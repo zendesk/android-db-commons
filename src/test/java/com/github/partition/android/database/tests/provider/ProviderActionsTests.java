@@ -93,7 +93,7 @@ public class ProviderActionsTests {
   }
 
   @Test
-  public void shouldPerformUpdateWithSeletionAndSelectionArgs() throws Exception {
+  public void shouldPerformUpdateWithSelectionAndSelectionArgs() throws Exception {
     ContentValues values = new ContentValues();
     values.put("col1", "val1");
     ProviderAction.update(TEST_URI)
@@ -110,7 +110,7 @@ public class ProviderActionsTests {
   }
 
   @Test
-  public void shouldCareAboutSelectionAndSeletionArgsWhenDeleting() throws Exception {
+  public void shouldCareAboutSelectionAndSelectionArgsWhenDeleting() throws Exception {
     ProviderAction.delete(TEST_URI)
         .where("col1 = ?", "val1")
         .perform(contentResolverMock);
