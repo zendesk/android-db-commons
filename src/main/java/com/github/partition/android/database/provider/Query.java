@@ -19,7 +19,7 @@ public class Query extends ProviderAction<Cursor> {
     return this;
   }
 
-  public Query where(String selection, String... selectionArgs) {
+  public Query where(String selection, Object... selectionArgs) {
     this.selection.append(selection, selectionArgs);
     return this;
   }

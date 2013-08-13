@@ -1,6 +1,8 @@
 package com.github.partition.android.database.provider;
 
+import com.google.common.base.Function;
 import com.google.common.base.Joiner;
+import com.google.common.collect.Collections2;
 import com.google.common.collect.Lists;
 
 import java.util.Collections;
@@ -9,9 +11,9 @@ import java.util.List;
 class Selection {
 
   private final List<String> selection = Lists.newLinkedList();
-  private final List<String> selectionArgs = Lists.newLinkedList();
+  private final List<Object> selectionArgs = Lists.newLinkedList();
 
-  void append(String selection, String... selectionArgs) {
+  void append(String selection, Object... selectionArgs) {
     this.selection.add(selection);
     Collections.addAll(this.selectionArgs, selectionArgs);
   }
@@ -27,6 +29,11 @@ class Selection {
     if (selectionArgs.isEmpty()) {
       return null;
     }
-    return selectionArgs.toArray(new String[selectionArgs.size()]);
+    return Collections2.transform(selectionArgs, new Function<Object, String>() {
+      @Override
+      public String apply(Object object) {
+        return object.toString();
+      }
+    }).toArray(new String[selectionArgs.size()]);
   }
 }

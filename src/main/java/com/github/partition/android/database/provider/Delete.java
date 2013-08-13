@@ -11,7 +11,7 @@ public class Delete extends ProviderAction<Integer> {
     super(uri);
   }
 
-  public Delete where(String selection, String... selectionArgs) {
+  public Delete where(String selection, Object... selectionArgs) {
     this.selection.append(selection, selectionArgs);
     return this;
   }

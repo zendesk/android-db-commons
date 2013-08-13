@@ -116,4 +116,12 @@ public class ResolvatorTests {
         .perform(contentResolverMock);
     verify(contentResolverMock).delete(eq(TEST_URI), eq("col1 = ?"), eq(new String[] { "val1" }));
   }
+
+  @Test
+  public void shouldBeAbleToUseNonStringObjectsInSelectionArgs() throws Exception {
+    ProviderAction.query(TEST_URI)
+        .where("col1 > ?", 18)
+        .perform(contentResolverMock);
+    verify(contentResolverMock).query(eq(TEST_URI), eq((String[]) null), eq("col1 > ?"), eq(new String[] { "18" }), eq((String) null));
+  }
 }

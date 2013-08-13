@@ -18,7 +18,7 @@ public class Update extends ProviderAction<Integer> {
     return this;
   }
 
-  public Update where(String selection, String... selectionArgs) {
+  public Update where(String selection, Object... selectionArgs) {
     this.selection.append(selection, selectionArgs);
     return this;
   }
