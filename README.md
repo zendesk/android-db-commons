@@ -25,3 +25,11 @@ ProviderAction.newQuery(uri)
   .where(People.AGE + ">?", 18)
   .perform(getContentResolver());
 ```
+
+Building
+--------
+This is standard maven project. To build it just execute:
+```shell
+mvn clean package
+```
+in directory with pom.xml.
