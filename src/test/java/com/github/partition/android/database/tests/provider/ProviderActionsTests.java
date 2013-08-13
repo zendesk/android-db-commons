@@ -19,7 +19,7 @@ import static org.mockito.Mockito.eq;
 
 @RunWith(RobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
-public class ResolvatorTests {
+public class ProviderActionsTests {
 
   private static final Uri TEST_URI = Uri.parse("content://authority/people");
 
