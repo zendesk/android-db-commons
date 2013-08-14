@@ -1,5 +1,6 @@
 package com.github.partition.android.database.provider;
 
+import com.github.partition.android.database.common.QueryData;
 import com.github.partition.android.database.cursors.FluentCursor;
 
 import android.content.ContentResolver;
@@ -29,6 +30,15 @@ public class Query extends ProviderAction<FluentCursor> {
   public Query orderBy(String orderBy) {
     this.orderBy = orderBy;
     return this;
+  }
+
+  public QueryData getQueryData() {
+    return new QueryData(getUri(),
+        projection.getProjection(),
+        selection.getSelection(),
+        selection.getSelectionArgs(),
+        orderBy
+    );
   }
 
   @Override
