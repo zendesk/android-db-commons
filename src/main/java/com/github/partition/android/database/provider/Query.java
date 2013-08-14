@@ -1,10 +1,12 @@
 package com.github.partition.android.database.provider;
 
+import com.github.partition.android.database.cursors.FluentCursor;
+
 import android.content.ContentResolver;
 import android.database.Cursor;
 import android.net.Uri;
 
-public class Query extends ProviderAction<Cursor> {
+public class Query extends ProviderAction<FluentCursor> {
 
   private final Selection selection = new Selection();
   private final Projection projection = new Projection();
@@ -30,12 +32,13 @@ public class Query extends ProviderAction<Cursor> {
   }
 
   @Override
-  public Cursor perform(ContentResolver contentResolver) {
-    return contentResolver.query(getUri(),
+  public FluentCursor perform(ContentResolver contentResolver) {
+    final Cursor queryResult = contentResolver.query(getUri(),
         projection.getProjection(),
         selection.getSelection(),
         selection.getSelectionArgs(),
         orderBy
     );
+    return new FluentCursor(queryResult);
   }
 }
