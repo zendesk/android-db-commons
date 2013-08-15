@@ -26,6 +26,26 @@ ProviderAction.newQuery(uri)
   .perform(getContentResolver());
 ```
 
+What's next? You may want to transform your Cursor to some collection of something. Using this util you can easily do:
+
+```java
+ProviderAction.newQuery(uri)
+  .projection(People.NAME, People.AGE)
+  .where(People.NAME + "=?", "Ian")
+  .where(People.AGE + ">?", 18)
+  .perform(getContentResolver());
+  .transform(new Function<Cursor, String>() {
+    @Override public String apply(Cursor cursor) {
+      return cursor.getString(cursor.getColumnIndexOrThrow(People.NAME));
+    }
+  })
+  .filter(new Predicate<String>() {
+    @Override public boolean apply(String string) {
+      return string.length()%2 == 0;
+    }
+  });
+  
+```
 Building
 --------
 This is standard maven project. To build it just execute:
