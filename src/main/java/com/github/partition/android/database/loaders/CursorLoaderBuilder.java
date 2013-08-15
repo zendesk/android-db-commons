@@ -42,6 +42,10 @@ public class CursorLoaderBuilder {
     return new TransformedLoaderBuilder<Out>(query.getQueryData(), function);
   }
 
+  public <Out> WrappedLoaderBuilder<Out> wrap(Function<Cursor, Out> wrapper) {
+    return new WrappedLoaderBuilder<Out>(query.getQueryData(), wrapper);
+  }
+
   public Loader<Cursor> build(Context context) {
     final QueryData queryData = query.getQueryData();
     final CursorLoader loader = new CursorLoader(context);

@@ -24,7 +24,20 @@ public class TransformedLoaderBuilder<T> {
     return new TransformedLoaderBuilder<Out>(queryData, Functions.compose(function, cursorTransformation));
   }
 
-  public Loader<List<T>> build(Context context) {
-    return new ComposedCursorLoader<T>(context, queryData, cursorTransformation);
+  public <Out> WrappedLoaderBuilder<Out> wrap(final Function<LazyCursorList<T>, Out> wrapper) {
+    return new WrappedLoaderBuilder<Out>(queryData, Functions.compose(wrapper, getTransformationFunction()));
+  }
+
+  public Loader<LazyCursorList<T>> build(Context context) {
+    return new ComposedCursorLoader<LazyCursorList<T>>(context, queryData, getTransformationFunction());
+  }
+
+  private Function<Cursor, LazyCursorList<T>> getTransformationFunction() {
+    return new Function<Cursor, LazyCursorList<T>>() {
+      @Override
+      public LazyCursorList<T> apply(Cursor cursor) {
+        return new LazyCursorList<T>(cursor, cursorTransformation);
+      }
+    };
   }
 }

@@ -28,8 +28,9 @@ import java.io.FileDescriptor;
 import java.io.PrintWriter;
 import java.util.Arrays;
 import java.util.List;
+import java.util.WeakHashMap;
 
-public class ComposedCursorLoader<T> extends AsyncTaskLoader<List<T>> {
+public class ComposedCursorLoader<T> extends AsyncTaskLoader<T> {
   final ForceLoadContentObserver mObserver;
 
   Uri mUri;
@@ -38,15 +39,20 @@ public class ComposedCursorLoader<T> extends AsyncTaskLoader<List<T>> {
   String[] mSelectionArgs;
   String mSortOrder;
 
-  Cursor mCursor;
+  T mResult;
 
   private final Function<Cursor, T> mCursorTransformation;
+  private WeakHashMap<T, Cursor> cursorsForResults = new WeakHashMap<T, Cursor>();
 
   /* Runs on a worker thread */
   @Override
-  public List<T> loadInBackground() {
+  public T loadInBackground() {
     final Cursor cursor = loadCursorInBackground();
-    return new LazyCursorList<T>(cursor, mCursorTransformation);
+    final T result = mCursorTransformation.apply(cursor);
+    if (cursor != null) {
+      cursorsForResults.put(result, cursor);
+    }
+    return result;
   }
 
   private Cursor loadCursorInBackground() {
@@ -61,9 +67,11 @@ public class ComposedCursorLoader<T> extends AsyncTaskLoader<List<T>> {
   }
 
   @Override
-  public void deliverResult(List<T> data) {
-    final LazyCursorList lazyCursorList = (LazyCursorList) data;
-    Cursor cursor = lazyCursorList.getCursor();
+  public void deliverResult(T data) {
+    final Cursor cursor = cursorsForResults.get(data);
+    if (cursor != null) {
+      cursorsForResults.remove(data);
+    }
     if (isReset()) {
       // An async query came in while the loader is stopped
       if (cursor != null) {
@@ -71,15 +79,17 @@ public class ComposedCursorLoader<T> extends AsyncTaskLoader<List<T>> {
       }
       return;
     }
-    Cursor oldCursor = mCursor;
-    mCursor = cursor;
+    T oldResult = mResult;
+    mResult = data;
 
     if (isStarted()) {
       super.deliverResult(data);
     }
 
+    Cursor oldCursor = cursorsForResults.get(oldResult);
     if (oldCursor != null && oldCursor != cursor && !oldCursor.isClosed()) {
       oldCursor.close();
+      cursorsForResults.remove(oldResult);
     }
   }
 
@@ -96,11 +106,10 @@ public class ComposedCursorLoader<T> extends AsyncTaskLoader<List<T>> {
 
   @Override
   protected void onStartLoading() {
-    if (mCursor != null) {
-      // TODO - caching
-      deliverResult(new LazyCursorList<T>(mCursor, mCursorTransformation));
+    if (mResult != null) {
+      deliverResult(mResult);
     }
-    if (takeContentChanged() || mCursor == null) {
+    if (takeContentChanged() || mResult == null) {
       forceLoad();
     }
   }
@@ -111,10 +120,11 @@ public class ComposedCursorLoader<T> extends AsyncTaskLoader<List<T>> {
   }
 
   @Override
-  public void onCanceled(List<T> list) {
-    Cursor cursor = ((LazyCursorList<T>)list).getCursor();
+  public void onCanceled(T result) {
+    Cursor cursor = cursorsForResults.get(result);
     if (cursor != null && !cursor.isClosed()) {
       cursor.close();
+      cursorsForResults.remove(result);
     }
   }
 
@@ -122,10 +132,14 @@ public class ComposedCursorLoader<T> extends AsyncTaskLoader<List<T>> {
   protected void onReset() {
     super.onReset();
     onStopLoading();
-    if (mCursor != null && !mCursor.isClosed()) {
-      mCursor.close();
+    if(mResult != null) {
+      Cursor cursor = cursorsForResults.get(mResult);
+      if(!cursor.isClosed()) {
+        cursor.close();
+      }
+      cursorsForResults.remove(mResult);
+      mResult = null;
     }
-    mCursor = null;
   }
 
   @Override
@@ -147,7 +161,7 @@ public class ComposedCursorLoader<T> extends AsyncTaskLoader<List<T>> {
     writer.print("mSortOrder=");
     writer.println(mSortOrder);
     writer.print(prefix);
-    writer.print("mCursor=");
-    writer.println(mCursor);
+    writer.print("mResult=");
+    writer.println(mResult);
   }
 }
