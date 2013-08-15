@@ -48,9 +48,7 @@ public class ComposedCursorLoader<T> extends AsyncTaskLoader<T> {
   public T loadInBackground() {
     final Cursor cursor = loadCursorInBackground();
     final T result = mCursorTransformation.apply(cursor);
-    if (cursor != null) {
-      cursorsForResults.put(result, cursor);
-    }
+    cursorsForResults.put(result, cursor);
     return result;
   }
 
@@ -82,9 +80,11 @@ public class ComposedCursorLoader<T> extends AsyncTaskLoader<T> {
       super.deliverResult(data);
     }
 
-    Cursor oldCursor = cursorsForResults.get(oldResult);
-    if (oldCursor != null && oldCursor != cursor && !oldCursor.isClosed()) {
-      oldCursor.close();
+    if(oldResult != null) {
+      Cursor oldCursor = cursorsForResults.get(oldResult);
+      if (oldCursor != null && oldCursor != cursor && !oldCursor.isClosed()) {
+        oldCursor.close();
+      }
       cursorsForResults.remove(oldResult);
     }
   }
