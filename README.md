@@ -46,6 +46,82 @@ ProviderAction.newQuery(uri)
   });
   
 ```
+Loaders
+-------
+Loaders are fine. They do some hard work for you which otherwise you would need to do manually. But maybe they can be even funnier? 
+
+This is a standard way of creating CursorLoader.
+```java
+long age = 18L;
+final CursorLoader loader = new CursorLoader(getActivity());
+loader.setUri(uri);
+loader.setProjection(new String[] { People.NAME });
+loader.setSelection(People.AGE + ">?");
+loader.setSelectionArgs(new String[] { String.valueOf(age) });
+```
+Using android-db-commons you can build it using this builder:
+```java
+CursorLoaderBuilder.forUri(uri)
+  .projection(People.NAME)
+  .where(People.AGE + ">?", 18)
+  .build(getActivity());
+```
+Looks nice, isn't it? Yeah, but it's still not a big change. Anyway, all of us know this:
+```java
+@Override public void onLoadFinished(Loader<Cursor> loader, Cursor result) {
+  RealResult result = ReaulResult.veryExpensiveOperationOnMainUiThread(result);
+  myFancyView.setResult(result);
+}
+```
+Using this library you are able to perform additional operations inside Loader's doInBackground().
+```java
+CursorLoaderBuilder.forUri(uri)
+  .projection(People.NAME)
+  .where(People.AGE + ">?", 18)
+  .wrap(new Function<Cursor, RealResult>() {
+    @Override public RealResult apply(Cursor cursor) {
+      return RealResult.veryExpensiveOperationOnMainUiThread(result);
+    }
+  })
+  .build(getActivity());
+```
+Wanna transform your Cursor into a collection of something? Easy.
+```java
+CursorLoaderBuilder.forUri(uri)
+  .projection(People.NAME)
+  .where(People.AGE + ">?", 18)
+  .transform(new Function<Cursor, String>() {
+    @Override public RealResult apply(Cursor cursor) {
+      return cursor.getString(0);
+    }
+  })
+  .build(getActivity());
+```
+Your Loader will return LazyCursorList<String> as a result in this case. Yes, it's lazy. We do not iterate through your 100K-rows Cursor. Even if everything is still happening on the background thread. 
+
+Sure, you can still wrap() your transformed() result.
+```java
+CursorLoaderBuilder.forUri(uri)
+  .projection(People.NAME)
+  .where(People.AGE + ">?", 18)
+  .transform(new Function<Cursor, String>() {
+    @Override public RealResult apply(Cursor cursor) {
+      return cursor.getString(0);
+    }
+  })
+  .transform(new Function<String, Integer>() {
+    @Override public Integer apply(String name) {
+      return name.length();
+    }
+  })
+  .wrap(new Function<LazyCursorList<Integer>, RealResult>() {
+    @Override public RealResult apply(LazyCursorList<Integer> lazyList) {
+      return RealResult.factoryFactory(lazyList);
+    }
+  })
+  .build(getActivity());
+```
+
 Building
 --------
 This is standard maven project. To build it just execute:
