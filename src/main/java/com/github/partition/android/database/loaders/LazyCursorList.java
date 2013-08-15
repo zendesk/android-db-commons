@@ -28,7 +28,4 @@ public class LazyCursorList<T> extends AbstractList<T> {
     return cursor.getCount();
   }
 
-  Cursor getCursor() {
-    return cursor;
-  }
 }
