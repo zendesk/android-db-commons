@@ -1,6 +1,8 @@
 android-db-commons
 ==================
 
+WARNING: This library is under heavy development. We can't guarantee both stability of the library itself and the API. However, if you'll find some troubles, bugs, problems please submit an issue here so we can fix it!
+
 Some common utilities for ContentProvider/ContentResolver/Cursor and other db-related android stuff
 
 Currently it's just a builder for ContentResolver-related crap.
