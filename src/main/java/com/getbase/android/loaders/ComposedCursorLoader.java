@@ -68,9 +68,6 @@ public class ComposedCursorLoader<T> extends AsyncTaskLoader<T> {
   @Override
   public void deliverResult(T data) {
     final Cursor cursor = cursorsForResults.get(data);
-    if (cursor != null) {
-      cursorsForResults.remove(data);
-    }
     if (isReset()) {
       // An async query came in while the loader is stopped
       if (cursor != null) {
@@ -131,9 +128,9 @@ public class ComposedCursorLoader<T> extends AsyncTaskLoader<T> {
   protected void onReset() {
     super.onReset();
     onStopLoading();
-    if(mResult != null) {
+    if (mResult != null) {
       Cursor cursor = cursorsForResults.get(mResult);
-      if(!cursor.isClosed()) {
+      if (cursor != null && !cursor.isClosed()) {
         cursor.close();
       }
       cursorsForResults.remove(mResult);
