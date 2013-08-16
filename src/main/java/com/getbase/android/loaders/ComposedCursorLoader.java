@@ -82,7 +82,7 @@ public class ComposedCursorLoader<T> extends AsyncTaskLoader<T> {
       super.deliverResult(data);
     }
 
-    if(oldResult != null) {
+    if (oldResult != null) {
       Cursor oldCursor = cursorsForResults.get(oldResult);
       if (oldCursor != null && oldCursor != cursor && !oldCursor.isClosed()) {
         oldCursor.close();
