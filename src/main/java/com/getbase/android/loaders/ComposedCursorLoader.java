@@ -18,6 +18,7 @@ package com.getbase.android.loaders;
 
 import com.getbase.android.common.QueryData;
 import com.google.common.base.Function;
+import com.google.common.base.Preconditions;
 
 import android.content.Context;
 import android.database.Cursor;
@@ -48,6 +49,7 @@ public class ComposedCursorLoader<T> extends AsyncTaskLoader<T> {
   public T loadInBackground() {
     final Cursor cursor = loadCursorInBackground();
     final T result = mCursorTransformation.apply(cursor);
+    Preconditions.checkNotNull(result, "Function passed to this loader should never return null.");
     cursorsForResults.put(result, cursor);
     return result;
   }
