@@ -8,6 +8,8 @@ import android.content.Context;
 import android.database.Cursor;
 import android.support.v4.content.Loader;
 
+import java.util.List;
+
 public class TransformedLoaderBuilder<T> {
 
   private final QueryData queryData;
@@ -22,18 +24,18 @@ public class TransformedLoaderBuilder<T> {
     return new TransformedLoaderBuilder<Out>(queryData, Functions.compose(function, cursorTransformation));
   }
 
-  public <Out> WrappedLoaderBuilder<Out> wrap(final Function<LazyCursorList<T>, Out> wrapper) {
+  public <Out> WrappedLoaderBuilder<Out> wrap(final Function<List<T>, Out> wrapper) {
     return new WrappedLoaderBuilder<Out>(queryData, Functions.compose(wrapper, getTransformationFunction()));
   }
 
-  public Loader<LazyCursorList<T>> build(Context context) {
-    return new ComposedCursorLoader<LazyCursorList<T>>(context, queryData, getTransformationFunction());
+  public Loader<List<T>> build(Context context) {
+    return new ComposedCursorLoader<List<T>>(context, queryData, getTransformationFunction());
   }
 
-  private Function<Cursor, LazyCursorList<T>> getTransformationFunction() {
-    return new Function<Cursor, LazyCursorList<T>>() {
+  private Function<Cursor, List<T>> getTransformationFunction() {
+    return new Function<Cursor, List<T>>() {
       @Override
-      public LazyCursorList<T> apply(Cursor cursor) {
+      public List<T> apply(Cursor cursor) {
         return new LazyCursorList<T>(cursor, cursorTransformation);
       }
     };
