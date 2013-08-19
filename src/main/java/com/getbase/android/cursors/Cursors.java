@@ -14,9 +14,6 @@ public class Cursors {
     List<T> transformed = Lists.newArrayList();
     for (int i = 0; cursor.moveToPosition(i); i++) {
       transformed.add(function.apply(cursor));
-      if (i != cursor.getPosition()) {
-        throw new IllegalArgumentException("Moving cursor inside function is forbidden");
-      }
     }
     return FluentIterable.from(transformed);
   }

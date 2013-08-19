@@ -55,22 +55,6 @@ public class FluentCursorTest {
     })).isTrue();
   }
 
-  @Test(expected = IllegalArgumentException.class)
-  public void shouldNotPermitMovingCursorInsideFunction() throws Exception {
-    final MatrixCursor cursor = new MatrixCursor(new String[] { TEST_COLUMN });
-    for (int i = 0; i < 10; i++) {
-      cursor.addRow(new Object[] { 18L });
-    }
-    final FluentCursor fluentCursor = new FluentCursor(cursor);
-    fluentCursor.transform(new Function<Cursor, Void>() {
-      @Override
-      public Void apply(Cursor cursor) {
-        cursor.moveToFirst();
-        return null;
-      }
-    });
-  }
-
   @Test
   public void shouldRecognizeNullAsAnEmptyCursor() throws Exception {
     final FluentCursor cursor = new FluentCursor(null);
