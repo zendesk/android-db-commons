@@ -28,7 +28,6 @@ import android.support.v4.content.AsyncTaskLoader;
 import java.io.FileDescriptor;
 import java.io.PrintWriter;
 import java.util.Arrays;
-import java.util.WeakHashMap;
 
 public class ComposedCursorLoader<T> extends AsyncTaskLoader<T> {
   final ForceLoadContentObserver mObserver;
@@ -42,7 +41,7 @@ public class ComposedCursorLoader<T> extends AsyncTaskLoader<T> {
   T mResult;
 
   private final Function<Cursor, T> mCursorTransformation;
-  private WeakHashMap<T, Cursor> cursorsForResults = new WeakHashMap<T, Cursor>();
+  private IdentityLinkedMap<T, Cursor> cursorsForResults = new IdentityLinkedMap<T, Cursor>();
 
   /* Runs on a worker thread */
   @Override
