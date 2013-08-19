@@ -24,7 +24,7 @@ public class FluentCursorTest {
   public void shouldCloseCursorAfterItIsTransformed() throws Exception {
     final MatrixCursor cursor = new MatrixCursor(new String[] { TEST_COLUMN });
     final FluentCursor fluentCursor = new FluentCursor(cursor);
-    fluentCursor.transform(new Function<Cursor, Object>() {
+    fluentCursor.toFluentIterable(new Function<Cursor, Object>() {
       @Override
       public Object apply(Cursor cursor) {
         return null;
@@ -40,7 +40,7 @@ public class FluentCursorTest {
       cursor.addRow(new Object[] { 18L });
     }
     final FluentCursor fluentCursor = new FluentCursor(cursor);
-    final FluentIterable<Long> transformed = fluentCursor.transform(new Function<Cursor, Long>() {
+    final FluentIterable<Long> transformed = fluentCursor.toFluentIterable(new Function<Cursor, Long>() {
       @Override
       public Long apply(Cursor cursor) {
         return cursor.getLong(cursor.getColumnIndexOrThrow(TEST_COLUMN));
