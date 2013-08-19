@@ -99,7 +99,7 @@ CursorLoaderBuilder.forUri(uri)
   })
   .build(getActivity());
 ```
-Your Loader will return LazyCursorList<String> as a result in this case. Yes, it's lazy. We do not iterate through your 100K-rows Cursor. Even if everything is still happening on the background thread. 
+Your Loader will return List<String> as a result in this case. It's lazy list. We do not iterate through your 100K-rows Cursor. Every row's transformation is calculated at its access time. 
 
 Sure, you can still wrap() your transformed() result.
 ```java
@@ -116,13 +116,14 @@ CursorLoaderBuilder.forUri(uri)
       return name.length();
     }
   })
-  .wrap(new Function<LazyCursorList<Integer>, RealResult>() {
-    @Override public RealResult apply(LazyCursorList<Integer> lazyList) {
+  .wrap(new Function<List<Integer>, RealResult>() {
+    @Override public RealResult apply(List<Integer> list) {
       return RealResult.factoryFactory(lazyList);
     }
   })
   .build(getActivity());
 ```
+Wrap function is applyied in Loader's doInBackground() so you don't have to worry about ANRs in case you want to do something more complex in there.
 
 Building
 --------
