@@ -1,4 +1,4 @@
-package com.getbase.android.common;
+package com.getbase.android.db.common;
 
 import android.net.Uri;
 

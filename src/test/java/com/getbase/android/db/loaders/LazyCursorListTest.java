@@ -1,4 +1,4 @@
-package com.getbase.android.loaders;
+package com.getbase.android.db.loaders;
 
 import static org.fest.assertions.Assertions.assertThat;
 

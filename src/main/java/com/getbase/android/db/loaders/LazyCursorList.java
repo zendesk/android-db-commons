@@ -1,4 +1,4 @@
-package com.getbase.android.loaders;
+package com.getbase.android.db.loaders;
 
 import com.google.common.base.Function;
 
@@ -6,7 +6,7 @@ import android.database.Cursor;
 
 import java.util.AbstractList;
 
-public class LazyCursorList<T> extends AbstractList<T> {
+class LazyCursorList<T> extends AbstractList<T> {
 
   private final Cursor cursor;
   private final Function<Cursor, T> transformation;

@@ -1,4 +1,4 @@
-package com.getbase.android.cursors;
+package com.getbase.android.db.cursors;
 
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
@@ -24,7 +24,7 @@ public class FluentCursorTest {
   public void shouldCloseCursorAfterItIsTransformed() throws Exception {
     final MatrixCursor cursor = new MatrixCursor(new String[] { TEST_COLUMN });
     final FluentCursor fluentCursor = new FluentCursor(cursor);
-    fluentCursor.transform(new Function<Cursor, Object>() {
+    fluentCursor.toFluentIterable(new Function<Cursor, Object>() {
       @Override
       public Object apply(Cursor cursor) {
         return null;
@@ -40,7 +40,7 @@ public class FluentCursorTest {
       cursor.addRow(new Object[] { 18L });
     }
     final FluentCursor fluentCursor = new FluentCursor(cursor);
-    final FluentIterable<Long> transformed = fluentCursor.transform(new Function<Cursor, Long>() {
+    final FluentIterable<Long> transformed = fluentCursor.toFluentIterable(new Function<Cursor, Long>() {
       @Override
       public Long apply(Cursor cursor) {
         return cursor.getLong(cursor.getColumnIndexOrThrow(TEST_COLUMN));
@@ -53,22 +53,6 @@ public class FluentCursorTest {
         return aLong.equals(18L);
       }
     })).isTrue();
-  }
-
-  @Test(expected = IllegalArgumentException.class)
-  public void shouldNotPermitMovingCursorInsideFunction() throws Exception {
-    final MatrixCursor cursor = new MatrixCursor(new String[] { TEST_COLUMN });
-    for (int i = 0; i < 10; i++) {
-      cursor.addRow(new Object[] { 18L });
-    }
-    final FluentCursor fluentCursor = new FluentCursor(cursor);
-    fluentCursor.transform(new Function<Cursor, Void>() {
-      @Override
-      public Void apply(Cursor cursor) {
-        cursor.moveToFirst();
-        return null;
-      }
-    });
   }
 
   @Test

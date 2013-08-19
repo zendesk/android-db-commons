@@ -1,4 +1,4 @@
-package com.getbase.android.cursors;
+package com.getbase.android.db.cursors;
 
 import android.database.MatrixCursor;
 
