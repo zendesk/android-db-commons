@@ -12,8 +12,10 @@ public class Cursors {
 
   public static <T> FluentIterable<T> toFluentIterable(Cursor cursor, Function<Cursor, T> singleRowTransform) {
     List<T> transformed = Lists.newArrayList();
-    for (int i = 0; cursor.moveToPosition(i); i++) {
-      transformed.add(singleRowTransform.apply(cursor));
+    if (cursor != null) {
+      for (int i = 0; cursor.moveToPosition(i); i++) {
+        transformed.add(singleRowTransform.apply(cursor));
+      }
     }
     return FluentIterable.from(transformed);
   }
