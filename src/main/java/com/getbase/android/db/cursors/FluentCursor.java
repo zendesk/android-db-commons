@@ -8,15 +8,8 @@ import android.database.CursorWrapper;
 
 public class FluentCursor extends CursorWrapper {
 
-  private static Cursor returnSameOrEmptyIfNull(Cursor cursor) {
-    if (cursor == null) {
-      return new EmptyCursor();
-    }
-    return cursor;
-  }
-
   public FluentCursor(Cursor cursor) {
-    super(returnSameOrEmptyIfNull(cursor));
+    super(Cursors.returnSameOrEmptyIfNull(cursor));
   }
 
   /**

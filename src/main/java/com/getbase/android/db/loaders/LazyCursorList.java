@@ -1,5 +1,6 @@
 package com.getbase.android.db.loaders;
 
+import com.getbase.android.db.cursors.Cursors;
 import com.google.common.base.Function;
 
 import android.database.Cursor;
@@ -12,7 +13,7 @@ class LazyCursorList<T> extends AbstractList<T> {
   private final Function<Cursor, T> transformation;
 
   public LazyCursorList(Cursor cursor, Function<Cursor, T> function) {
-    this.cursor = cursor;
+    this.cursor = Cursors.returnSameOrEmptyIfNull(cursor);
     this.transformation = function;
   }
 

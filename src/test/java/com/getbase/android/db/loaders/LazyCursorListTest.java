@@ -45,4 +45,15 @@ public class LazyCursorListTest {
     });
     assertThat(list.size()).isEqualTo(cursor.getCount());
   }
+
+  @Test
+  public void shouldSurviveNullCursor() throws Exception {
+    final LazyCursorList<String> list = new LazyCursorList<String>(null, new Function<Cursor, String>() {
+      @Override
+      public String apply(Cursor cursor) {
+        return cursor.getString(0);
+      }
+    });
+    assertThat(list).isEmpty();
+  }
 }

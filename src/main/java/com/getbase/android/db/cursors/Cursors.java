@@ -25,4 +25,11 @@ public class Cursors {
       cursor.close();
     }
   }
+
+  public static Cursor returnSameOrEmptyIfNull(Cursor cursor) {
+    if (cursor == null) {
+      return new EmptyCursor();
+    }
+    return cursor;
+  }
 }
