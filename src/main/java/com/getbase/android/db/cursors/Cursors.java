@@ -18,10 +18,6 @@ public class Cursors {
     return FluentIterable.from(transformed);
   }
 
-  public static <T> FluentIterable<T> toLazyFluentIterable(Cursor cursor, Function<Cursor, T> function) {
-    return null;
-  }
-
   public static void closeQuietly(Cursor cursor) {
     if (cursor != null) {
       cursor.close();
