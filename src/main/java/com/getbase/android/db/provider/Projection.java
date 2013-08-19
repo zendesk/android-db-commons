@@ -1,4 +1,4 @@
-package com.getbase.android.provider;
+package com.getbase.android.db.provider;
 
 import com.google.common.collect.Lists;
 

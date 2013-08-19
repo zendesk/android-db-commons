@@ -1,4 +1,4 @@
-package com.getbase.android.loaders;
+package com.getbase.android.db.loaders;
 
 /*
  * Copyright (C) 2011 The Android Open Source Project
@@ -16,7 +16,7 @@ package com.getbase.android.loaders;
  * limitations under the License.
  */
 
-import com.getbase.android.common.QueryData;
+import com.getbase.android.db.common.QueryData;
 import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 

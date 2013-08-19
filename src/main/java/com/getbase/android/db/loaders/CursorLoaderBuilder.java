@@ -1,8 +1,8 @@
-package com.getbase.android.loaders;
+package com.getbase.android.db.loaders;
 
-import com.getbase.android.common.QueryData;
-import com.getbase.android.provider.ProviderAction;
-import com.getbase.android.provider.Query;
+import com.getbase.android.db.common.QueryData;
+import com.getbase.android.db.provider.ProviderAction;
+import com.getbase.android.db.provider.Query;
 import com.google.common.base.Function;
 
 import android.content.Context;
