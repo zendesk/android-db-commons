@@ -10,10 +10,10 @@ import java.util.List;
 
 public class Cursors {
 
-  public static <T> FluentIterable<T> toFluentIterable(Cursor cursor, Function<Cursor, T> function) {
+  public static <T> FluentIterable<T> toFluentIterable(Cursor cursor, Function<Cursor, T> singleRowTransform) {
     List<T> transformed = Lists.newArrayList();
     for (int i = 0; cursor.moveToPosition(i); i++) {
-      transformed.add(function.apply(cursor));
+      transformed.add(singleRowTransform.apply(cursor));
     }
     return FluentIterable.from(transformed);
   }
