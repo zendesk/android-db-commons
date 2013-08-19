@@ -1,7 +1,7 @@
-package com.getbase.android.provider;
+package com.getbase.android.db.provider;
 
-import com.getbase.android.common.QueryData;
-import com.getbase.android.cursors.FluentCursor;
+import com.getbase.android.db.common.QueryData;
+import com.getbase.android.db.cursors.FluentCursor;
 
 import android.content.ContentResolver;
 import android.database.Cursor;

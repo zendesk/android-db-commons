@@ -1,4 +1,4 @@
-package com.getbase.android.loaders;
+package com.getbase.android.db.loaders;
 
 import com.google.common.base.Function;
 
