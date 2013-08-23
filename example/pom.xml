@@ -6,14 +6,14 @@
   >
   <modelVersion>4.0.0</modelVersion>
   <artifactId>example</artifactId>
-  <version>0.1.0</version>
+  <version>0.1.1</version>
   <packaging>apk</packaging>
   <name>android-db-utils sample app</name>
 
   <parent>
     <groupId>com.getbase.android.db</groupId>
     <artifactId>parent</artifactId>
-    <version>0.1.0</version>
+    <version>0.1.1</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
@@ -28,7 +28,7 @@
     <dependency>
       <groupId>com.getbase.android.db</groupId>
       <artifactId>library</artifactId>
-      <version>0.1.0</version>
+      <version>0.1.1</version>
     </dependency>
     <dependency>
       <groupId>com.google.android</groupId>
