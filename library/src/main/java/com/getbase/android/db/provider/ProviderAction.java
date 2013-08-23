@@ -51,5 +51,5 @@ public abstract class ProviderAction<T> {
     return perform(new ContentProviderClientCrudHandler(contentProviderClient));
   }
 
-  public abstract T perform(CrudHandler crudHandler) throws RemoteException;
+  protected abstract T perform(CrudHandler crudHandler) throws RemoteException;
 }

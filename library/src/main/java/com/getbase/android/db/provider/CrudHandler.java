@@ -5,7 +5,7 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.RemoteException;
 
-public interface CrudHandler {
+interface CrudHandler {
 
   public Cursor query(Uri url, String[] projection, String selection, String[] selectionArgs, String sortOrder) throws RemoteException;
 
