@@ -1,7 +1,7 @@
 package com.getbase.android.db.provider;
 
-import android.content.ContentResolver;
 import android.net.Uri;
+import android.os.RemoteException;
 
 public class Delete extends ProviderAction<Integer> {
 
@@ -17,7 +17,7 @@ public class Delete extends ProviderAction<Integer> {
   }
 
   @Override
-  public Integer perform(ContentResolver contentResolver) {
-    return contentResolver.delete(getUri(), selection.getSelection(), selection.getSelectionArgs());
+  public Integer perform(CrudHandler crudHandler) throws RemoteException {
+    return crudHandler.delete(getUri(), selection.getSelection(), selection.getSelectionArgs());
   }
 }

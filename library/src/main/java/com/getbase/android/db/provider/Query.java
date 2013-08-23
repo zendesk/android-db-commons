@@ -6,6 +6,7 @@ import com.getbase.android.db.cursors.FluentCursor;
 import android.content.ContentResolver;
 import android.database.Cursor;
 import android.net.Uri;
+import android.os.RemoteException;
 
 public class Query extends ProviderAction<FluentCursor> {
 
@@ -42,8 +43,8 @@ public class Query extends ProviderAction<FluentCursor> {
   }
 
   @Override
-  public FluentCursor perform(ContentResolver contentResolver) {
-    final Cursor queryResult = contentResolver.query(getUri(),
+  public FluentCursor perform(CrudHandler crudHandler) throws RemoteException {
+    final Cursor queryResult = crudHandler.query(getUri(),
         projection.getProjection(),
         selection.getSelection(),
         selection.getSelectionArgs(),

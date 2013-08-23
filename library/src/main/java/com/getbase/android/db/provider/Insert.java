@@ -1,8 +1,8 @@
 package com.getbase.android.db.provider;
 
-import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.net.Uri;
+import android.os.RemoteException;
 
 public class Insert extends ProviderAction<Uri> {
 
@@ -18,7 +18,7 @@ public class Insert extends ProviderAction<Uri> {
   }
 
   @Override
-  public Uri perform(ContentResolver contentResolver) {
-    return contentResolver.insert(getUri(), contentValues);
+  public Uri perform(CrudHandler crudHandler) throws RemoteException {
+    return crudHandler.insert(getUri(), contentValues);
   }
 }

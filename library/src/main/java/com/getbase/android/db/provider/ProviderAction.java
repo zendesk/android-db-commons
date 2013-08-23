@@ -1,8 +1,11 @@
 package com.getbase.android.db.provider;
 
+import android.content.ContentProviderClient;
+import android.content.ContentProviderOperation;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.net.Uri;
+import android.os.RemoteException;
 
 public abstract class ProviderAction<T> {
 
@@ -36,5 +39,17 @@ public abstract class ProviderAction<T> {
     return perform(context.getContentResolver());
   }
 
-  public abstract T perform(ContentResolver contentResolver);
+  public T perform(ContentResolver contentResolver) {
+    try {
+      return perform(new ContentResolverCrudHandler(contentResolver));
+    } catch (RemoteException e) {
+      throw new RuntimeException("Unexpected exception: ", e);
+    }
+  }
+
+  public T perform(ContentProviderClient contentProviderClient) throws RemoteException {
+    return perform(new ContentProviderClientCrudHandler(contentProviderClient));
+  }
+
+  public abstract T perform(CrudHandler crudHandler) throws RemoteException;
 }

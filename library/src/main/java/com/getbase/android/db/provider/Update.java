@@ -1,8 +1,8 @@
 package com.getbase.android.db.provider;
 
-import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.net.Uri;
+import android.os.RemoteException;
 
 public class Update extends ProviderAction<Integer> {
 
@@ -24,7 +24,7 @@ public class Update extends ProviderAction<Integer> {
   }
 
   @Override
-  public Integer perform(ContentResolver contentResolver) {
-    return contentResolver.update(getUri(), values, selection.getSelection(), selection.getSelectionArgs());
+  public Integer perform(CrudHandler crudHandler) throws RemoteException {
+    return crudHandler.update(getUri(), values, selection.getSelection(), selection.getSelectionArgs());
   }
 }
