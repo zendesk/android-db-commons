@@ -2,11 +2,15 @@ package com.getbase.android.db.provider;
 
 import com.getbase.android.db.common.QueryData;
 import com.getbase.android.db.cursors.FluentCursor;
+import com.google.common.base.Joiner;
 
 import android.content.ContentResolver;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.RemoteException;
+
+import java.util.Collection;
+import java.util.Collections;
 
 public class Query extends ProviderAction<FluentCursor> {
 
@@ -25,6 +29,11 @@ public class Query extends ProviderAction<FluentCursor> {
 
   public Query where(String selection, Object... selectionArgs) {
     this.selection.append(selection, selectionArgs);
+    return this;
+  }
+
+  public <T> Query whereIn(String column, Collection<T> collection) {
+    this.selection.append(column + " IN (" + Joiner.on(",").join(Collections.nCopies(collection.size(), "?")) + ")", collection.toArray());
     return this;
   }
 
