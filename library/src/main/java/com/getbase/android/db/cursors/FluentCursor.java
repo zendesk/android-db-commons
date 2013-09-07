@@ -21,7 +21,7 @@ public class FluentCursor extends CursorWrapper {
    * @return Transformed iterable
    */
   public <T> FluentIterable<T> toFluentIterable(Function<Cursor, T> singleRowTransform) {
-    final FluentIterable<T> fi = Cursors.toFluentIterable(getWrappedCursor(), singleRowTransform);
+    final FluentIterable<T> fi = Cursors.toFluentIterable(this, singleRowTransform);
     close();
     return fi;
   }
