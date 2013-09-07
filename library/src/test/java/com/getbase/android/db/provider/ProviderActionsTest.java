@@ -15,6 +15,13 @@ import android.net.Uri;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.eq;
 
+import com.google.common.base.Joiner;
+import com.google.common.collect.Lists;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 @RunWith(RobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
 public class ProviderActionsTest {
@@ -121,5 +128,19 @@ public class ProviderActionsTest {
         .where("col1 > ?", 18)
         .perform(contentResolverMock);
     verify(contentResolverMock).query(eq(TEST_URI), eq((String[]) null), eq("col1 > ?"), eq(new String[] { "18" }), eq((String) null));
+  }
+
+  @Test
+  public void shouldBeAbleToCreateASelectionWithWhereIn() throws Exception {
+    final List<String> inSet = Lists.newArrayList("one", "two", "three");
+    ProviderAction.query(TEST_URI)
+        .whereIn("col1", inSet)
+        .perform(contentResolverMock);
+    final String expectedSelection = "col1 IN (" + Joiner.on(",").join(Collections.nCopies(inSet.size(), "?")) + ")";
+    verify(contentResolverMock).query(eq(TEST_URI),
+        eq((String[]) null),
+        eq(expectedSelection),
+        eq(inSet.toArray(new String[inSet.size()])),
+        eq((String) null));
   }
 }
