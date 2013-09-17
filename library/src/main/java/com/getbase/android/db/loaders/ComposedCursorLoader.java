@@ -19,17 +19,17 @@ package com.getbase.android.db.loaders;
 import com.getbase.android.db.common.QueryData;
 import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
+import com.sun.istack.internal.Nullable;
 
 import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
-import android.support.v4.content.AsyncTaskLoader;
 
 import java.io.FileDescriptor;
 import java.io.PrintWriter;
 import java.util.Arrays;
 
-public class ComposedCursorLoader<T> extends AsyncTaskLoader<T> {
+public class ComposedCursorLoader<T> extends AbstractLoader<T> {
   final ForceLoadContentObserver mObserver;
 
   Uri mUri;
@@ -49,7 +49,9 @@ public class ComposedCursorLoader<T> extends AsyncTaskLoader<T> {
     final Cursor cursor = loadCursorInBackground();
     final T result = mCursorTransformation.apply(cursor);
     Preconditions.checkNotNull(result, "Function passed to this loader should never return null.");
-    cursorsForResults.put(result, cursor);
+
+    releaseCursor(cursorsForResults.put(result, cursor));
+
     return result;
   }
 
@@ -64,32 +66,6 @@ public class ComposedCursorLoader<T> extends AsyncTaskLoader<T> {
     return cursor;
   }
 
-  @Override
-  public void deliverResult(T data) {
-    final Cursor cursor = cursorsForResults.get(data);
-    if (isReset()) {
-      // An async query came in while the loader is stopped
-      if (cursor != null) {
-        cursor.close();
-      }
-      return;
-    }
-    T oldResult = mResult;
-    mResult = data;
-
-    if (isStarted()) {
-      super.deliverResult(data);
-    }
-
-    if (oldResult != null) {
-      Cursor oldCursor = cursorsForResults.get(oldResult);
-      if (oldCursor != null && oldCursor != cursor && !oldCursor.isClosed()) {
-        oldCursor.close();
-      }
-      cursorsForResults.remove(oldResult);
-    }
-  }
-
   public ComposedCursorLoader(Context context, QueryData queryData, Function<Cursor, T> cursorTransformation) {
     super(context);
     mObserver = new ForceLoadContentObserver();
@@ -102,40 +78,13 @@ public class ComposedCursorLoader<T> extends AsyncTaskLoader<T> {
   }
 
   @Override
-  protected void onStartLoading() {
-    if (mResult != null) {
-      deliverResult(mResult);
-    }
-    if (takeContentChanged() || mResult == null) {
-      forceLoad();
-    }
+  protected void releaseResources(T result) {
+    releaseCursor(cursorsForResults.remove(result));
   }
 
-  @Override
-  protected void onStopLoading() {
-    cancelLoad();
-  }
-
-  @Override
-  public void onCanceled(T result) {
-    Cursor cursor = cursorsForResults.get(result);
+  private void releaseCursor(@Nullable Cursor cursor) {
     if (cursor != null && !cursor.isClosed()) {
       cursor.close();
-      cursorsForResults.remove(result);
-    }
-  }
-
-  @Override
-  protected void onReset() {
-    super.onReset();
-    onStopLoading();
-    if (mResult != null) {
-      Cursor cursor = cursorsForResults.get(mResult);
-      if (cursor != null && !cursor.isClosed()) {
-        cursor.close();
-      }
-      cursorsForResults.remove(mResult);
-      mResult = null;
     }
   }
 
