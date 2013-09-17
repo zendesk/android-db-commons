@@ -18,17 +18,25 @@ class IdentityLinkedMap<K, V> {
 
   private List<Entry<K, V>> entries = Lists.newLinkedList();
 
-  public synchronized void put(K key, V value) {
+  public synchronized V put(K key, V value) {
     final int index = findIndexOf(key);
     if (index == -1) {
       entries.add(new Entry<K, V>(key, value));
+      return null;
+    } else {
+      Entry<K, V> entry = entries.get(index);
+      V oldValue = entry.value;
+      entry.value = value;
+      return oldValue;
     }
   }
 
-  public synchronized void remove(K keyToRemove) {
+  public synchronized V remove(K keyToRemove) {
     final int index = findIndexOf(keyToRemove);
     if (index != -1) {
-      entries.remove(index);
+      return entries.remove(index).value;
+    } else {
+      return null;
     }
   }
 

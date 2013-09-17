@@ -136,6 +136,27 @@ public class ComposedCursorLoaderTest {
   }
 
   @Test
+  public void shouldCloseOldCursorDeliveredEarlierTwice() throws Exception {
+    final Loader<MyCustomWrapper> loader = CursorLoaderBuilder.forUri(TEST_URI)
+        .transform(genericToStringFunction)
+        .wrap(new Function<List<String>, MyCustomWrapper>() {
+          @Override
+          public MyCustomWrapper apply(List<String> strings) {
+            return new MyCustomWrapper(strings);
+          }
+        })
+        .build(Robolectric.application);
+    loader.startLoading();
+    Robolectric.getBackgroundScheduler().runOneTask();
+    loader.startLoading();
+    Robolectric.getBackgroundScheduler().runOneTask();
+    loader.reset();
+    Robolectric.getBackgroundScheduler().runOneTask();
+
+    assertThat(cursor.isClosed()).isTrue();
+  }
+
+  @Test
   public void shouldNotDeliverResultIfLoaderHasBeenResetAlready() throws Exception {
     final Loader<MyCustomWrapper> loader = CursorLoaderBuilder.forUri(TEST_URI)
         .transform(genericToStringFunction)
