@@ -3,6 +3,7 @@ package com.getbase.android.db.provider;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.robolectric.RobolectricTestRunner;
@@ -12,6 +13,8 @@ import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.net.Uri;
 
+import static org.fest.assertions.api.ANDROID.assertThat;
+import static org.fest.assertions.api.android.content.ContentValuesEntry.entry;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.eq;
 
@@ -95,6 +98,75 @@ public class ProviderActionsTest {
         .values(values)
         .perform(contentResolverMock);
     verify(contentResolverMock).update(eq(TEST_URI), eq(values), eq((String) null), eq((String[]) null));
+  }
+
+  @Test
+  public void shouldPerformUpdateWithSingleValue() throws Exception {
+    ArgumentCaptor<ContentValues> contentValuesArgument = ArgumentCaptor.forClass(ContentValues.class);
+    ProviderAction.update(TEST_URI)
+        .value("col1", "val1")
+        .perform(contentResolverMock);
+    verify(contentResolverMock).update(eq(TEST_URI), contentValuesArgument.capture(), eq((String) null), eq((String[]) null));
+    assertThat(contentValuesArgument.getValue()).contains(entry("col1", "val1"));
+  }
+
+  @Test
+  public void shouldPerformUpdateWithConcatenatedContentValues() throws Exception {
+    ContentValues firstValues = new ContentValues();
+    firstValues.put("col1", "val1");
+
+    ContentValues secondValues = new ContentValues();
+    secondValues.put("col2", "val2");
+
+    ArgumentCaptor<ContentValues> contentValuesArgument = ArgumentCaptor.forClass(ContentValues.class);
+    ProviderAction.update(TEST_URI)
+        .values(firstValues)
+        .values(secondValues)
+        .perform(contentResolverMock);
+    verify(contentResolverMock).update(eq(TEST_URI), contentValuesArgument.capture(), eq((String) null), eq((String[]) null));
+
+    assertThat(contentValuesArgument.getValue()).contains(entry("col1", "val1"), entry("col2", "val2"));
+  }
+
+  @Test
+  public void shouldPerformUpdateWithContentValuesOverriddenBySingleValue() throws Exception {
+    ContentValues values = new ContentValues();
+    values.put("col1", "val1");
+    values.put("col2", "val2");
+
+    ArgumentCaptor<ContentValues> contentValuesArgument = ArgumentCaptor.forClass(ContentValues.class);
+    ProviderAction.update(TEST_URI)
+        .values(values)
+        .value("col2", null)
+        .perform(contentResolverMock);
+    verify(contentResolverMock).update(eq(TEST_URI), contentValuesArgument.capture(), eq((String) null), eq((String[]) null));
+
+    assertThat(contentValuesArgument.getValue()).contains(entry("col1", "val1"), entry("col2", null));
+  }
+
+  @Test
+  public void shouldPerformUpdateWithContentValuesOverriddenByOtherContentValues() throws Exception {
+    ContentValues firstValues = new ContentValues();
+    firstValues.put("col1", "val1");
+    firstValues.put("col2", "val2");
+
+    ContentValues secondValues = new ContentValues();
+    secondValues.putNull("col2");
+    secondValues.put("col3", "val3");
+
+    ArgumentCaptor<ContentValues> contentValuesArgument = ArgumentCaptor.forClass(ContentValues.class);
+    ProviderAction.update(TEST_URI)
+        .values(firstValues)
+        .values(secondValues)
+        .perform(contentResolverMock);
+    verify(contentResolverMock).update(eq(TEST_URI), contentValuesArgument.capture(), eq((String) null), eq((String[]) null));
+
+    assertThat(contentValuesArgument.getValue()).contains(entry("col1", "val1"), entry("col3", "val3"), entry("col2", null));
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void shouldRejectUpdateWithSingleValueOfUnsupportedType() throws Exception {
+    ProviderAction.update(TEST_URI).value("col1", new Object());
   }
 
   @Test
