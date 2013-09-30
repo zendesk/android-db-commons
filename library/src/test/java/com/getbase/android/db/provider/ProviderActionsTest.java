@@ -21,7 +21,6 @@ import static org.mockito.Mockito.eq;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
