@@ -52,7 +52,7 @@ public abstract class AbstractLoader<T> extends AsyncTaskLoader<T> {
     if (mResult != null) {
       deliverResult(mResult);
     }
-    if (mResult == null || takeContentChanged()) {
+    if (takeContentChanged() || mResult == null) {
       forceLoad();
     }
   }
