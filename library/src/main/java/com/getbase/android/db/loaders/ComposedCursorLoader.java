@@ -19,7 +19,6 @@ package com.getbase.android.db.loaders;
 import com.getbase.android.db.common.QueryData;
 import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
-import com.sun.istack.internal.Nullable;
 
 import android.content.Context;
 import android.database.Cursor;
@@ -28,6 +27,8 @@ import android.net.Uri;
 import java.io.FileDescriptor;
 import java.io.PrintWriter;
 import java.util.Arrays;
+
+import javax.annotation.Nullable;
 
 public class ComposedCursorLoader<T> extends AbstractLoader<T> {
   final ForceLoadContentObserver mObserver;
