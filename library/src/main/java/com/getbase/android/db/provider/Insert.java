@@ -19,6 +19,9 @@ public class Insert extends ProviderAction<Uri> {
 
   @Override
   public Uri perform(CrudHandler crudHandler) throws RemoteException {
+    if (contentValues == null) {
+      contentValues = new ContentValues();
+    }
     return crudHandler.insert(getUri(), contentValues);
   }
 }
