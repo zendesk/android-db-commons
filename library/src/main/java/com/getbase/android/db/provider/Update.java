@@ -59,6 +59,9 @@ public class Update extends ProviderAction<Integer> {
 
   @Override
   public Integer perform(CrudHandler crudHandler) throws RemoteException {
+    if (values == null) {
+      values = new ContentValues();
+    }
     return crudHandler.update(getUri(), values, selection.getSelection(), selection.getSelectionArgs());
   }
 }

@@ -15,6 +15,9 @@ import android.net.Uri;
 
 import static org.fest.assertions.api.ANDROID.assertThat;
 import static org.fest.assertions.api.android.content.ContentValuesEntry.entry;
+import static org.mockito.Matchers.isNotNull;
+import static org.mockito.Matchers.isNull;
+import static org.mockito.Matchers.notNull;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.eq;
 
@@ -213,5 +216,21 @@ public class ProviderActionsTest {
         eq(expectedSelection),
         eq(inSet.toArray(new String[inSet.size()])),
         eq((String) null));
+  }
+
+  @Test
+  public void shouldAlwaysPassNonNullContentValuesOnInsert() throws Exception {
+    ProviderAction.insert(TEST_URI)
+        .perform(contentResolverMock);
+
+    verify(contentResolverMock).insert(eq(TEST_URI), isNotNull(ContentValues.class));
+  }
+
+  @Test
+  public void shouldAlwaysPassNonNullContentValuesOnUpdate() throws Exception {
+    ProviderAction.update(TEST_URI)
+        .perform(contentResolverMock);
+
+    verify(contentResolverMock).update(eq(TEST_URI), isNotNull(ContentValues.class), isNull(String.class), isNull(String[].class));
   }
 }
