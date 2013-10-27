@@ -66,4 +66,11 @@ public class FluentCursorTest {
     final FluentCursor cursor = new FluentCursor(null);
     cursor.close();
   }
+
+  @Test
+  public void shouldBeAbleToGetColumnIndexFromFluentCursorWrappingNull() throws Exception {
+    final FluentCursor cursor = new FluentCursor(null);
+    cursor.getColumnIndexOrThrow(TEST_COLUMN);
+    cursor.getColumnIndex(TEST_COLUMN);
+  }
 }
