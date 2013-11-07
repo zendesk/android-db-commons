@@ -71,6 +71,24 @@ public class FluentCursorTest {
     cursor.getColumnIndex(TEST_COLUMN);
   }
 
+  @Test
+  public void shouldAlwaysCloseCursorAfterCallingToFluentIterable() throws Exception {
+    final FluentCursor fluentCursor = new FluentCursor(buildMatrixCursor());
+
+    try {
+      fluentCursor.toFluentIterable(new Function<Cursor, Object>() {
+        @Override
+        public Object apply(Cursor input) {
+          throw new RuntimeException();
+        }
+      });
+    } catch (Throwable t) {
+      // ignore
+    }
+
+    assertThat(fluentCursor.isClosed()).isTrue();
+  }
+
   private MatrixCursor buildMatrixCursor() {
     final MatrixCursor cursor = new MatrixCursor(new String[] { TEST_COLUMN });
     for (int i = 0; i < 10; i++) {
