@@ -35,10 +35,7 @@ public class FluentCursorTest {
 
   @Test
   public void shouldApplyGivenFunctionOnEverySingleRow() throws Exception {
-    final MatrixCursor cursor = new MatrixCursor(new String[] { TEST_COLUMN });
-    for (int i = 0; i < 10; i++) {
-      cursor.addRow(new Object[] { 18L });
-    }
+    final MatrixCursor cursor = buildMatrixCursor();
     final FluentCursor fluentCursor = new FluentCursor(cursor);
     final FluentIterable<Long> transformed = fluentCursor.toFluentIterable(new Function<Cursor, Long>() {
       @Override
@@ -72,5 +69,13 @@ public class FluentCursorTest {
     final FluentCursor cursor = new FluentCursor(null);
     cursor.getColumnIndexOrThrow(TEST_COLUMN);
     cursor.getColumnIndex(TEST_COLUMN);
+  }
+
+  private MatrixCursor buildMatrixCursor() {
+    final MatrixCursor cursor = new MatrixCursor(new String[] { TEST_COLUMN });
+    for (int i = 0; i < 10; i++) {
+      cursor.addRow(new Object[] { 18L });
+    }
+    return cursor;
   }
 }
