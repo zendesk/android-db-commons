@@ -1,5 +1,6 @@
 package com.getbase.android.db.provider;
 
+import org.fest.assertions.Assertions;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -18,6 +19,7 @@ import static org.fest.assertions.api.android.content.ContentValuesEntry.entry;
 import static org.mockito.Matchers.isNotNull;
 import static org.mockito.Matchers.isNull;
 import static org.mockito.Matchers.notNull;
+import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.eq;
 
@@ -100,6 +102,29 @@ public class ProviderActionsTest {
         .perform(contentResolverMock);
     verify(contentResolverMock).insert(eq(TEST_URI), contentValuesArgument.capture());
     assertThat(contentValuesArgument.getValue()).contains(entry("col1", "val1"));
+  }
+
+  @Test
+  public void shouldNotModifyPassedContentValues() throws Exception {
+    ContentValues genericValues = new ContentValues();
+
+    ProviderAction.insert(TEST_URI)
+        .values(genericValues)
+        .value("key", "value")
+        .perform(contentResolverMock);
+
+    reset(contentResolverMock);
+
+    ProviderAction.insert(TEST_URI)
+        .values(genericValues)
+        .value("another_key", "another_value")
+        .perform(contentResolverMock);
+
+    ArgumentCaptor<ContentValues> contentValuesArgument = ArgumentCaptor.forClass(ContentValues.class);
+    verify(contentResolverMock).insert(eq(TEST_URI), contentValuesArgument.capture());
+    final ContentValues valuesReceived = contentValuesArgument.getValue();
+    assertThat(valuesReceived).contains(entry("another_key", "another_value"));
+    Assertions.assertThat(valuesReceived.containsKey("key")).isFalse();
   }
 
   @Test
