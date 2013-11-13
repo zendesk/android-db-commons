@@ -13,7 +13,21 @@ public class Insert extends ProviderAction<Uri> {
   }
 
   public Insert values(ContentValues contentValues) {
-    this.contentValues = contentValues;
+    if (this.contentValues == null) {
+      this.contentValues = contentValues;
+    } else {
+      this.contentValues.putAll(contentValues);
+    }
+    return this;
+  }
+
+  public Insert value(String key, Object value) {
+    if (contentValues == null) {
+      contentValues = new ContentValues();
+    }
+
+    Utils.addToContentValues(key, value, contentValues);
+
     return this;
   }
 
