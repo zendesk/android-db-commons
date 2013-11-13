@@ -1,5 +1,6 @@
 package com.getbase.android.db.provider;
 
+import android.content.ContentProvider;
 import android.content.ContentProviderClient;
 import android.content.ContentProviderOperation;
 import android.content.ContentResolver;
@@ -33,6 +34,14 @@ public abstract class ProviderAction<T> {
 
   protected Uri getUri() {
     return mUri;
+  }
+
+  public T perform(ContentProvider contentProvider) {
+    try {
+      return perform(new ContentProviderCrudHandler(contentProvider));
+    } catch (RemoteException e) {
+      throw new RuntimeException("Unexpected exception", e);
+    }
   }
 
   public T perform(Context context) {

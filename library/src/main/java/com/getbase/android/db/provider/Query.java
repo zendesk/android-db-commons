@@ -33,7 +33,7 @@ public class Query extends ProviderAction<FluentCursor> {
   }
 
   public <T> Query whereIn(String column, Collection<T> collection) {
-    this.selection.append(column + " IN (" + Joiner.on(",").join(Collections.nCopies(collection.size(), "?")) + ")", collection.toArray());
+    this.selection.append(column + " IN (" + Joiner.on(",").join(collection) + ")");
     return this;
   }
 
