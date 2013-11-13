@@ -206,15 +206,15 @@ public class ProviderActionsTest {
 
   @Test
   public void shouldBeAbleToCreateASelectionWithWhereIn() throws Exception {
-    final List<String> inSet = Lists.newArrayList("one", "two", "three");
+    final List<Long> inSet = Lists.newArrayList(1L, 2L, 3L);
     ProviderAction.query(TEST_URI)
         .whereIn("col1", inSet)
         .perform(contentResolverMock);
-    final String expectedSelection = "col1 IN (" + Joiner.on(",").join(Collections.nCopies(inSet.size(), "?")) + ")";
+    final String expectedSelection = "col1 IN (" + Joiner.on(",").join(inSet) + ")";
     verify(contentResolverMock).query(eq(TEST_URI),
         eq((String[]) null),
         eq(expectedSelection),
-        eq(inSet.toArray(new String[inSet.size()])),
+        eq((String[])null),
         eq((String) null));
   }
 
