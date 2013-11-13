@@ -1,6 +1,7 @@
 package com.getbase.android.db.cursors;
 
 import com.google.common.base.Function;
+import com.google.common.base.Functions;
 import com.google.common.base.Predicate;
 import com.google.common.collect.FluentIterable;
 
@@ -87,6 +88,11 @@ public class FluentCursorTest {
     }
 
     assertThat(fluentCursor.isClosed()).isTrue();
+  }
+
+  @Test
+  public void shouldAcceptFunctionsOperatingOnObject() throws Exception {
+    new FluentCursor(null).toFluentIterable(Functions.constant(1L));
   }
 
   private MatrixCursor buildMatrixCursor() {

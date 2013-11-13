@@ -10,7 +10,7 @@ import java.util.List;
 
 public class Cursors {
 
-  public static <T> FluentIterable<T> toFluentIterable(Cursor cursor, Function<Cursor, T> singleRowTransform) {
+  public static <T> FluentIterable<T> toFluentIterable(Cursor cursor, Function<? super Cursor, T> singleRowTransform) {
     List<T> transformed = Lists.newArrayList();
     if (cursor != null) {
       for (int i = 0; cursor.moveToPosition(i); i++) {
