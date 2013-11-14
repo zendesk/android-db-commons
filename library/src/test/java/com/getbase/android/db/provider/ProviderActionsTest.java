@@ -18,15 +18,12 @@ import static org.fest.assertions.api.ANDROID.assertThat;
 import static org.fest.assertions.api.android.content.ContentValuesEntry.entry;
 import static org.mockito.Matchers.isNotNull;
 import static org.mockito.Matchers.isNull;
-import static org.mockito.Matchers.notNull;
-import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.eq;
 
 import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
 
-import java.util.Collections;
 import java.util.List;
 
 @RunWith(RobolectricTestRunner.class)
@@ -307,7 +304,7 @@ public class ProviderActionsTest {
     verify(contentResolverMock).query(eq(TEST_URI),
         eq((String[]) null),
         eq(expectedSelection),
-        eq((String[])null),
+        eq((String[]) null),
         eq((String) null));
   }
 
