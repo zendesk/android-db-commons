@@ -106,25 +106,24 @@ public class ProviderActionsTest {
 
   @Test
   public void shouldNotModifyPassedContentValues() throws Exception {
-    ContentValues genericValues = new ContentValues();
+    ContentValues values = new ContentValues();
 
     ProviderAction.insert(TEST_URI)
-        .values(genericValues)
+        .values(values)
         .value("key", "value")
         .perform(contentResolverMock);
 
-    reset(contentResolverMock);
+    Assertions.assertThat(values.containsKey("key")).isFalse();
+
+    ContentValues valuesToConcatenate = new ContentValues();
+    valuesToConcatenate.put("another_key", "another_value");
 
     ProviderAction.insert(TEST_URI)
-        .values(genericValues)
-        .value("another_key", "another_value")
+        .values(values)
+        .values(valuesToConcatenate)
         .perform(contentResolverMock);
 
-    ArgumentCaptor<ContentValues> contentValuesArgument = ArgumentCaptor.forClass(ContentValues.class);
-    verify(contentResolverMock).insert(eq(TEST_URI), contentValuesArgument.capture());
-    final ContentValues valuesReceived = contentValuesArgument.getValue();
-    assertThat(valuesReceived).contains(entry("another_key", "another_value"));
-    Assertions.assertThat(valuesReceived.containsKey("key")).isFalse();
+    Assertions.assertThat(values.containsKey("another_key")).isFalse();
   }
 
   @Test
