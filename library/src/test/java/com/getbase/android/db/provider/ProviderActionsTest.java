@@ -102,7 +102,7 @@ public class ProviderActionsTest {
   }
 
   @Test
-  public void shouldNotModifyPassedContentValues() throws Exception {
+  public void insertShouldNotModifyPassedContentValues() throws Exception {
     ContentValues values = new ContentValues();
 
     ProviderAction.insert(TEST_URI)
@@ -270,6 +270,28 @@ public class ProviderActionsTest {
         .where("col2 = ?", "blah")
         .perform(contentResolverMock);
     verify(contentResolverMock).update(eq(TEST_URI), eq(values), eq("col2 = ?"), eq(new String[] { "blah" }));
+  }
+
+  @Test
+  public void updateShouldNotModifyPassedContentValues() throws Exception {
+    ContentValues values = new ContentValues();
+
+    ProviderAction.update(TEST_URI)
+        .values(values)
+        .value("key", "value")
+        .perform(contentResolverMock);
+
+    Assertions.assertThat(values.containsKey("key")).isFalse();
+
+    ContentValues valuesToConcatenate = new ContentValues();
+    valuesToConcatenate.put("another_key", "another_value");
+
+    ProviderAction.update(TEST_URI)
+        .values(values)
+        .values(valuesToConcatenate)
+        .perform(contentResolverMock);
+
+    Assertions.assertThat(values.containsKey("another_key")).isFalse();
   }
 
   @Test

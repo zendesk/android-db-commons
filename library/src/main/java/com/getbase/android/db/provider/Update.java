@@ -7,28 +7,19 @@ import android.os.RemoteException;
 public class Update extends ProviderAction<Integer> {
 
   private final Selection selection = new Selection();
-  private ContentValues values;
+  private ContentValues values = new ContentValues();
 
   Update(Uri uri) {
     super(uri);
   }
 
   public Update values(ContentValues values) {
-    if (this.values == null) {
-      this.values = values;
-    } else {
-      this.values.putAll(values);
-    }
+    this.values.putAll(values);
     return this;
   }
 
   public Update value(String key, Object value) {
-    if (values == null) {
-      values = new ContentValues();
-    }
-
     Utils.addToContentValues(key, value, values);
-
     return this;
   }
 
@@ -39,9 +30,6 @@ public class Update extends ProviderAction<Integer> {
 
   @Override
   public Integer perform(CrudHandler crudHandler) throws RemoteException {
-    if (values == null) {
-      values = new ContentValues();
-    }
     return crudHandler.update(getUri(), values, selection.getSelection(), selection.getSelectionArgs());
   }
 }
