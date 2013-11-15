@@ -12,22 +12,20 @@ import java.util.RandomAccess;
 class LazyCursorList<T> extends AbstractList<T> implements RandomAccess {
 
   private final Cursor cursor;
-  private final Function<Cursor, T> transformation;
   private final LruCache<Integer, T> cache;
 
   public LazyCursorList(Cursor cursor, Function<Cursor, T> function) {
     this(cursor, function, 256);
   }
 
-  public LazyCursorList(final Cursor cursor, Function<Cursor, T> function, int cacheSize) {
+  public LazyCursorList(final Cursor cursor, final Function<Cursor, T> function, int cacheSize) {
     this.cursor = Cursors.returnSameOrEmptyIfNull(cursor);
-    this.transformation = function;
 
     cache = new LruCache<Integer, T>(cacheSize) {
       @Override
       protected T create(Integer key) {
         cursor.moveToPosition(key);
-        return transformation.apply(cursor);
+        return function.apply(cursor);
       }
     };
   }
