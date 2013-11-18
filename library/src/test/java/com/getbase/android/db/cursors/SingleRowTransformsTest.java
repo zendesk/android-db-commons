@@ -43,6 +43,29 @@ public class SingleRowTransformsTest {
     verify(c, times(1)).getColumnIndexOrThrow(anyString());
   }
 
+  @Test
+  public void shouldHandleGracefullyUsingWithMultipleCursors() throws Exception {
+    Cursor c1 = mock(Cursor.class);
+    when(c1.getColumnIndexOrThrow(COLUMN)).thenReturn(1);
+    when(c1.isNull(1)).thenReturn(false);
+    when(c1.getInt(1)).thenReturn(42);
+    when(c1.isNull(2)).thenThrow(new IllegalArgumentException());
+    when(c1.getInt(2)).thenThrow(new IllegalArgumentException());
+
+    Cursor c2 = mock(Cursor.class);
+    when(c2.getColumnIndexOrThrow(COLUMN)).thenReturn(2);
+    when(c2.isNull(2)).thenReturn(false);
+    when(c2.getInt(2)).thenReturn(666);
+    when(c2.isNull(1)).thenThrow(new IllegalArgumentException());
+    when(c2.getInt(1)).thenThrow(new IllegalArgumentException());
+
+    Function<Cursor, Integer> transform = SingleRowTransforms.getColumn(COLUMN).asInteger();
+
+    assertThat(transform.apply(c1)).isEqualTo(42);
+    assertThat(transform.apply(c2)).isEqualTo(666);
+    assertThat(transform.apply(c1)).isEqualTo(42);
+  }
+
   @Test(expected = IllegalArgumentException.class)
   public void shouldRejectCursorWithoutSpecifiedColumn() throws Exception {
     MatrixCursor cursor = new MatrixCursor(new String[] { COLUMN });

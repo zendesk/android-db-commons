@@ -1,6 +1,7 @@
 package com.getbase.android.db.cursors;
 
 import com.google.common.base.Function;
+import com.google.common.base.Objects;
 
 import android.database.Cursor;
 
@@ -86,16 +87,16 @@ public abstract class SingleRowTransforms {
   private abstract static class CursorRowFunction<T> implements Function<Cursor, T> {
     protected final String mColumnName;
     private int mColumnIndex;
-    private boolean mInitialized;
+    private Cursor mInitializedForCursor;
 
     protected CursorRowFunction(String columnName) {
       mColumnName = columnName;
     }
 
     private int getColumnIndex(Cursor c) {
-      if (!mInitialized) {
+      if (!Objects.equal(mInitializedForCursor, c)) {
         mColumnIndex = c.getColumnIndexOrThrow(mColumnName);
-        mInitialized = true;
+        mInitializedForCursor = c;
       }
 
       return mColumnIndex;
