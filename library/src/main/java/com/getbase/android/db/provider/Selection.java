@@ -10,6 +10,13 @@ import java.util.List;
 
 class Selection {
 
+  private static final Function<String, String> SURROUND_WITH_PARENS = new Function<String, String>() {
+    @Override
+    public String apply(String input) {
+      return "(" + input + ")";
+    }
+  };
+
   private final List<String> selection = Lists.newLinkedList();
   private final List<Object> selectionArgs = Lists.newLinkedList();
 
@@ -22,7 +29,7 @@ class Selection {
     if (selection.isEmpty()) {
       return null;
     }
-    return Joiner.on(" AND ").join(selection);
+    return Joiner.on(" AND ").join(Collections2.transform(selection, SURROUND_WITH_PARENS));
   }
 
   String[] getSelectionArgs() {
