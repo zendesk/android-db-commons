@@ -1,6 +1,7 @@
 package com.getbase.android.db.provider;
 
 import com.google.common.base.Function;
+import com.google.common.base.Functions;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.Lists;
@@ -36,11 +37,6 @@ class Selection {
     if (selectionArgs.isEmpty()) {
       return null;
     }
-    return Collections2.transform(selectionArgs, new Function<Object, String>() {
-      @Override
-      public String apply(Object object) {
-        return object.toString();
-      }
-    }).toArray(new String[selectionArgs.size()]);
+    return Collections2.transform(selectionArgs, Functions.toStringFunction()).toArray(new String[selectionArgs.size()]);
   }
 }
