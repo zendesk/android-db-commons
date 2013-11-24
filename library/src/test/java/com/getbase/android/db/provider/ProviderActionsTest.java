@@ -16,6 +16,7 @@ import android.net.Uri;
 
 import static org.fest.assertions.api.ANDROID.assertThat;
 import static org.fest.assertions.api.android.content.ContentValuesEntry.entry;
+import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.isNotNull;
 import static org.mockito.Matchers.isNull;
 import static org.mockito.Mockito.verify;
@@ -70,7 +71,34 @@ public class ProviderActionsTest {
         .where("COL1 = ?", "arg")
         .where("COL2 = ?", "arg2")
         .perform(contentResolverMock);
-    verify(contentResolverMock).query(eq(TEST_URI), eq((String[]) null), eq("COL1 = ? AND COL2 = ?"), eq(new String[] { "arg", "arg2" }), eq((String) null));
+    verify(contentResolverMock).query(eq(TEST_URI), eq((String[]) null), eq("(COL1 = ?) AND (COL2 = ?)"), eq(new String[] { "arg", "arg2" }), eq((String) null));
+  }
+
+  @Test
+  public void shouldAddParenthesesForEachWhereWhenQuerying() throws Exception {
+    ProviderAction.query(TEST_URI)
+        .where("COL1 = ? OR COL1 = ?", "arg", "argh")
+        .where("COL2 = ?", "arg2")
+        .perform(contentResolverMock);
+    verify(contentResolverMock).query(eq(TEST_URI), eq((String[]) null), eq("(COL1 = ? OR COL1 = ?) AND (COL2 = ?)"), eq(new String[] { "arg", "argh", "arg2" }), eq((String) null));
+  }
+
+  @Test
+  public void shouldAddParenthesesForEachWhereWhenDeleting() throws Exception {
+    ProviderAction.delete(TEST_URI)
+        .where("COL1 = ? OR COL1 = ?", "arg", "argh")
+        .where("COL2 = ?", "arg2")
+        .perform(contentResolverMock);
+    verify(contentResolverMock).delete(eq(TEST_URI), eq("(COL1 = ? OR COL1 = ?) AND (COL2 = ?)"), eq(new String[] { "arg", "argh", "arg2" }));
+  }
+
+  @Test
+  public void shouldAddParenthesesForEachWhereWhenUpdating() throws Exception {
+    ProviderAction.update(TEST_URI)
+        .where("COL1 = ? OR COL1 = ?", "arg", "argh")
+        .where("COL2 = ?", "arg2")
+        .perform(contentResolverMock);
+    verify(contentResolverMock).update(eq(TEST_URI), any(ContentValues.class), eq("(COL1 = ? OR COL1 = ?) AND (COL2 = ?)"), eq(new String[] { "arg", "argh", "arg2" }));
   }
 
   @Test
@@ -269,7 +297,7 @@ public class ProviderActionsTest {
         .values(values)
         .where("col2 = ?", "blah")
         .perform(contentResolverMock);
-    verify(contentResolverMock).update(eq(TEST_URI), eq(values), eq("col2 = ?"), eq(new String[] { "blah" }));
+    verify(contentResolverMock).update(eq(TEST_URI), eq(values), eq("(col2 = ?)"), eq(new String[] { "blah" }));
   }
 
   @Test
@@ -305,7 +333,7 @@ public class ProviderActionsTest {
     ProviderAction.delete(TEST_URI)
         .where("col1 = ?", "val1")
         .perform(contentResolverMock);
-    verify(contentResolverMock).delete(eq(TEST_URI), eq("col1 = ?"), eq(new String[] { "val1" }));
+    verify(contentResolverMock).delete(eq(TEST_URI), eq("(col1 = ?)"), eq(new String[] { "val1" }));
   }
 
   @Test
@@ -313,7 +341,7 @@ public class ProviderActionsTest {
     ProviderAction.query(TEST_URI)
         .where("col1 > ?", 18)
         .perform(contentResolverMock);
-    verify(contentResolverMock).query(eq(TEST_URI), eq((String[]) null), eq("col1 > ?"), eq(new String[] { "18" }), eq((String) null));
+    verify(contentResolverMock).query(eq(TEST_URI), eq((String[]) null), eq("(col1 > ?)"), eq(new String[] { "18" }), eq((String) null));
   }
 
   @Test
@@ -322,7 +350,7 @@ public class ProviderActionsTest {
     ProviderAction.query(TEST_URI)
         .whereIn("col1", inSet)
         .perform(contentResolverMock);
-    final String expectedSelection = "col1 IN (" + Joiner.on(",").join(inSet) + ")";
+    final String expectedSelection = "(" + "col1 IN (" + Joiner.on(",").join(inSet) + ")" + ")";
     verify(contentResolverMock).query(eq(TEST_URI),
         eq((String[]) null),
         eq(expectedSelection),
