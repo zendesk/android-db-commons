@@ -359,6 +359,19 @@ public class ProviderActionsTest {
   }
 
   @Test
+  public void shouldBeAbleToCreateAnUpdateWithWhereIn() throws Exception {
+    final List<Long> inSet = Lists.newArrayList(1L, 2L, 3L);
+    ProviderAction.update(TEST_URI)
+        .whereIn("col1", inSet)
+        .perform(contentResolverMock);
+    final String expectedSelection = "(" + "col1 IN (" + Joiner.on(",").join(inSet) + ")" + ")";
+    verify(contentResolverMock).update(eq(TEST_URI),
+        any(ContentValues.class),
+        eq(expectedSelection),
+        eq((String[]) null));
+  }
+
+  @Test
   public void shouldAlwaysPassNonNullContentValuesOnInsert() throws Exception {
     ProviderAction.insert(TEST_URI)
         .perform(contentResolverMock);

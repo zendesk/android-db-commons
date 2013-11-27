@@ -1,8 +1,12 @@
 package com.getbase.android.db.provider;
 
+import com.google.common.base.Joiner;
+
 import android.content.ContentValues;
 import android.net.Uri;
 import android.os.RemoteException;
+
+import java.util.Collection;
 
 public class Update extends ProviderAction<Integer> {
 
@@ -25,6 +29,11 @@ public class Update extends ProviderAction<Integer> {
 
   public Update where(String selection, Object... selectionArgs) {
     this.selection.append(selection, selectionArgs);
+    return this;
+  }
+
+  public <T> Update whereIn(String column, Collection<T> collection) {
+    this.selection.append(column + " IN (" + Joiner.on(",").join(collection) + ")");
     return this;
   }
 
