@@ -1,5 +1,9 @@
 package com.getbase.android.db.cursors;
 
+import static org.fest.assertions.Assertions.assertThat;
+import static org.mockito.Matchers.anyInt;
+import static org.mockito.Mockito.*;
+
 import com.google.common.base.Function;
 import com.google.common.base.Functions;
 import com.google.common.base.Predicate;
@@ -12,8 +16,6 @@ import org.robolectric.annotation.Config;
 
 import android.database.Cursor;
 import android.database.MatrixCursor;
-
-import static org.fest.assertions.Assertions.assertThat;
 
 @RunWith(RobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
@@ -93,6 +95,36 @@ public class FluentCursorTest {
   @Test
   public void shouldAcceptFunctionsOperatingOnObject() throws Exception {
     new FluentCursor(null).toFluentIterable(Functions.constant(1L));
+  }
+
+  @Test
+  public void shouldCloseCursorWhenGettingRowCount() throws Exception {
+    Cursor mock = mock(Cursor.class);
+
+    new FluentCursor(mock).toRowCount();
+
+    verify(mock).close();
+  }
+
+  @Test
+  public void shouldConvertToCorrectRowCount() throws Exception {
+    Cursor mock = mock(Cursor.class);
+    when(mock.getCount()).thenReturn(42);
+
+    assertThat(new FluentCursor(mock).toRowCount()).isEqualTo(42);
+  }
+
+  @Test
+  public void shouldNotIterateOverCursorWhenTransformingCursorToRowCount() throws Exception {
+    Cursor mock = mock(Cursor.class);
+
+    new FluentCursor(mock).toRowCount();
+
+    verify(mock, never()).moveToFirst();
+    verify(mock, never()).moveToNext();
+    verify(mock, never()).moveToLast();
+    verify(mock, never()).moveToPrevious();
+    verify(mock, never()).moveToPosition(anyInt());
   }
 
   private MatrixCursor buildMatrixCursor() {

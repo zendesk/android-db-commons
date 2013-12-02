@@ -27,4 +27,18 @@ public class FluentCursor extends CursorWrapper {
       close();
     }
   }
+
+  /**
+   * Returns number of rows in this cursor and closes it.
+   * WARNING: This method closes cursor. Do not use this from onLoadFinished()
+   *
+   * @return Row count from this cursor
+   */
+  public int toRowCount() {
+    try {
+      return getCount();
+    } finally {
+      close();
+    }
+  }
 }
