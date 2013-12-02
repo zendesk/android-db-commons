@@ -1,11 +1,13 @@
 package com.getbase.android.db.cursors;
 
 import static org.fest.assertions.Assertions.assertThat;
+import static org.fest.assertions.api.ANDROID.assertThat;
 import static org.mockito.Matchers.anyInt;
 import static org.mockito.Mockito.*;
 
 import com.google.common.base.Function;
 import com.google.common.base.Functions;
+import com.google.common.base.Optional;
 import com.google.common.base.Predicate;
 import com.google.common.collect.FluentIterable;
 
@@ -112,6 +114,55 @@ public class FluentCursorTest {
     when(mock.getCount()).thenReturn(42);
 
     assertThat(new FluentCursor(mock).toRowCount()).isEqualTo(42);
+  }
+
+  @Test
+  public void shouldCloseCursorAfterTransformingToFirstRow() throws Exception {
+    MatrixCursor cursor = buildMatrixCursor();
+
+    new FluentCursor(cursor).toFirstRow(Functions.constant(null));
+
+    assertThat(cursor).isClosed();
+  }
+
+  @Test
+  public void shouldReturnAbsentWhenTransformingEmptyCursorToFirstRow() throws Exception {
+    final MatrixCursor cursor = new MatrixCursor(new String[] { TEST_COLUMN });
+
+    Optional<Integer> maybeFirstRow = new FluentCursor(cursor).toFirstRow(Functions.constant(1500));
+
+    assertThat(maybeFirstRow.isPresent()).isFalse();
+  }
+
+  @Test
+  public void shouldReturnAbsentWhenGivenFunctionReturnsNullWhenTransformingCursorToFirstRow() throws Exception {
+    MatrixCursor cursor = buildMatrixCursor();
+
+    Optional<Object> maybeFirstRow = new FluentCursor(cursor).toFirstRow(Functions.constant(null));
+
+    assertThat(maybeFirstRow.isPresent()).isFalse();
+  }
+
+  @Test
+  public void shouldApplyGivenFunctionWhenTransformingCursorToFirstRow() throws Exception {
+    MatrixCursor cursor = buildMatrixCursor();
+
+    Optional<Long> maybeFirstRow = new FluentCursor(cursor).toFirstRow(SingleRowTransforms.getColumn(TEST_COLUMN).asLong());
+
+    assertThat(maybeFirstRow.isPresent()).isTrue();
+    assertThat(maybeFirstRow.get()).isEqualTo(18L);
+  }
+
+  @Test
+  public void shouldNotIterateOverCursorWhenTransformingCursorToFirstRow() throws Exception {
+    Cursor mock = mock(Cursor.class);
+
+    new FluentCursor(mock).toFirstRow(Functions.constant(null));
+
+    verify(mock, never()).moveToNext();
+    verify(mock, never()).moveToLast();
+    verify(mock, never()).moveToPrevious();
+    verify(mock, never()).moveToPosition(anyInt());
   }
 
   @Test
