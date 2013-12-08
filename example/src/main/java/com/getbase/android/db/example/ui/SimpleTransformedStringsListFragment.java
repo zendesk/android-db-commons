@@ -49,14 +49,14 @@ public class SimpleTransformedStringsListFragment extends ListFragment implement
   };
 
   @Override
-  public void onLoadFinished(List<String> data) {
+  public void onLoadFinished(Loader<List<String>> loader, List<String> data) {
     for (String s : data) {
       mAdapter.add(s);
     }
   }
 
   @Override
-  public void onLoaderReset() {
+  public void onLoaderReset(Loader<List<String>> loader) {
     mAdapter.clear();
   }
 }

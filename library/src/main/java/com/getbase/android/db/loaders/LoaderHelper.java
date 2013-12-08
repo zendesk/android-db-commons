@@ -25,28 +25,28 @@ public abstract class LoaderHelper<T> {
     activity.getSupportLoaderManager().destroyLoader(mId);
   }
 
-  public final void restartLoader(Fragment fragment, Bundle args, LoaderDataCallbacks<T> callbacks) {
-    restartLoader(fragment.getLoaderManager(), fragment.getActivity(), args, callbacks);
+  public final Loader<T> restartLoader(Fragment fragment, Bundle args, LoaderDataCallbacks<T> callbacks) {
+    return restartLoader(fragment.getLoaderManager(), fragment.getActivity(), args, callbacks);
   }
 
-  public final void restartLoader(FragmentActivity activity, Bundle args, LoaderDataCallbacks<T> callbacks) {
-    restartLoader(activity.getSupportLoaderManager(), activity, args, callbacks);
+  public final Loader<T> restartLoader(FragmentActivity activity, Bundle args, LoaderDataCallbacks<T> callbacks) {
+    return restartLoader(activity.getSupportLoaderManager(), activity, args, callbacks);
   }
 
-  private void restartLoader(LoaderManager loaderManager, Context context, Bundle args, LoaderDataCallbacks<T> callbacks) {
-    loaderManager.restartLoader(mId, args, wrapCallbacks(context.getApplicationContext(), callbacks));
+  private Loader<T> restartLoader(LoaderManager loaderManager, Context context, Bundle args, LoaderDataCallbacks<T> callbacks) {
+    return loaderManager.restartLoader(mId, args, wrapCallbacks(context.getApplicationContext(), callbacks));
   }
 
-  public final void initLoader(Fragment fragment, Bundle args, LoaderDataCallbacks<T> callbacks) {
-    initLoader(fragment.getLoaderManager(), fragment.getActivity(), args, callbacks);
+  public final Loader<T> initLoader(Fragment fragment, Bundle args, LoaderDataCallbacks<T> callbacks) {
+    return initLoader(fragment.getLoaderManager(), fragment.getActivity(), args, callbacks);
   }
 
-  public final void initLoader(FragmentActivity activity, Bundle args, LoaderDataCallbacks<T> callbacks) {
-    initLoader(activity.getSupportLoaderManager(), activity, args, callbacks);
+  public final Loader<T> initLoader(FragmentActivity activity, Bundle args, LoaderDataCallbacks<T> callbacks) {
+    return initLoader(activity.getSupportLoaderManager(), activity, args, callbacks);
   }
 
-  private void initLoader(LoaderManager loaderManager, Context context, Bundle args, LoaderDataCallbacks<T> callbacks) {
-    loaderManager.initLoader(mId, args, wrapCallbacks(context.getApplicationContext(), callbacks));
+  private Loader<T> initLoader(LoaderManager loaderManager, Context context, Bundle args, LoaderDataCallbacks<T> callbacks) {
+    return loaderManager.initLoader(mId, args, wrapCallbacks(context.getApplicationContext(), callbacks));
   }
 
   private LoaderCallbacks<T> wrapCallbacks(final Context applicationContext, final LoaderDataCallbacks<T> callbacks) {
@@ -59,12 +59,12 @@ public abstract class LoaderHelper<T> {
 
       @Override
       public void onLoadFinished(Loader<T> loader, T data) {
-        callbacks.onLoadFinished(data);
+        callbacks.onLoadFinished(loader, data);
       }
 
       @Override
       public void onLoaderReset(Loader<T> loader) {
-        callbacks.onLoaderReset();
+        callbacks.onLoaderReset(loader);
       }
     };
   }
@@ -72,7 +72,7 @@ public abstract class LoaderHelper<T> {
   protected abstract Loader<T> onCreateLoader(Context context, Bundle args);
 
   public interface LoaderDataCallbacks<T> {
-    public void onLoadFinished(T data);
-    public void onLoaderReset();
+    public void onLoadFinished(Loader<T> loader, T data);
+    public void onLoaderReset(Loader<T> loader);
   }
 }

@@ -59,12 +59,12 @@ public class WrapperTransformationListFragment extends ListFragment implements L
   };
 
   @Override
-  public void onLoadFinished(SectionedPeopleList data) {
+  public void onLoadFinished(Loader<SectionedPeopleList> loader, SectionedPeopleList data) {
     adapter.setNewModel(data);
   }
 
   @Override
-  public void onLoaderReset() {
+  public void onLoaderReset(Loader<SectionedPeopleList> loader) {
     adapter.setNewModel(null);
   }
 }
