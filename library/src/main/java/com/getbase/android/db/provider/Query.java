@@ -4,13 +4,11 @@ import com.getbase.android.db.common.QueryData;
 import com.getbase.android.db.cursors.FluentCursor;
 import com.google.common.base.Joiner;
 
-import android.content.ContentResolver;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.RemoteException;
 
 import java.util.Collection;
-import java.util.Collections;
 
 public class Query extends ProviderAction<FluentCursor> {
 
