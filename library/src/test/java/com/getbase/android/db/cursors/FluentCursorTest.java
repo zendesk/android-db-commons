@@ -40,7 +40,7 @@ public class FluentCursorTest {
 
   @Test
   public void shouldApplyGivenFunctionOnEverySingleRow() throws Exception {
-    final MatrixCursor cursor = buildMatrixCursor();
+    final MatrixCursor cursor = buildMatrixCursor(10);
     final FluentCursor fluentCursor = new FluentCursor(cursor);
     final FluentIterable<Long> transformed = fluentCursor.toFluentIterable(new Function<Cursor, Long>() {
       @Override
@@ -78,7 +78,7 @@ public class FluentCursorTest {
 
   @Test
   public void shouldAlwaysCloseCursorAfterCallingToFluentIterable() throws Exception {
-    final FluentCursor fluentCursor = new FluentCursor(buildMatrixCursor());
+    final FluentCursor fluentCursor = new FluentCursor(buildMatrixCursor(10));
 
     try {
       fluentCursor.toFluentIterable(new Function<Cursor, Object>() {
@@ -118,7 +118,7 @@ public class FluentCursorTest {
 
   @Test
   public void shouldCloseCursorAfterTransformingToFirstRow() throws Exception {
-    MatrixCursor cursor = buildMatrixCursor();
+    MatrixCursor cursor = buildMatrixCursor(10);
 
     new FluentCursor(cursor).toFirstRow(Functions.constant(null));
 
@@ -136,7 +136,7 @@ public class FluentCursorTest {
 
   @Test
   public void shouldReturnAbsentWhenGivenFunctionReturnsNullWhenTransformingCursorToFirstRow() throws Exception {
-    MatrixCursor cursor = buildMatrixCursor();
+    MatrixCursor cursor = buildMatrixCursor(10);
 
     Optional<Object> maybeFirstRow = new FluentCursor(cursor).toFirstRow(Functions.constant(null));
 
@@ -145,7 +145,7 @@ public class FluentCursorTest {
 
   @Test
   public void shouldApplyGivenFunctionWhenTransformingCursorToFirstRow() throws Exception {
-    MatrixCursor cursor = buildMatrixCursor();
+    MatrixCursor cursor = buildMatrixCursor(10);
 
     Optional<Long> maybeFirstRow = new FluentCursor(cursor).toFirstRow(SingleRowTransforms.getColumn(TEST_COLUMN).asLong());
 
@@ -178,9 +178,9 @@ public class FluentCursorTest {
     verify(mock, never()).moveToPosition(anyInt());
   }
 
-  private MatrixCursor buildMatrixCursor() {
+  private MatrixCursor buildMatrixCursor(int count) {
     final MatrixCursor cursor = new MatrixCursor(new String[] { TEST_COLUMN });
-    for (int i = 0; i < 10; i++) {
+    for (int i = 0; i < count; i++) {
       cursor.addRow(new Object[] { 18L });
     }
     return cursor;
