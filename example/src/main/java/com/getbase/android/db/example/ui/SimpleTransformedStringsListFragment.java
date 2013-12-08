@@ -51,7 +51,9 @@ public class SimpleTransformedStringsListFragment extends ListFragment implement
 
   @Override
   public void onLoadFinished(List<String> data) {
-    mAdapter.addAll(data);
+    for (String s : data) {
+      mAdapter.add(s);
+    }
   }
 
   @Override
