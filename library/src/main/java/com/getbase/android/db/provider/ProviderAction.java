@@ -2,7 +2,6 @@ package com.getbase.android.db.provider;
 
 import android.content.ContentProvider;
 import android.content.ContentProviderClient;
-import android.content.ContentProviderOperation;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.net.Uri;
