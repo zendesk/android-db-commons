@@ -5,7 +5,6 @@ import com.getbase.android.db.loaders.CursorLoaderBuilder;
 import com.getbase.android.db.loaders.LoaderHelper;
 import com.google.common.base.Function;
 
-import android.R;
 import android.content.Context;
 import android.database.Cursor;
 import android.os.Bundle;
@@ -24,7 +23,7 @@ public class SimpleTransformedStringsListFragment extends ListFragment implement
   @Override
   public void onViewCreated(View view, Bundle savedInstanceState) {
     super.onViewCreated(view, savedInstanceState);
-    mAdapter = new ArrayAdapter<String>(getActivity(), R.layout.simple_list_item_1, R.id.text1);
+    mAdapter = new ArrayAdapter<String>(getActivity(), android.R.layout.simple_list_item_1, android.R.id.text1);
     setListAdapter(mAdapter);
   }
 
