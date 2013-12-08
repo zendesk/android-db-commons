@@ -7,7 +7,6 @@ import static org.mockito.Mockito.*;
 
 import com.google.common.base.Function;
 import com.google.common.base.Functions;
-import com.google.common.base.Optional;
 import com.google.common.base.Predicate;
 import com.google.common.collect.FluentIterable;
 
@@ -18,6 +17,8 @@ import org.robolectric.annotation.Config;
 
 import android.database.Cursor;
 import android.database.MatrixCursor;
+
+import java.util.NoSuchElementException;
 
 @RunWith(RobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
@@ -40,7 +41,7 @@ public class FluentCursorTest {
 
   @Test
   public void shouldApplyGivenFunctionOnEverySingleRow() throws Exception {
-    final MatrixCursor cursor = buildMatrixCursor();
+    final MatrixCursor cursor = buildMatrixCursor(10);
     final FluentCursor fluentCursor = new FluentCursor(cursor);
     final FluentIterable<Long> transformed = fluentCursor.toFluentIterable(new Function<Cursor, Long>() {
       @Override
@@ -78,7 +79,7 @@ public class FluentCursorTest {
 
   @Test
   public void shouldAlwaysCloseCursorAfterCallingToFluentIterable() throws Exception {
-    final FluentCursor fluentCursor = new FluentCursor(buildMatrixCursor());
+    final FluentCursor fluentCursor = new FluentCursor(buildMatrixCursor(10));
 
     try {
       fluentCursor.toFluentIterable(new Function<Cursor, Object>() {
@@ -117,52 +118,85 @@ public class FluentCursorTest {
   }
 
   @Test
-  public void shouldCloseCursorAfterTransformingToFirstRow() throws Exception {
-    MatrixCursor cursor = buildMatrixCursor();
+  public void shouldCloseCursorAfterTransformingToOnlyElement() throws Exception {
+    MatrixCursor cursor = buildMatrixCursor(1);
 
-    new FluentCursor(cursor).toFirstRow(Functions.constant(null));
+    new FluentCursor(cursor).toOnlyElement(Functions.constant(null));
 
     assertThat(cursor).isClosed();
   }
 
   @Test
-  public void shouldReturnAbsentWhenTransformingEmptyCursorToFirstRow() throws Exception {
-    final MatrixCursor cursor = new MatrixCursor(new String[] { TEST_COLUMN });
+  public void shouldCloseCursorAfterTransformingToOnlyElementWithDefaultValue() throws Exception {
+    MatrixCursor cursor = buildMatrixCursor(0);
 
-    Optional<Integer> maybeFirstRow = new FluentCursor(cursor).toFirstRow(Functions.constant(1500));
+    new FluentCursor(cursor).toOnlyElement(Functions.constant(null), null);
 
-    assertThat(maybeFirstRow.isPresent()).isFalse();
+    assertThat(cursor).isClosed();
+  }
+
+  @Test(expected = NoSuchElementException.class)
+  public void shouldThrowAnExceptionWhenTransformingEmptyCursorToOnlyElement() throws Exception {
+    new FluentCursor(buildMatrixCursor(0)).toOnlyElement(Functions.constant(null));
   }
 
   @Test
-  public void shouldReturnAbsentWhenGivenFunctionReturnsNullWhenTransformingCursorToFirstRow() throws Exception {
-    MatrixCursor cursor = buildMatrixCursor();
+  public void shouldReturnDefaultValueWhenTransformingEmptyCursorToOnlyElementWithDefaultValue() throws Exception {
+    Integer shouldBeDefault = new FluentCursor(buildMatrixCursor(0)).toOnlyElement(Functions.constant(1500), 2900);
 
-    Optional<Object> maybeFirstRow = new FluentCursor(cursor).toFirstRow(Functions.constant(null));
+    assertThat(shouldBeDefault).isEqualTo(2900);
+  }
 
-    assertThat(maybeFirstRow.isPresent()).isFalse();
+  @Test(expected = IllegalArgumentException.class)
+  public void shouldThrowAnExceptionWhenTransformingCursorWithMultipleToOnlyElement() throws Exception {
+    new FluentCursor(buildMatrixCursor(10)).toOnlyElement(Functions.constant(null));
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void shouldThrowAnExceptionWhenTransformingCursorWithMultipleToOnlyElementWithDefaultValue() throws Exception {
+    new FluentCursor(buildMatrixCursor(10)).toOnlyElement(Functions.constant(null), null);
   }
 
   @Test
-  public void shouldApplyGivenFunctionWhenTransformingCursorToFirstRow() throws Exception {
-    MatrixCursor cursor = buildMatrixCursor();
+  public void shouldApplyGivenFunctionWhenTransformingCursorToOnlyElement() throws Exception {
+    MatrixCursor cursor = buildMatrixCursor(1);
 
-    Optional<Long> maybeFirstRow = new FluentCursor(cursor).toFirstRow(SingleRowTransforms.getColumn(TEST_COLUMN).asLong());
+    Integer onlyElement = new FluentCursor(cursor).toOnlyElement(Functions.constant(1500));
 
-    assertThat(maybeFirstRow.isPresent()).isTrue();
-    assertThat(maybeFirstRow.get()).isEqualTo(18L);
+    assertThat(onlyElement).isEqualTo(1500);
   }
 
   @Test
-  public void shouldNotIterateOverCursorWhenTransformingCursorToFirstRow() throws Exception {
-    Cursor mock = mock(Cursor.class);
+  public void shouldApplyGivenFunctionWhenTransformingCursorToOnlyElementWithDefaultValue() throws Exception {
+    MatrixCursor cursor = buildMatrixCursor(1);
 
-    new FluentCursor(mock).toFirstRow(Functions.constant(null));
+    Integer onlyElement = new FluentCursor(cursor).toOnlyElement(Functions.constant(1500), 2900);
 
-    verify(mock, never()).moveToNext();
-    verify(mock, never()).moveToLast();
-    verify(mock, never()).moveToPrevious();
-    verify(mock, never()).moveToPosition(anyInt());
+    assertThat(onlyElement).isEqualTo(1500);
+  }
+
+  @Test
+  public void shouldNotIterateOverCursorWhenTransformingCursorToOnlyElement() throws Exception {
+    Cursor cursor = spy(buildMatrixCursor(1));
+
+    new FluentCursor(cursor).toOnlyElement(Functions.constant(null));
+
+    verify(cursor, never()).moveToNext();
+    verify(cursor, never()).moveToLast();
+    verify(cursor, never()).moveToPrevious();
+    verify(cursor, never()).moveToPosition(anyInt());
+  }
+
+  @Test
+  public void shouldNotIterateOverCursorWhenTransformingCursorToOnlyElementWithDefaultValue() throws Exception {
+    Cursor cursor = spy(buildMatrixCursor(0));
+
+    new FluentCursor(cursor).toOnlyElement(Functions.constant(null), null);
+
+    verify(cursor, never()).moveToNext();
+    verify(cursor, never()).moveToLast();
+    verify(cursor, never()).moveToPrevious();
+    verify(cursor, never()).moveToPosition(anyInt());
   }
 
   @Test
@@ -178,9 +212,9 @@ public class FluentCursorTest {
     verify(mock, never()).moveToPosition(anyInt());
   }
 
-  private MatrixCursor buildMatrixCursor() {
+  private MatrixCursor buildMatrixCursor(int count) {
     final MatrixCursor cursor = new MatrixCursor(new String[] { TEST_COLUMN });
-    for (int i = 0; i < 10; i++) {
+    for (int i = 0; i < count; i++) {
       cursor.addRow(new Object[] { 18L });
     }
     return cursor;

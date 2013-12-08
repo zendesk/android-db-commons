@@ -1,11 +1,12 @@
 package com.getbase.android.db.cursors;
 
 import com.google.common.base.Function;
-import com.google.common.base.Optional;
 import com.google.common.collect.FluentIterable;
 
 import android.database.Cursor;
 import android.database.CursorWrapper;
+
+import java.util.NoSuchElementException;
 
 public class FluentCursor extends CursorWrapper {
 
@@ -30,23 +31,48 @@ public class FluentCursor extends CursorWrapper {
   }
 
   /**
-   * Returns the first row of this cursor transformed using the given function.
+   * Returns the only row of this cursor transformed using the given function.
    * WARNING: This method closes cursor. Do not use this from onLoadFinished()
    *
-   * @param singleRowTransform Function to apply on every single row of this cursor
-   * @param <T> Type of Iterable's single element
-   * @return Transformed first row of the cursor. If the cursor was empty,
-   * {@code Optional.absent()} is returned.
+   * @param singleRowTransform Function to apply on the only row of this cursor
+   * @param <T> Type of returned element
+   * @return Transformed first row of the cursor. If the cursor is empty,
+   * NoSuchElementException is thrown. If the cursor contains more than one
+   * row, IllegalArgumentException is thrown.
    */
-  public <T> Optional<T> toFirstRow(Function<? super Cursor, T> singleRowTransform) {
+  public <T> T toOnlyElement(Function<? super Cursor, T> singleRowTransform) {
     try {
-      if (moveToFirst()) {
-        return Optional.fromNullable(singleRowTransform.apply(this));
-      } else {
-        return Optional.absent();
+      switch (getCount()) {
+      case 0:
+        throw new NoSuchElementException();
+      case 1:
+        moveToFirst();
+        return singleRowTransform.apply(this);
+      default:
+        throw new IllegalArgumentException("expected one element but was: " + getCount());
       }
     } finally {
       close();
+    }
+  }
+
+  /**
+   * Returns the only row of this cursor transformed using the given function,
+   * or the supplied default value if cursor is empty.
+   * WARNING: This method closes cursor. Do not use this from onLoadFinished()
+   *
+   * @param singleRowTransform Function to apply on the only row of this cursor
+   * @param <T> Type of returned element
+   * @return Transformed first row of the cursor or the supplied default
+   * value if the cursor is empty. If the cursor contains more than one
+   * row, IllegalArgumentException is thrown.
+   */
+  public <T> T toOnlyElement(Function<? super Cursor, T> singleRowTransform, T defaultValue) {
+    if (moveToFirst()) {
+      return toOnlyElement(singleRowTransform);
+    } else {
+      close();
+      return defaultValue;
     }
   }
 
