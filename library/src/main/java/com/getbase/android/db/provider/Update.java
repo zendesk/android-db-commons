@@ -3,13 +3,14 @@ package com.getbase.android.db.provider;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Collections2;
 
+import android.content.ContentProviderOperation;
 import android.content.ContentValues;
 import android.net.Uri;
 import android.os.RemoteException;
 
 import java.util.Collection;
 
-public class Update extends ProviderAction<Integer> {
+public class Update extends ProviderAction<Integer> implements ConvertibleToOperation {
 
   private final Selection selection = new Selection();
   private ContentValues values = new ContentValues();
@@ -41,5 +42,13 @@ public class Update extends ProviderAction<Integer> {
   @Override
   public Integer perform(CrudHandler crudHandler) throws RemoteException {
     return crudHandler.update(getUri(), values, selection.getSelection(), selection.getSelectionArgs());
+  }
+
+  @Override
+  public ContentProviderOperation toContentProviderOperation() {
+    return ContentProviderOperation.newUpdate(getUri())
+        .withSelection(selection.getSelection(), selection.getSelectionArgs())
+        .withValues(values)
+        .build();
   }
 }
