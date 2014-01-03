@@ -1,12 +1,15 @@
 package com.getbase.android.db.query;
 
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
+
 public class Query {
 
   public void test() {
     select();
-    select().distinct();
-    select().distinct().column("X");
-    select().distinct().column("X").as("lol");
+    selectDistinct();
+    selectDistinct().column("X");
+    selectDistinct().column("X").as("lol");
     select().columns("X", "Y", "Z");
     select().allColumns();
     select().allColumnsOf("T");
@@ -23,6 +26,7 @@ public class Query {
     select().allColumns().from("T").join("U").using("A", "B");
 
     select().allColumns().from("T").join("U").on("A");
+    select().allColumns().from("T").join("U").on("A").on("B");
 
     select().allColumns().from("T").where("A == B");
     select().allColumns().from("T").as("X").where("A == B");
@@ -85,27 +89,20 @@ public class Query {
     select().allColumns().from("T").groupBy("X").having("Z").union().select().allColumns().from("X").build();
   }
 
-  public static SelectDistinctCore select() {
+  public static QueryBuilder select() {
     return null;
   }
 
-  public interface SelectCore {
-    SelectDistinctCore select();
+  public static QueryBuilder selectDistinct() {
+    return null;
   }
 
-  public interface SelectDistinctCore extends ColumnBuilder {
-    ColumnBuilder distinct();
+  public Cursor perform(SQLiteDatabase db) {
+    return db.rawQuery(null, null);
   }
 
-  public interface ColumnBuilder extends TableSelector {
-    ColumnAliasBuilder column(String column);
-    ColumnBuilder columns(String... columns);
-    ColumnBuilder allColumns();
-    ColumnBuilder allColumnsOf(String table);
-  }
-
-  public interface ColumnAliasBuilder extends ColumnBuilder {
-    ColumnBuilder as(String alias);
+  public interface QueryBuilder extends TableSelector, ColumnSelector, SelectionBuilder, NaturalJoinTypeBuilder, GroupByBuilder, HavingBuilder, OrderByBuilder, LimitBuilder, CompoundQueryBuilder {
+    Query build();
   }
 
   public interface TableSelector {
@@ -113,8 +110,23 @@ public class Query {
     TableAliasBuilder from(Query subquery);
   }
 
-  public interface TableAliasBuilder extends NaturalJoinTypeBuilder {
-    NaturalJoinTypeBuilder as(String alias);
+  public interface TableAliasBuilder extends QueryBuilder {
+    QueryBuilder as(String alias);
+  }
+
+  public interface ColumnSelector {
+    ColumnAliasBuilder column(String column);
+    QueryBuilder columns(String... columns);
+    QueryBuilder allColumns();
+    QueryBuilder allColumnsOf(String table);
+  }
+
+  public interface ColumnAliasBuilder extends QueryBuilder {
+    QueryBuilder as(String alias);
+  }
+
+  public interface SelectionBuilder {
+    QueryBuilder where(String selection, Object... selectionArgs);
   }
 
   public interface JoinTypeBuilder extends JoinBuilder {
@@ -122,7 +134,7 @@ public class Query {
     JoinBuilder cross();
   }
 
-  public interface NaturalJoinTypeBuilder extends JoinTypeBuilder, SelectionBuilder {
+  public interface NaturalJoinTypeBuilder extends JoinTypeBuilder {
     JoinTypeBuilder natural();
   }
 
@@ -131,28 +143,27 @@ public class Query {
     JoinAliasBuilder join(Query subquery);
   }
 
-  public interface JoinAliasBuilder extends JoinConstraintBuilder, SelectionBuilder {
+  public interface JoinAliasBuilder extends JoinConstraintBuilder {
     JoinConstraintBuilder as(String alias);
   }
 
-  public interface JoinConstraintBuilder {
-    NaturalJoinTypeBuilder using(String... columns);
-    NaturalJoinTypeBuilder on(String expression);
+  public interface JoinConstraintBuilder extends JoinOnConstraintBuilder {
+    QueryBuilder using(String... columns);
   }
 
-  public interface SelectionBuilder extends GroupByBuilder {
-    GroupByBuilder where(String expression);
+  public interface JoinOnConstraintBuilder extends QueryBuilder {
+    JoinOnConstraintBuilder on(String constraint, Object... constraintArgs);
   }
 
-  public interface GroupByBuilder extends OrderByBuilder {
-    HavingBuilder groupBy(String... expressions);
+  public interface GroupByBuilder {
+    QueryBuilder groupBy(String expression);
   }
 
-  public interface HavingBuilder extends OrderByBuilder {
-    OrderByBuilder having(String expression);
+  public interface HavingBuilder {
+    QueryBuilder having(String having, Object... havingArgs);
   }
 
-  public interface OrderByBuilder extends LimitBuilder, CompoundQueryBuilder {
+  public interface OrderByBuilder {
     OrderingTermBuilder orderBy(String expression);
   }
 
@@ -160,12 +171,12 @@ public class Query {
     OrderingDirectionSelector collate(String collation);
   }
 
-  public interface OrderingDirectionSelector extends OrderByBuilder {
-    OrderByBuilder asc();
-    OrderByBuilder desc();
+  public interface OrderingDirectionSelector extends QueryBuilder {
+    QueryBuilder asc();
+    QueryBuilder desc();
   }
 
-  public interface LimitBuilder extends QueryBuilder {
+  public interface LimitBuilder {
     LimitOffsetBuilder limit(String expression);
     LimitOffsetBuilder limit(int limit);
   }
@@ -175,17 +186,18 @@ public class Query {
     QueryBuilder offset(int limit);
   }
 
-  public interface QueryBuilder {
-    Query build();
-  }
-
   public interface CompoundQueryBuilder {
     UnionTypeSelector union();
-    SelectCore intersect();
-    SelectCore except();
+    SelectTypeSelector intersect();
+    SelectTypeSelector except();
   }
 
-  public interface UnionTypeSelector extends SelectCore {
-    SelectCore all();
+  public interface UnionTypeSelector extends SelectTypeSelector {
+    SelectTypeSelector all();
+  }
+
+  public interface SelectTypeSelector {
+    QueryBuilder select();
+    QueryBuilder selectDistinct();
   }
 }
