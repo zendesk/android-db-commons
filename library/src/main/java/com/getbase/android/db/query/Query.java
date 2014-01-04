@@ -1,6 +1,12 @@
 package com.getbase.android.db.query;
 
+import com.google.common.base.Function;
+import com.google.common.base.Functions;
+import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
+import com.google.common.base.Predicate;
+import com.google.common.collect.Collections2;
+import com.google.common.collect.FluentIterable;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
@@ -10,8 +16,16 @@ import android.database.sqlite.SQLiteDatabase;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map.Entry;
 
 public class Query {
+
+  private static final Function<String,String> SURROUND_WITH_PARENS = new Function<String, String>() {
+    @Override
+    public String apply(String input) {
+      return "(" + input + ")";
+    }
+  };
 
   public static QueryBuilder select() {
     return new QueryBuilderImpl(false);
@@ -22,15 +36,15 @@ public class Query {
   }
 
   final String mRawQuery;
-  final String[] mRawQueryArgs;
+  final List<String> mRawQueryArgs;
 
-  private Query(String rawQuery, String[] rawQueryArgs) {
+  private Query(String rawQuery, List<String> rawQueryArgs) {
     mRawQuery = rawQuery;
     mRawQueryArgs = rawQueryArgs;
   }
 
   public Cursor perform(SQLiteDatabase db) {
-    return db.rawQuery(mRawQuery, mRawQueryArgs);
+    return db.rawQuery(mRawQuery, mRawQueryArgs.toArray(new String[mRawQueryArgs.size()]));
   }
 
   private static class QueryBuilderImpl implements QueryBuilder, ColumnAliasBuilder, LimitOffsetBuilder, OrderingTermBuilder {
@@ -55,36 +69,179 @@ public class Query {
     private TableOrSubquery mPendingTable;
     private LinkedHashMap<TableOrSubquery, String> mTables = Maps.newLinkedHashMap();
 
-    private final boolean mIsDistinct;
-    private final QueryBuilderImpl mPreviousCompoundQueryPart;
-    private final String mCompoundQueryOperation;
+    private boolean mIsDistinct;
 
     private String mPendingJoinType = "";
     private JoinSpec mPendingJoin;
     private List<JoinSpec> mJoins = Lists.newArrayList();
 
+    private LinkedHashMap<Query, String> mCompoundQueryParts = Maps.newLinkedHashMap();
+
     private QueryBuilderImpl(boolean isDistinct) {
       mIsDistinct = isDistinct;
-      mPreviousCompoundQueryPart = null;
-      mCompoundQueryOperation = null;
     }
 
-    private QueryBuilderImpl(boolean isDistinct, QueryBuilderImpl previousCompoundQueryPart, String compoundQueryOperation) {
-      mIsDistinct = isDistinct;
-      mPreviousCompoundQueryPart = previousCompoundQueryPart;
-      mCompoundQueryOperation = compoundQueryOperation;
+    private void resetCoreSelectParts(boolean distinct) {
+      mIsDistinct = distinct;
+
+      mProjection = Lists.newArrayList();
+      mColumnWithPotentialAlias = null;
+
+      mGroupByExpressions = Lists.newArrayList();
+      mHaving = Lists.newArrayList();
+      mHavingArgs = Lists.newArrayList();
+
+      mSelection = Lists.newArrayList();
+      mSelectionArgs = Lists.newArrayList();
+
+      mPendingTable = null;
+      mTables = Maps.newLinkedHashMap();
+
+      mPendingJoinType = "";
+      mPendingJoin = null;
+      mJoins = Lists.newArrayList();
     }
 
     @Override
     public Query build() {
+      processPendingParts();
+
+      List<String> args = Lists.newArrayList();
+      StringBuilder builder = new StringBuilder();
+
+      for (Entry<Query, String> entry : mCompoundQueryParts.entrySet()) {
+        builder.append(entry.getKey().mRawQuery);
+        builder.append(" ");
+        builder.append(entry.getValue());
+        builder.append(" ");
+        args.addAll(entry.getKey().mRawQueryArgs);
+      }
+
+      Query lastQueryPart = buildCompoundQueryPart();
+      args.addAll(lastQueryPart.mRawQueryArgs);
+      builder.append(lastQueryPart.mRawQuery);
+
+      if (!mOrderClauses.isEmpty()) {
+        builder.append(" ORDER BY ");
+        builder.append(Joiner.on(", ").join(mOrderClauses));
+      }
+
+      if (mLimit != null) {
+        builder.append(" LIMIT ");
+        builder.append(mLimit);
+        if (mOffset != null) {
+          builder.append(" OFFSET ");
+          builder.append(mOffset);
+        }
+      }
+
+      return new Query(builder.toString(), args);
+    }
+
+    private Query buildCompoundQueryPart() {
+      processPendingParts();
+
+      Preconditions.checkState(!(!mHaving.isEmpty() && mGroupByExpressions.isEmpty()), "a GROUP BY clause is required when using HAVING clause");
+
+      List<String> args = Lists.newArrayList();
+      StringBuilder builder = new StringBuilder();
+
+      builder.append("SELECT ");
+      if (mIsDistinct) {
+        builder.append("DISTINCT ");
+      }
+      builder.append(Joiner.on(", ").join(mProjection));
+
+      if (!mTables.isEmpty()) {
+        builder.append(" FROM ");
+
+        builder.append(Joiner.on(", ").join(Collections2.transform(mTables.entrySet(), new Function<Entry<TableOrSubquery, String>, String>() {
+          @Override
+          public String apply(Entry<TableOrSubquery, String> entry) {
+            TableOrSubquery tableOrSubquery = entry.getKey();
+            String alias = entry.getValue();
+
+            String result = tableOrSubquery.mTable != null
+                ? tableOrSubquery.mTable
+                : SURROUND_WITH_PARENS.apply(tableOrSubquery.mSubquery.mRawQuery);
+
+            if (alias != null) {
+              result += " AS " + alias;
+            }
+
+            return result;
+          }
+        })));
+
+        args.addAll(FluentIterable.from(mTables.keySet())
+            .filter(new Predicate<TableOrSubquery>() {
+              @Override
+              public boolean apply(TableOrSubquery tableOrSubquery) {
+                return tableOrSubquery.mSubquery != null;
+              }
+            })
+            .transformAndConcat(new Function<TableOrSubquery, Iterable<String>>() {
+              @Override
+              public Iterable<String> apply(TableOrSubquery input) {
+                return input.mSubquery.mRawQueryArgs;
+              }
+            })
+            .toImmutableList()
+        );
+      }
+
+      for (JoinSpec join : mJoins) {
+        builder.append(" ");
+        builder.append(join.mJoinType);
+        builder.append(" JOIN ");
+
+        builder.append(join.mJoinSource.mTable != null
+            ? join.mJoinSource.mTable
+            : SURROUND_WITH_PARENS.apply(join.mJoinSource.mSubquery.mRawQuery)
+        );
+
+        if (join.mAlias != null) {
+          builder.append(" AS ");
+          builder.append(join.mAlias);
+        }
+
+        if (join.mUsingColumns != null) {
+          builder.append(" USING ");
+          builder.append("(");
+          builder.append(Joiner.on(", ").join(join.mUsingColumns));
+          builder.append(")");
+        } else if (!join.mConstraints.isEmpty()) {
+          builder.append(" ON ");
+          builder.append(Joiner.on(" AND ").join(Collections2.transform(join.mConstraints, SURROUND_WITH_PARENS)));
+          args.addAll(Collections2.transform(join.mConstraintsArgs, Functions.toStringFunction()));
+        }
+      }
+
+      if (!mSelection.isEmpty()) {
+        builder.append(" WHERE ");
+        builder.append(Joiner.on(" AND ").join(Collections2.transform(mSelection, SURROUND_WITH_PARENS)));
+        args.addAll(Collections2.transform(mSelectionArgs, Functions.toStringFunction()));
+      }
+
+      if (!mGroupByExpressions.isEmpty()) {
+        builder.append(" GROUP BY ");
+        builder.append(Joiner.on(", ").join(mGroupByExpressions));
+
+        if (!mHaving.isEmpty()) {
+          builder.append(" HAVING ");
+          builder.append(Joiner.on(" AND ").join(Collections2.transform(mHaving, SURROUND_WITH_PARENS)));
+          args.addAll(Collections2.transform(mHavingArgs, Functions.toStringFunction()));
+        }
+      }
+
+      return new Query(builder.toString(), args);
+    }
+
+    private void processPendingParts() {
       addPendingColumn();
       buildPendingOrderByClause();
       addPendingTable(null);
       addPendingJoin();
-
-      Preconditions.checkState(!(!mHaving.isEmpty() && mGroupByExpressions.isEmpty()), "a GROUP BY clause is required when using HAVING clause");
-
-      return null; // TODO
     }
 
     @Override
@@ -167,7 +324,11 @@ public class Query {
       }
 
       private QueryBuilder select(boolean distinct) {
-        return new QueryBuilderImpl(distinct, QueryBuilderImpl.this, mOperation);
+        mCompoundQueryParts.put(buildCompoundQueryPart(), mOperation);
+
+        resetCoreSelectParts(distinct);
+
+        return QueryBuilderImpl.this;
       }
     };
 
@@ -253,14 +414,14 @@ public class Query {
       @Override
       public JoinOnConstraintBuilder on(String constraint, Object... constraintArgs) {
         mPendingJoin.mConstraints.add(constraint);
-        mPendingJoin.mConstraintsArgs.add(constraintArgs);
+        Collections.addAll(mPendingJoin.mConstraintsArgs, constraintArgs);
         return this;
       }
     };
 
     private static class JoinSpec {
       final String mJoinType;
-      final TableOrSubquery mTable;
+      final TableOrSubquery mJoinSource;
 
       String mAlias;
 
@@ -269,9 +430,9 @@ public class Query {
       List<String> mConstraints = Lists.newArrayList();
       List<Object> mConstraintsArgs = Lists.newArrayList();
 
-      private JoinSpec(String joinType, TableOrSubquery table) {
+      private JoinSpec(String joinType, TableOrSubquery joinSource) {
         mJoinType = joinType;
-        mTable = table;
+        mJoinSource = joinSource;
       }
     }
 
