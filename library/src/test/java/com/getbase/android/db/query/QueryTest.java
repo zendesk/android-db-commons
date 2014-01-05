@@ -130,4 +130,16 @@ public class QueryTest {
     assertThat(query.mRawQueryArgs).isEmpty();
     assertThat(query.mRawQuery).isEqualTo("SELECT a, b, NULL AS c FROM table_a");
   }
+
+  @Test
+  public void shouldAcceptNullProjection() throws Exception {
+    Query query = Query
+        .select()
+        .columns(null)
+        .from("table_a")
+        .build();
+
+    assertThat(query.mRawQueryArgs).isEmpty();
+    assertThat(query.mRawQuery).isEqualTo("SELECT * FROM table_a");
+  }
 }

@@ -276,8 +276,12 @@ public class Query {
 
     @Override
     public QueryBuilder columns(String... columns) {
-      mProjection.putAll(Maps.uniqueIndex(Arrays.asList(columns), Functions.<String>identity()));
-      return this;
+      if (columns != null) {
+        mProjection.putAll(Maps.uniqueIndex(Arrays.asList(columns), Functions.<String>identity()));
+        return this;
+      } else {
+        return allColumns();
+      }
     }
 
     @Override
