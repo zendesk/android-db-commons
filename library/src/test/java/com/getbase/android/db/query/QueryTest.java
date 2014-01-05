@@ -135,7 +135,7 @@ public class QueryTest {
   public void shouldAcceptNullProjection() throws Exception {
     Query query = Query
         .select()
-        .columns(null)
+        .columns()
         .from("table_a")
         .build();
 
@@ -159,7 +159,7 @@ public class QueryTest {
     Query query = Query
         .select()
         .from("table_a")
-        .where(null, null)
+        .where(null)
         .build();
 
     assertThat(query.mRawQueryArgs).isEmpty();
