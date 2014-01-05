@@ -117,4 +117,17 @@ public class QueryTest {
     assertThat(query.mRawQueryArgs).containsSequence("0", "1");
     assertThat(query.mRawQuery).isEqualTo("SELECT * FROM table_a LEFT JOIN table_b ON (column_a=?) WHERE (column_b=?)");
   }
+
+  @Test
+  public void shouldOverrideColumnsWithAliasedColumns() throws Exception {
+    Query query = Query
+        .select()
+        .columns("a", "b", "c")
+        .column("NULL").as("c")
+        .from("table_a")
+        .build();
+
+    assertThat(query.mRawQueryArgs).isEmpty();
+    assertThat(query.mRawQuery).isEqualTo("SELECT a, b, NULL AS c FROM table_a");
+  }
 }
