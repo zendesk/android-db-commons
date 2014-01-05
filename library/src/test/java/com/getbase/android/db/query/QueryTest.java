@@ -165,4 +165,16 @@ public class QueryTest {
     assertThat(query.mRawQueryArgs).isEmpty();
     assertThat(query.mRawQuery).isEqualTo("SELECT * FROM table_a");
   }
+
+  @Test
+  public void shouldAcceptNullSortOrder() throws Exception {
+    Query query = Query
+        .select()
+        .from("table_a")
+        .orderBy(null)
+        .build();
+
+    assertThat(query.mRawQueryArgs).isEmpty();
+    assertThat(query.mRawQuery).isEqualTo("SELECT * FROM table_a");
+  }
 }
