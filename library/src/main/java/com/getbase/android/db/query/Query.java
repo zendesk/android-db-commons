@@ -22,7 +22,7 @@ import java.util.Map.Entry;
 
 public class Query {
 
-  private static final Function<String,String> SURROUND_WITH_PARENS = new Function<String, String>() {
+  private static final Function<String, String> SURROUND_WITH_PARENS = new Function<String, String>() {
     @Override
     public String apply(String input) {
       return "(" + input + ")";
@@ -152,14 +152,18 @@ public class Query {
       if (mIsDistinct) {
         builder.append("DISTINCT ");
       }
-      builder.append(Joiner.on(", ").join(Collections2.transform(mProjection.entrySet(), new Function<Entry<String, String>, Object>() {
-        @Override
-        public Object apply(Entry<String, String> input) {
-          return input.getValue().equals(input.getKey())
-              ? input.getValue()
-              : input.getValue() + " AS " + input.getKey();
-        }
-      })));
+      if (!mProjection.isEmpty()) {
+        builder.append(Joiner.on(", ").join(Collections2.transform(mProjection.entrySet(), new Function<Entry<String, String>, Object>() {
+          @Override
+          public Object apply(Entry<String, String> input) {
+            return input.getValue().equals(input.getKey())
+                ? input.getValue()
+                : input.getValue() + " AS " + input.getKey();
+          }
+        })));
+      } else {
+        builder.append("*");
+      }
 
       if (!mTables.isEmpty()) {
         builder.append(" FROM ");
