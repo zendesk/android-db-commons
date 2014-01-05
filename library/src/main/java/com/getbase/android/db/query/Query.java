@@ -5,6 +5,7 @@ import com.google.common.base.Functions;
 import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
+import com.google.common.base.Strings;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.Lists;
@@ -522,8 +523,10 @@ public class Query {
 
     @Override
     public QueryBuilder where(String selection, Object... selectionArgs) {
-      mSelection.add(selection);
-      Collections.addAll(mSelectionArgs, selectionArgs);
+      if (!Strings.isNullOrEmpty(selection)) {
+        mSelection.add(selection);
+        Collections.addAll(mSelectionArgs, selectionArgs);
+      }
 
       return this;
     }

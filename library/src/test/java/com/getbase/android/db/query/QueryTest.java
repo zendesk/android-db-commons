@@ -153,4 +153,16 @@ public class QueryTest {
     assertThat(query.mRawQueryArgs).isEmpty();
     assertThat(query.mRawQuery).isEqualTo("SELECT * FROM table_a");
   }
+
+  @Test
+  public void shouldAcceptNullSelection() throws Exception {
+    Query query = Query
+        .select()
+        .from("table_a")
+        .where(null, null)
+        .build();
+
+    assertThat(query.mRawQueryArgs).isEmpty();
+    assertThat(query.mRawQuery).isEqualTo("SELECT * FROM table_a");
+  }
 }
