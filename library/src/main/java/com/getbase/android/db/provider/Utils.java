@@ -6,7 +6,7 @@ public final class Utils {
   private Utils() {
   }
 
-  static void addToContentValues(String key, Object value, ContentValues contentValues) {
+  public static void addToContentValues(String key, Object value, ContentValues contentValues) {
     if (value == null) {
       contentValues.putNull(key);
     } else if (value instanceof String) {
