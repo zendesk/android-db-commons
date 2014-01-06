@@ -32,7 +32,7 @@ public class Update extends ProviderAction<Integer> {
     return this;
   }
 
-  public <T> Update whereIn(String column, Collection<T> collection) {
+  public <T extends Number> Update whereIn(String column, Collection<T> collection) {
     this.selection.append(column + " IN (" + Joiner.on(",").join(collection) + ")");
     return this;
   }
