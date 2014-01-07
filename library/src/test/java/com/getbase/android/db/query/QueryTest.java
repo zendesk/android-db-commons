@@ -119,19 +119,6 @@ public class QueryTest {
   }
 
   @Test
-  public void shouldOverrideColumnsWithAliasedColumns() throws Exception {
-    Query query = Query
-        .select()
-        .columns("a", "b", "c")
-        .column("NULL").as("c")
-        .from("table_a")
-        .build();
-
-    assertThat(query.mRawQueryArgs).isEmpty();
-    assertThat(query.mRawQuery).isEqualTo("SELECT a, b, NULL AS c FROM table_a");
-  }
-
-  @Test
   public void shouldAcceptNullProjection() throws Exception {
     Query query = Query
         .select()

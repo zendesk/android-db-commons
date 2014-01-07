@@ -14,11 +14,9 @@ import com.google.common.collect.Maps;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Map.Entry;
 
 public class Query {
@@ -51,7 +49,7 @@ public class Query {
   }
 
   private static class QueryBuilderImpl implements QueryBuilder, ColumnAliasBuilder, LimitOffsetBuilder, OrderingTermBuilder {
-    private Map<String, String> mProjection = Maps.newLinkedHashMap();
+    private List<String> mProjection = Lists.newArrayList();
     private String mColumnWithPotentialAlias;
 
     private List<String> mGroupByExpressions = Lists.newArrayList();
@@ -87,7 +85,7 @@ public class Query {
     private void resetCoreSelectParts(boolean distinct) {
       mIsDistinct = distinct;
 
-      mProjection = Maps.newLinkedHashMap();
+      mProjection = Lists.newArrayList();
       mColumnWithPotentialAlias = null;
 
       mGroupByExpressions = Lists.newArrayList();
@@ -154,14 +152,7 @@ public class Query {
         builder.append("DISTINCT ");
       }
       if (!mProjection.isEmpty()) {
-        builder.append(Joiner.on(", ").join(Collections2.transform(mProjection.entrySet(), new Function<Entry<String, String>, Object>() {
-          @Override
-          public Object apply(Entry<String, String> input) {
-            return input.getValue().equals(input.getKey())
-                ? input.getValue()
-                : input.getValue() + " AS " + input.getKey();
-          }
-        })));
+        builder.append(Joiner.on(", ").join(mProjection));
       } else {
         builder.append("*");
       }
@@ -268,21 +259,21 @@ public class Query {
     @Override
     public QueryBuilder as(String alias) {
       Preconditions.checkState(mColumnWithPotentialAlias != null);
-      mProjection.put(alias, mColumnWithPotentialAlias);
+      mProjection.add(mColumnWithPotentialAlias + " AS " + alias);
       mColumnWithPotentialAlias = null;
       return this;
     }
 
     private void addPendingColumn() {
       if (mColumnWithPotentialAlias != null) {
-        mProjection.put(mColumnWithPotentialAlias, mColumnWithPotentialAlias);
+        mProjection.add(mColumnWithPotentialAlias);
       }
     }
 
     @Override
     public QueryBuilder columns(String... columns) {
       if (columns != null) {
-        mProjection.putAll(Maps.uniqueIndex(Arrays.asList(columns), Functions.<String>identity()));
+        Collections.addAll(mProjection, columns);
         return this;
       } else {
         return allColumns();
@@ -291,13 +282,13 @@ public class Query {
 
     @Override
     public QueryBuilder allColumns() {
-      mProjection.put("*", "*");
+      mProjection.add("*");
       return this;
     }
 
     @Override
     public QueryBuilder allColumnsOf(String table) {
-      mProjection.put(table + ".*", table + ".*");
+      mProjection.add(table + ".*");
       return this;
     }
 
