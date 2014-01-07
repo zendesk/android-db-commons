@@ -1,5 +1,6 @@
 package com.getbase.android.db.query;
 
+import com.getbase.android.db.cursors.FluentCursor;
 import com.google.common.base.Function;
 import com.google.common.base.Functions;
 import com.google.common.base.Joiner;
@@ -11,7 +12,6 @@ import com.google.common.collect.FluentIterable;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
-import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 
 import java.util.Collections;
@@ -44,8 +44,8 @@ public class Query {
     mRawQueryArgs = rawQueryArgs;
   }
 
-  public Cursor perform(SQLiteDatabase db) {
-    return db.rawQuery(mRawQuery, mRawQueryArgs.toArray(new String[mRawQueryArgs.size()]));
+  public FluentCursor perform(SQLiteDatabase db) {
+    return new FluentCursor(db.rawQuery(mRawQuery, mRawQueryArgs.toArray(new String[mRawQueryArgs.size()])));
   }
 
   private static class QueryBuilderImpl implements QueryBuilder, ColumnAliasBuilder, LimitOffsetBuilder, OrderingTermBuilder {
