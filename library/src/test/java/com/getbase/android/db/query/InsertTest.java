@@ -5,6 +5,8 @@ import static org.fest.assertions.Assertions.assertThat;
 import static org.fest.assertions.api.ANDROID.assertThat;
 import static org.fest.assertions.api.android.content.ContentValuesEntry.entry;
 
+import com.getbase.android.db.query.Insert.InsertWithSelect;
+
 import org.fest.assertions.Assertions;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -35,7 +37,7 @@ public class InsertTest {
   @Test
   public void shouldBuildTheInsertInSelectFormWithoutSpecifiedColumns() throws Exception {
     Query query = select().allColumns().from("B").build();
-    Insert insert = Insert.insert().into("A").select(query);
+    InsertWithSelect insert = Insert.insert().into("A").select(query);
 
     assertThat(insert.mQueryFormString).isEqualTo("INSERT INTO A " + query.mRawQuery);
   }
@@ -56,7 +58,7 @@ public class InsertTest {
   @Test
   public void shouldBuildTheInsertInSelectFormWithSpecifiedColumns() throws Exception {
     Query query = select().allColumns().from("B").build();
-    Insert insert = Insert.insert().into("A").columns("a", "b", "c").select(query);
+    InsertWithSelect insert = Insert.insert().into("A").columns("a", "b", "c").select(query);
 
     assertThat(insert.mQueryFormString).isEqualTo("INSERT INTO A (a, b, c) " + query.mRawQuery);
   }
@@ -64,7 +66,7 @@ public class InsertTest {
   @Test
   public void shouldConcatenateSpecifiedColumnsForInsertInSelectForm() throws Exception {
     Query query = select().allColumns().from("B").build();
-    Insert insert = Insert.insert().into("A").columns("a", "b").columns("c").select(query);
+    InsertWithSelect insert = Insert.insert().into("A").columns("a", "b").columns("c").select(query);
 
     assertThat(insert.mQueryFormString).isEqualTo("INSERT INTO A (a, b, c) " + query.mRawQuery);
   }

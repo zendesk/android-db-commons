@@ -17,32 +17,30 @@ public class Insert {
   final String mTable;
   final String mNullColumnHack;
   final ContentValues mValues;
-  final String mQueryFormString;
 
   private Insert(String table, String nullColumnHack, ContentValues values) {
     mTable = table;
     mNullColumnHack = nullColumnHack;
     mValues = values;
-    mQueryFormString = null;
-  }
-
-  private Insert(String queryFormString) {
-    mTable = null;
-    mNullColumnHack = null;
-    mValues = null;
-    mQueryFormString = queryFormString;
   }
 
   public static InsertTableSelector insert() {
     return new InsertBuilder();
   }
 
-  public Long perform(SQLiteDatabase db) {
-    if (mQueryFormString == null) {
-      return db.insert(mTable, mNullColumnHack, mValues);
-    } else {
+  public long perform(SQLiteDatabase db) {
+    return db.insert(mTable, mNullColumnHack, mValues);
+  }
+
+  public static class InsertWithSelect {
+    final String mQueryFormString;
+
+    InsertWithSelect(String queryFormString) {
+      mQueryFormString = queryFormString;
+    }
+
+    public void perform(SQLiteDatabase db) {
       db.execSQL(mQueryFormString);
-      return null;
     }
   }
 
@@ -75,7 +73,7 @@ public class Insert {
     }
 
     @Override
-    public Insert select(Query query) {
+    public InsertWithSelect select(Query query) {
       checkNotNull(query);
       checkArgument(query.mRawQueryArgs.isEmpty());
 
@@ -89,7 +87,7 @@ public class Insert {
       }
       builder.append(query.mRawQuery);
 
-      return new Insert(builder.toString());
+      return new InsertWithSelect(builder.toString());
     }
 
     @Override
@@ -120,7 +118,7 @@ public class Insert {
 
   public interface InsertSubqueryForm {
     InsertSubqueryForm columns(String... columns);
-    Insert select(Query query);
+    InsertWithSelect select(Query query);
   }
 
   public interface InsertValuesBuilder {
