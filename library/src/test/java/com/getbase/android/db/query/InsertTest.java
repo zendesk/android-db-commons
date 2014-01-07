@@ -40,13 +40,17 @@ public class InsertTest {
     assertThat(insert.mQueryFormString).isEqualTo("INSERT INTO A " + query.mRawQuery);
   }
 
-  @Test
-  public void shouldUseQueryArgsForInsertInSelectForm() throws Exception {
-    Query query = select().allColumns().from("B").where("col=?", 0).build();
-    Insert insert = Insert.insert().into("A").select(query);
-
-    assertThat(insert.mQueryFormString).isEqualTo("INSERT INTO A " + query.mRawQuery);
-    assertThat(insert.mQueryFormArgs).containsOnly(query.mRawQueryArgs.toArray());
+  @Test(expected = IllegalArgumentException.class)
+  public void shouldNotAllowUsingQueryWithBoundArgsForInsertInSelectForm() throws Exception {
+    Insert
+        .insert()
+        .into("A")
+        .select(select()
+            .allColumns()
+            .from("B")
+            .where("col=?", 0)
+            .build()
+        );
   }
 
   @Test

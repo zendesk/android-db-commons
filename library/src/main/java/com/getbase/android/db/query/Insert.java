@@ -1,5 +1,6 @@
 package com.getbase.android.db.query;
 
+import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import com.getbase.android.db.provider.Utils;
@@ -17,22 +18,19 @@ public class Insert {
   final String mNullColumnHack;
   final ContentValues mValues;
   final String mQueryFormString;
-  final Object[] mQueryFormArgs;
 
   private Insert(String table, String nullColumnHack, ContentValues values) {
     mTable = table;
     mNullColumnHack = nullColumnHack;
     mValues = values;
     mQueryFormString = null;
-    mQueryFormArgs = null;
   }
 
-  private Insert(String queryFormString, Object[] queryFormArgs) {
+  private Insert(String queryFormString) {
     mTable = null;
     mNullColumnHack = null;
     mValues = null;
     mQueryFormString = queryFormString;
-    mQueryFormArgs = queryFormArgs;
   }
 
   public static InsertTableSelector insert() {
@@ -43,7 +41,7 @@ public class Insert {
     if (mQueryFormString == null) {
       return db.insert(mTable, mNullColumnHack, mValues);
     } else {
-      db.execSQL(mQueryFormString, mQueryFormArgs);
+      db.execSQL(mQueryFormString);
       return null;
     }
   }
@@ -79,6 +77,7 @@ public class Insert {
     @Override
     public Insert select(Query query) {
       checkNotNull(query);
+      checkArgument(query.mRawQueryArgs.isEmpty());
 
       StringBuilder builder = new StringBuilder();
       builder.append("INSERT INTO ").append(mTable).append(" ");
@@ -90,7 +89,7 @@ public class Insert {
       }
       builder.append(query.mRawQuery);
 
-      return new Insert(builder.toString(), query.mRawQueryArgs.toArray());
+      return new Insert(builder.toString());
     }
 
     @Override
