@@ -37,7 +37,7 @@ public class InsertTest {
   @Test
   public void shouldBuildTheInsertInSelectFormWithoutSpecifiedColumns() throws Exception {
     Query query = select().allColumns().from("B").build();
-    InsertWithSelect insert = Insert.insert().into("A").select(query);
+    InsertWithSelect insert = Insert.insert().into("A").resultOf(query);
 
     assertThat(insert.mQueryFormString).isEqualTo("INSERT INTO A " + query.mRawQuery);
   }
@@ -47,7 +47,7 @@ public class InsertTest {
     Insert
         .insert()
         .into("A")
-        .select(select()
+        .resultOf(select()
             .allColumns()
             .from("B")
             .where("col=?", 0)
@@ -58,7 +58,7 @@ public class InsertTest {
   @Test
   public void shouldBuildTheInsertInSelectFormWithSpecifiedColumns() throws Exception {
     Query query = select().allColumns().from("B").build();
-    InsertWithSelect insert = Insert.insert().into("A").columns("a", "b", "c").select(query);
+    InsertWithSelect insert = Insert.insert().into("A").columns("a", "b", "c").resultOf(query);
 
     assertThat(insert.mQueryFormString).isEqualTo("INSERT INTO A (a, b, c) " + query.mRawQuery);
   }
@@ -66,7 +66,7 @@ public class InsertTest {
   @Test
   public void shouldConcatenateSpecifiedColumnsForInsertInSelectForm() throws Exception {
     Query query = select().allColumns().from("B").build();
-    InsertWithSelect insert = Insert.insert().into("A").columns("a", "b").columns("c").select(query);
+    InsertWithSelect insert = Insert.insert().into("A").columns("a", "b").columns("c").resultOf(query);
 
     assertThat(insert.mQueryFormString).isEqualTo("INSERT INTO A (a, b, c) " + query.mRawQuery);
   }

@@ -73,7 +73,7 @@ public class Insert {
     }
 
     @Override
-    public InsertWithSelect select(Query query) {
+    public InsertWithSelect resultOf(Query query) {
       checkNotNull(query);
       checkArgument(query.mRawQueryArgs.isEmpty());
 
@@ -118,7 +118,7 @@ public class Insert {
 
   public interface InsertSubqueryForm {
     InsertSubqueryForm columns(String... columns);
-    InsertWithSelect select(Query query);
+    InsertWithSelect resultOf(Query query);
   }
 
   public interface InsertValuesBuilder {
