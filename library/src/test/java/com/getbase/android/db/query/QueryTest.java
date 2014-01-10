@@ -47,6 +47,18 @@ public class QueryTest {
   }
 
   @Test
+  public void shouldBuildTheUnionCompoundQueryWithDistinctSelect() throws Exception {
+    Query query = Query
+        .select().allColumns().from("table_a")
+        .union()
+        .selectDistinct().allColumns().from("table_b")
+        .build();
+
+    assertThat(query.mRawQueryArgs).isEmpty();
+    assertThat(query.mRawQuery).isEqualTo("SELECT * FROM table_a UNION SELECT DISTINCT * FROM table_b");
+  }
+
+  @Test
   public void shouldBuildTheUnionAllCompoundQuery() throws Exception {
     Query query = Query
         .select().allColumns().from("table_a")
@@ -130,6 +142,42 @@ public class QueryTest {
   }
 
   @Test
+  public void shouldBuildTheQueryWithNaturalJoin() throws Exception {
+    Query query = Query
+        .select().allColumns().from("table_a")
+        .natural().join("table_b")
+        .build();
+
+    assertThat(query.mRawQueryArgs).isEmpty();
+    assertThat(query.mRawQuery).isEqualTo("SELECT * FROM table_a NATURAL JOIN table_b");
+  }
+
+  @Test
+  public void shouldBuildTheQueryWithAliasedJoin() throws Exception {
+    Query query = Query
+        .select().allColumns().from("table_a")
+        .join("table_b").as("b")
+        .build();
+
+    assertThat(query.mRawQueryArgs).isEmpty();
+    assertThat(query.mRawQuery).isEqualTo("SELECT * FROM table_a JOIN table_b AS b");
+  }
+
+
+  @Test
+  public void shouldBuildTheQueryJoinedWithSubquery() throws Exception {
+    Query query = Query
+        .select().allColumns().from("table_a")
+        .join(
+            Query.select().allColumns().from("table_b").build()
+        )
+        .build();
+
+    assertThat(query.mRawQueryArgs).isEmpty();
+    assertThat(query.mRawQuery).isEqualTo("SELECT * FROM table_a JOIN (SELECT * FROM table_b)");
+  }
+
+  @Test
   public void shouldBuildTheQueryWithJoinUsingColumnList() throws Exception {
     Query query = Query
         .select().allColumns().from("table_a")
@@ -142,10 +190,60 @@ public class QueryTest {
   }
 
   @Test
+  public void shouldBuildQueryWithSingleColumnProjection() throws Exception {
+    Query query = Query
+        .select()
+        .column("a")
+        .from("table_a")
+        .build();
+
+    assertThat(query.mRawQueryArgs).isEmpty();
+    assertThat(query.mRawQuery).isEqualTo("SELECT a FROM table_a");
+  }
+
+  @Test
+  public void shouldBuildQueryWithAliasedColumnProjection() throws Exception {
+    Query query = Query
+        .select()
+        .column("a").as("aaa")
+        .from("table_a")
+        .build();
+
+    assertThat(query.mRawQueryArgs).isEmpty();
+    assertThat(query.mRawQuery).isEqualTo("SELECT a AS aaa FROM table_a");
+  }
+
+  @Test
+  public void shouldConcatenateProjections() throws Exception {
+    Query query = Query
+        .select()
+        .column("a")
+        .column("b")
+        .from("table_a")
+        .build();
+
+    assertThat(query.mRawQueryArgs).isEmpty();
+    assertThat(query.mRawQuery).isEqualTo("SELECT a, b FROM table_a");
+  }
+
+  @Test
+  public void shouldAcceptEmptyProjection() throws Exception {
+    Query query = Query
+        .select()
+        .column("a")
+        .columns()
+        .from("table_a")
+        .build();
+
+    assertThat(query.mRawQueryArgs).isEmpty();
+    assertThat(query.mRawQuery).isEqualTo("SELECT a FROM table_a");
+  }
+
+  @Test
   public void shouldAcceptNullProjection() throws Exception {
     Query query = Query
         .select()
-        .columns()
+        .columns((String[])null)
         .from("table_a")
         .build();
 

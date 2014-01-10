@@ -267,6 +267,7 @@ public class Query {
     private void addPendingColumn() {
       if (mColumnWithPotentialAlias != null) {
         mProjection.add(mColumnWithPotentialAlias);
+        mColumnWithPotentialAlias = null;
       }
     }
 
