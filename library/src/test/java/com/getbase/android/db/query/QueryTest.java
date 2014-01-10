@@ -2,17 +2,10 @@ package com.getbase.android.db.query;
 
 import static org.fest.assertions.Assertions.assertThat;
 
-import com.getbase.android.db.cursors.Cursors;
-import com.google.common.base.Function;
-import com.google.common.collect.FluentIterable;
-
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
-
-import android.database.Cursor;
-import android.database.MatrixCursor;
 
 @RunWith(RobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
@@ -163,7 +156,6 @@ public class QueryTest {
     assertThat(query.mRawQuery).isEqualTo("SELECT * FROM table_a JOIN table_b AS b");
   }
 
-
   @Test
   public void shouldBuildTheQueryJoinedWithSubquery() throws Exception {
     Query query = Query
@@ -243,7 +235,7 @@ public class QueryTest {
   public void shouldAcceptNullProjection() throws Exception {
     Query query = Query
         .select()
-        .columns((String[])null)
+        .columns((String[]) null)
         .from("table_a")
         .build();
 
