@@ -219,6 +219,29 @@ public class QueryTest {
   }
 
   @Test
+  public void shouldBuildQueryForAllColumnsFromSpecifiedTable() throws Exception {
+    Query query = Query
+        .select()
+        .allColumnsOf("table_a")
+        .from("table_a")
+        .build();
+
+    assertThat(query.mRawQueryArgs).isEmpty();
+    assertThat(query.mRawQuery).isEqualTo("SELECT table_a.* FROM table_a");
+  }
+
+  @Test
+  public void shouldBuildQueryWithAliasedTable() throws Exception {
+    Query query = Query
+        .select()
+        .from("table_a").as("a")
+        .build();
+
+    assertThat(query.mRawQueryArgs).isEmpty();
+    assertThat(query.mRawQuery).isEqualTo("SELECT * FROM table_a AS a");
+  }
+
+  @Test
   public void shouldAcceptEmptyProjection() throws Exception {
     Query query = Query
         .select()
@@ -276,5 +299,127 @@ public class QueryTest {
 
     assertThat(query.mRawQueryArgs).isEmpty();
     assertThat(query.mRawQuery).isEqualTo("SELECT * FROM table_a");
+  }
+
+  @Test
+  public void shouldBuildQueryWithNumericLimit() throws Exception {
+    Query query = Query
+        .select()
+        .from("table_a")
+        .limit(1)
+        .build();
+
+    assertThat(query.mRawQueryArgs).isEmpty();
+    assertThat(query.mRawQuery).isEqualTo("SELECT * FROM table_a LIMIT 1");
+  }
+
+  @Test
+  public void shouldBuildQueryWithExpressionLimit() throws Exception {
+    Query query = Query
+        .select()
+        .from("table_a")
+        .limit("1+1")
+        .build();
+
+    assertThat(query.mRawQueryArgs).isEmpty();
+    assertThat(query.mRawQuery).isEqualTo("SELECT * FROM table_a LIMIT 1+1");
+  }
+
+  @Test
+  public void shouldBuildQueryWithNumericLimitOffset() throws Exception {
+    Query query = Query
+        .select()
+        .from("table_a")
+        .limit(1)
+        .offset(1)
+        .build();
+
+    assertThat(query.mRawQueryArgs).isEmpty();
+    assertThat(query.mRawQuery).isEqualTo("SELECT * FROM table_a LIMIT 1 OFFSET 1");
+  }
+
+  @Test
+  public void shouldBuildQueryWithExpressionLimitOffset() throws Exception {
+    Query query = Query
+        .select()
+        .from("table_a")
+        .limit(1)
+        .offset("1+1")
+        .build();
+
+    assertThat(query.mRawQueryArgs).isEmpty();
+    assertThat(query.mRawQuery).isEqualTo("SELECT * FROM table_a LIMIT 1 OFFSET 1+1");
+  }
+
+  @Test(expected = IllegalStateException.class)
+  public void shouldAllowSettingTheLimitOnlyOnce() throws Exception {
+    Query
+        .select()
+        .from("table_a")
+        .limit(1)
+        .limit(1);
+  }
+
+  @Test
+  public void shouldBuildQueryWithoutAnyTables() throws Exception {
+    Query query = Query
+        .select()
+        .column("1500")
+        .build();
+
+    assertThat(query.mRawQueryArgs).isEmpty();
+    assertThat(query.mRawQuery).isEqualTo("SELECT 1500");
+  }
+
+  @Test
+  public void shouldBuildQueryWithGroupByClause() throws Exception {
+    Query query = Query
+        .select()
+        .from("table_a")
+        .groupBy("col_a")
+        .build();
+
+    assertThat(query.mRawQueryArgs).isEmpty();
+    assertThat(query.mRawQuery).isEqualTo("SELECT * FROM table_a GROUP BY col_a");
+  }
+
+  @Test
+  public void shouldBuildQueryWithMulipleGroupByClauses() throws Exception {
+    Query query = Query
+        .select()
+        .from("table_a")
+        .groupBy("col_a")
+        .groupBy("col_b")
+        .build();
+
+    assertThat(query.mRawQueryArgs).isEmpty();
+    assertThat(query.mRawQuery).isEqualTo("SELECT * FROM table_a GROUP BY col_a, col_b");
+  }
+
+  @Test
+  public void shouldBuildQueryWithGroupByAndHavingClause() throws Exception {
+    Query query = Query
+        .select()
+        .from("table_a")
+        .groupBy("col_a")
+        .having("col_b=?", 1)
+        .build();
+
+    assertThat(query.mRawQueryArgs).containsSequence("1");
+    assertThat(query.mRawQuery).isEqualTo("SELECT * FROM table_a GROUP BY col_a HAVING (col_b=?)");
+  }
+
+  @Test
+  public void shouldBuildQueryWithGroupByAndMultipleHavingClauses() throws Exception {
+    Query query = Query
+        .select()
+        .from("table_a")
+        .groupBy("col_a")
+        .having("col_b=?", 1)
+        .having("col_c=?", 2)
+        .build();
+
+    assertThat(query.mRawQueryArgs).containsSequence("1", "2");
+    assertThat(query.mRawQuery).isEqualTo("SELECT * FROM table_a GROUP BY col_a HAVING (col_b=?) AND (col_c=?)");
   }
 }
