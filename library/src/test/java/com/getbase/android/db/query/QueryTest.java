@@ -119,6 +119,29 @@ public class QueryTest {
   }
 
   @Test
+  public void shouldBuildTheQueryWithCrossJoin() throws Exception {
+    Query query = Query
+        .select().allColumns().from("table_a")
+        .cross().join("table_b")
+        .build();
+
+    assertThat(query.mRawQueryArgs).isEmpty();
+    assertThat(query.mRawQuery).isEqualTo("SELECT * FROM table_a CROSS JOIN table_b");
+  }
+
+  @Test
+  public void shouldBuildTheQueryWithJoinUsingColumnList() throws Exception {
+    Query query = Query
+        .select().allColumns().from("table_a")
+        .join("table_b")
+        .using("col_b", "col_c")
+        .build();
+
+    assertThat(query.mRawQueryArgs).isEmpty();
+    assertThat(query.mRawQuery).isEqualTo("SELECT * FROM table_a JOIN table_b USING (col_b, col_c)");
+  }
+
+  @Test
   public void shouldAcceptNullProjection() throws Exception {
     Query query = Query
         .select()

@@ -198,7 +198,7 @@ public class Query {
       for (JoinSpec join : mJoins) {
         builder.append(" ");
         builder.append(join.mJoinType);
-        builder.append(" JOIN ");
+        builder.append("JOIN ");
 
         builder.append(join.mJoinSource.mTable != null
             ? join.mJoinSource.mTable
@@ -363,13 +363,13 @@ public class Query {
 
     @Override
     public JoinBuilder left() {
-      mPendingJoinType += "LEFT";
+      mPendingJoinType += "LEFT ";
       return this;
     }
 
     @Override
     public JoinBuilder cross() {
-      mPendingJoinType += "CROSS";
+      mPendingJoinType += "CROSS ";
       return this;
     }
 
