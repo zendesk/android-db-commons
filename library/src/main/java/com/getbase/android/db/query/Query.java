@@ -460,6 +460,7 @@ public class Query {
 
     @Override
     public QueryBuilder offset(String expression) {
+      Preconditions.checkState(mLimit != null);
       Preconditions.checkState(mOffset == null);
       mOffset = expression;
       return this;

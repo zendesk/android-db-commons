@@ -170,6 +170,20 @@ public class QueryTest {
   }
 
   @Test
+  public void shouldBuildTheQueryFromSubquery() throws Exception {
+    Query query = Query
+        .select()
+        .allColumns()
+        .from(
+            Query.select().allColumns().from("table_a").build()
+        )
+        .build();
+
+    assertThat(query.mRawQueryArgs).isEmpty();
+    assertThat(query.mRawQuery).isEqualTo("SELECT * FROM (SELECT * FROM table_a)");
+  }
+
+  @Test
   public void shouldBuildTheQueryWithJoinUsingColumnList() throws Exception {
     Query query = Query
         .select().allColumns().from("table_a")
@@ -421,5 +435,108 @@ public class QueryTest {
 
     assertThat(query.mRawQueryArgs).containsSequence("1", "2");
     assertThat(query.mRawQuery).isEqualTo("SELECT * FROM table_a GROUP BY col_a HAVING (col_b=?) AND (col_c=?)");
+  }
+
+  @Test
+  public void shouldIgnoreNullLimit() throws Exception {
+    Query query = Query
+        .select()
+        .from("table_a")
+        .limit(null)
+        .build();
+
+    assertThat(query.mRawQueryArgs).isEmpty();
+    assertThat(query.mRawQuery).isEqualTo("SELECT * FROM table_a");
+  }
+
+  @Test(expected = IllegalStateException.class)
+  public void shouldNotAllowSettingValidNumericalOffsetAfterNullLimit() throws Exception {
+    Query
+        .select()
+        .from("table_a")
+        .limit(null)
+        .offset(1);
+  }
+
+  @Test(expected = IllegalStateException.class)
+  public void shouldNotAllowSettingValidExpressionOffsetAfterNullLimit() throws Exception {
+    Query
+        .select()
+        .from("table_a")
+        .limit(null)
+        .offset("1+1");
+  }
+
+  @Test(expected = IllegalStateException.class)
+  public void shouldNotAllowHavingClauseWithoutGroupByClause() throws Exception {
+    Query
+        .select()
+        .from("table_a")
+        .having("col_a=?", 1)
+        .build();
+  }
+
+  @Test
+  public void shouldBuildQueryWithOrderByWithoutSpecifiedSorting() throws Exception {
+    Query query = Query
+        .select()
+        .from("table_a")
+        .orderBy("col_a")
+        .build();
+
+    assertThat(query.mRawQueryArgs).isEmpty();
+    assertThat(query.mRawQuery).isEqualTo("SELECT * FROM table_a ORDER BY col_a");
+  }
+
+  @Test
+  public void shouldBuildQueryWithOrderByWithAscSort() throws Exception {
+    Query query = Query
+        .select()
+        .from("table_a")
+        .orderBy("col_a")
+        .asc()
+        .build();
+
+    assertThat(query.mRawQueryArgs).isEmpty();
+    assertThat(query.mRawQuery).isEqualTo("SELECT * FROM table_a ORDER BY col_a ASC");
+  }
+
+  @Test
+  public void shouldBuildQueryWithOrderByWithDescSort() throws Exception {
+    Query query = Query
+        .select()
+        .from("table_a")
+        .orderBy("col_a")
+        .desc()
+        .build();
+
+    assertThat(query.mRawQueryArgs).isEmpty();
+    assertThat(query.mRawQuery).isEqualTo("SELECT * FROM table_a ORDER BY col_a DESC");
+  }
+
+  @Test
+  public void shouldBuildQueryWithMiltipleOrderByClauses() throws Exception {
+    Query query = Query
+        .select()
+        .from("table_a")
+        .orderBy("col_a")
+        .orderBy("col_b")
+        .build();
+
+    assertThat(query.mRawQueryArgs).isEmpty();
+    assertThat(query.mRawQuery).isEqualTo("SELECT * FROM table_a ORDER BY col_a, col_b");
+  }
+
+  @Test
+  public void shouldBuildQueryWithOrderByWithSpecifiedCollation() throws Exception {
+    Query query = Query
+        .select()
+        .from("table_a")
+        .orderBy("col_a")
+        .collate("NOCASE")
+        .build();
+
+    assertThat(query.mRawQueryArgs).isEmpty();
+    assertThat(query.mRawQuery).isEqualTo("SELECT * FROM table_a ORDER BY col_a COLLATE NOCASE");
   }
 }
