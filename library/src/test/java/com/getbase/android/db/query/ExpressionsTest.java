@@ -3,8 +3,11 @@ package com.getbase.android.db.query;
 import static com.getbase.android.db.query.Expressions.arg;
 import static com.getbase.android.db.query.Expressions.coalesce;
 import static com.getbase.android.db.query.Expressions.column;
+import static com.getbase.android.db.query.Expressions.concat;
 import static com.getbase.android.db.query.Expressions.count;
 import static com.getbase.android.db.query.Expressions.ifNull;
+import static com.getbase.android.db.query.Expressions.join;
+import static com.getbase.android.db.query.Expressions.length;
 import static com.getbase.android.db.query.Expressions.literal;
 import static com.getbase.android.db.query.Expressions.max;
 import static com.getbase.android.db.query.Expressions.min;
@@ -60,6 +63,9 @@ public class ExpressionsTest {
       .put(ifNull(column("col_a"), literal("unknown")), "ifnull(col_a, 'unknown')")
       .put(nullIf(column("col_a"), literal("")), "nullif(col_a, '')")
       .put(coalesce(column("col_a"), column("col_b"), literal("unknown")), "coalesce(col_a, col_b, 'unknown')")
+      .put(length(column("col_a")), "length(col_a)")
+      .put(concat(column("col_a"), literal(" at "), column("col_b")), "col_a || ' at ' || col_b")
+      .put(join(" ", column("col_a"), column("col_b")), "col_a || ' ' || col_b")
       .build();
 
   @Parameters
