@@ -1,7 +1,10 @@
 package com.getbase.android.db.query;
 
+import static com.getbase.android.db.query.Expressions.arg;
 import static com.getbase.android.db.query.Expressions.column;
+import static com.getbase.android.db.query.Expressions.literal;
 import static com.getbase.android.db.query.Expressions.not;
+import static com.getbase.android.db.query.Expressions.nul;
 import static org.fest.assertions.Assertions.assertThat;
 
 import com.getbase.android.db.query.Expressions.Expression;
@@ -36,6 +39,12 @@ public class ExpressionsTest {
       .put(column("col_a").eq().column("col_b"), "col_a == col_b")
       .put(column("col_a").eq().not().column("col_b"), "col_a == NOT col_b")
       .put(column("col_a").eq(column("col_b")), "col_a == (col_b)")
+      .put(column("table_a", "col_a"), "table_a.col_a")
+      .put(arg().eq().column("table_a", "col_a"), "? == table_a.col_a")
+      .put(nul(), "NULL")
+      .put(column("col_a").is().nul(), "col_a IS NULL")
+      .put(literal("WAT?").eq().column("col_a"), "'WAT?' == col_a")
+      .put(column("col_a").eq().literal(1500), "col_a == 1500")
       .build();
 
   @Parameters
