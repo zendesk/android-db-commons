@@ -2,9 +2,13 @@ package com.getbase.android.db.query;
 
 import static com.getbase.android.db.query.Expressions.arg;
 import static com.getbase.android.db.query.Expressions.column;
+import static com.getbase.android.db.query.Expressions.count;
 import static com.getbase.android.db.query.Expressions.literal;
+import static com.getbase.android.db.query.Expressions.max;
+import static com.getbase.android.db.query.Expressions.min;
 import static com.getbase.android.db.query.Expressions.not;
 import static com.getbase.android.db.query.Expressions.nul;
+import static com.getbase.android.db.query.Expressions.sum;
 import static org.fest.assertions.Assertions.assertThat;
 
 import com.getbase.android.db.query.Expressions.Expression;
@@ -45,6 +49,11 @@ public class ExpressionsTest {
       .put(column("col_a").is().nul(), "col_a IS NULL")
       .put(literal("WAT?").eq().column("col_a"), "'WAT?' == col_a")
       .put(column("col_a").eq().literal(1500), "col_a == 1500")
+      .put(sum(column("col_a")), "SUM(col_a)")
+      .put(min(column("col_a")), "MIN(col_a)")
+      .put(max(column("col_a")), "MAX(col_a)")
+      .put(count(column("col_a")), "COUNT(col_a)")
+      .put(count(), "COUNT(*)")
       .build();
 
   @Parameters

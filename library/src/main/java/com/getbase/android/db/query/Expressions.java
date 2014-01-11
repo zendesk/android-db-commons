@@ -13,12 +13,20 @@ public final class Expressions {
   }
 
   public interface ExpressionCore {
+    // basic stuff
     ExpressionCombiner column(String col);
     ExpressionCombiner column(String table, String col);
     ExpressionCombiner arg();
     ExpressionCombiner nul();
     ExpressionCombiner literal(Number number);
     ExpressionCombiner literal(Object object);
+
+    // aggregate functions
+    ExpressionCombiner sum(Expression e);
+    ExpressionCombiner count(Expression e);
+    ExpressionCombiner count();
+    ExpressionCombiner max(Expression e);
+    ExpressionCombiner min(Expression e);
   }
 
   public interface BinaryOperator {
@@ -61,6 +69,26 @@ public final class Expressions {
 
   public static ExpressionCombiner literal(Object object) {
     return new Builder().literal(object);
+  }
+
+  public static ExpressionCombiner sum(Expression e) {
+    return new Builder().sum(e);
+  }
+
+  public static ExpressionCombiner count(Expression e) {
+    return new Builder().count(e);
+  }
+
+  public static ExpressionCombiner count() {
+    return new Builder().count();
+  }
+
+  public static ExpressionCombiner max(Expression e) {
+    return new Builder().max(e);
+  }
+
+  public static ExpressionCombiner min(Expression e) {
+    return new Builder().min(e);
   }
 
   private static class Builder implements ExpressionBuilder, ExpressionCombiner {
@@ -142,6 +170,38 @@ public final class Expressions {
           .append('\'')
           .append(object.toString().replaceAll("'", "''"))
           .append('\'');
+      return this;
+    }
+
+    @Override
+    public ExpressionCombiner sum(Expression e) {
+      return aggregateFunction("SUM", e);
+    }
+
+    @Override
+    public ExpressionCombiner count(Expression e) {
+      return aggregateFunction("COUNT", e);
+    }
+
+    @Override
+    public ExpressionCombiner count() {
+      mBuilder.append("COUNT(*)");
+      return this;
+    }
+
+    @Override
+    public ExpressionCombiner max(Expression e) {
+      return aggregateFunction("MAX", e);
+    }
+
+    @Override
+    public ExpressionCombiner min(Expression e) {
+      return aggregateFunction("MIN", e);
+    }
+
+    private ExpressionCombiner aggregateFunction(String func, Expression e) {
+      mBuilder.append(func);
+      expr(e);
       return this;
     }
 
