@@ -39,6 +39,13 @@ public final class Expressions {
   private static class Builder implements ExpressionBuilder, ExpressionCombiner {
     private StringBuilder mBuilder = new StringBuilder();
 
+    private void expr(Expression e) {
+      mBuilder
+          .append("(")
+          .append(e.toRawSql())
+          .append(")");
+    }
+
     @Override
     public ExpressionBuilder eq() {
       mBuilder.append(" == ");
@@ -48,10 +55,7 @@ public final class Expressions {
     @Override
     public ExpressionCombiner eq(Expression e) {
       eq();
-      mBuilder
-          .append("(")
-          .append(e.toRawSql())
-          .append(")");
+      expr(e);
       return this;
     }
 
