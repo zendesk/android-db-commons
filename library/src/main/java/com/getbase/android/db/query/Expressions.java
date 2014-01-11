@@ -52,8 +52,24 @@ public final class Expressions {
   public interface BinaryOperator {
     ExpressionBuilder eq();
     ExpressionCombiner eq(Expression e);
+    ExpressionBuilder ne();
+    ExpressionCombiner ne(Expression e);
+    ExpressionBuilder gt();
+    ExpressionCombiner gt(Expression e);
+    ExpressionBuilder ge();
+    ExpressionCombiner ge(Expression e);
+    ExpressionBuilder lt();
+    ExpressionCombiner lt(Expression e);
+    ExpressionBuilder le();
+    ExpressionCombiner le(Expression e);
+
     ExpressionBuilder is();
     ExpressionCombiner is(Expression e);
+
+    ExpressionBuilder or();
+    ExpressionCombiner or(Expression e);
+    ExpressionBuilder and();
+    ExpressionCombiner and(Expression e);
   }
 
   public interface ExpressionBuilder extends UnaryOperator, ExpressionCore {
@@ -154,10 +170,16 @@ public final class Expressions {
           .append(")");
     }
 
+    private ExpressionBuilder binaryOperator(String operator) {
+      mBuilder.append(" ");
+      mBuilder.append(operator);
+      mBuilder.append(" ");
+      return this;
+    }
+
     @Override
     public ExpressionBuilder eq() {
-      mBuilder.append(" == ");
-      return this;
+      return binaryOperator("==");
     }
 
     @Override
@@ -168,14 +190,97 @@ public final class Expressions {
     }
 
     @Override
-    public ExpressionBuilder is() {
-      mBuilder.append(" IS ");
+    public ExpressionBuilder ne() {
+      return binaryOperator("!=");
+    }
+
+    @Override
+    public ExpressionCombiner ne(Expression e) {
+      ne();
+      expr(e);
       return this;
+    }
+
+    @Override
+    public ExpressionBuilder gt() {
+      return binaryOperator(">");
+    }
+
+    @Override
+    public ExpressionCombiner gt(Expression e) {
+      gt();
+      expr(e);
+      return this;
+    }
+
+    @Override
+    public ExpressionBuilder ge() {
+      return binaryOperator(">=");
+    }
+
+    @Override
+    public ExpressionCombiner ge(Expression e) {
+      ge();
+      expr(e);
+      return this;
+    }
+
+    @Override
+    public ExpressionBuilder lt() {
+      return binaryOperator("<");
+    }
+
+    @Override
+    public ExpressionCombiner lt(Expression e) {
+      lt();
+      expr(e);
+      return this;
+    }
+
+    @Override
+    public ExpressionBuilder le() {
+      return binaryOperator("<=");
+    }
+
+    @Override
+    public ExpressionCombiner le(Expression e) {
+      le();
+      expr(e);
+      return this;
+    }
+
+    @Override
+    public ExpressionBuilder is() {
+      return binaryOperator("IS");
     }
 
     @Override
     public ExpressionCombiner is(Expression e) {
       is();
+      expr(e);
+      return this;
+    }
+
+    @Override
+    public ExpressionBuilder or() {
+      return binaryOperator("OR");
+    }
+
+    @Override
+    public ExpressionCombiner or(Expression e) {
+      or();
+      expr(e);
+      return this;
+    }
+
+    @Override
+    public ExpressionBuilder and() {
+      return binaryOperator("AND");
+    }
+
+    @Override
+    public ExpressionCombiner and(Expression e) {
+      and();
       expr(e);
       return this;
     }

@@ -68,6 +68,20 @@ public class ExpressionsTest {
       .put(length(column("col_a")), "length(col_a)")
       .put(concat(column("col_a"), literal(" at "), column("col_b")), "col_a || ' at ' || col_b")
       .put(join(" ", column("col_a"), column("col_b")), "col_a || ' ' || col_b")
+      .put(column("col_a").ne().column("col_b"), "col_a != col_b")
+      .put(column("col_a").ne(column("col_b")), "col_a != (col_b)")
+      .put(column("col_a").gt().column("col_b"), "col_a > col_b")
+      .put(column("col_a").gt(column("col_b")), "col_a > (col_b)")
+      .put(column("col_a").ge().column("col_b"), "col_a >= col_b")
+      .put(column("col_a").ge(column("col_b")), "col_a >= (col_b)")
+      .put(column("col_a").lt().column("col_b"), "col_a < col_b")
+      .put(column("col_a").lt(column("col_b")), "col_a < (col_b)")
+      .put(column("col_a").le().column("col_b"), "col_a <= col_b")
+      .put(column("col_a").le(column("col_b")), "col_a <= (col_b)")
+      .put(column("col_a").or().column("col_b"), "col_a OR col_b")
+      .put(column("col_a").or(column("col_b")), "col_a OR (col_b)")
+      .put(column("col_a").and().column("col_b"), "col_a AND col_b")
+      .put(column("col_a").and(column("col_b")), "col_a AND (col_b)")
       .build();
 
   @Parameters
