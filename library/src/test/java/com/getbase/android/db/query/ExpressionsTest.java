@@ -1,13 +1,16 @@
 package com.getbase.android.db.query;
 
 import static com.getbase.android.db.query.Expressions.arg;
+import static com.getbase.android.db.query.Expressions.coalesce;
 import static com.getbase.android.db.query.Expressions.column;
 import static com.getbase.android.db.query.Expressions.count;
+import static com.getbase.android.db.query.Expressions.ifNull;
 import static com.getbase.android.db.query.Expressions.literal;
 import static com.getbase.android.db.query.Expressions.max;
 import static com.getbase.android.db.query.Expressions.min;
 import static com.getbase.android.db.query.Expressions.not;
 import static com.getbase.android.db.query.Expressions.nul;
+import static com.getbase.android.db.query.Expressions.nullIf;
 import static com.getbase.android.db.query.Expressions.sum;
 import static org.fest.assertions.Assertions.assertThat;
 
@@ -54,6 +57,9 @@ public class ExpressionsTest {
       .put(max(column("col_a")), "MAX(col_a)")
       .put(count(column("col_a")), "COUNT(col_a)")
       .put(count(), "COUNT(*)")
+      .put(ifNull(column("col_a"), literal("unknown")), "ifnull(col_a, 'unknown')")
+      .put(nullIf(column("col_a"), literal("")), "nullif(col_a, '')")
+      .put(coalesce(column("col_a"), column("col_b"), literal("unknown")), "coalesce(col_a, col_b, 'unknown')")
       .build();
 
   @Parameters

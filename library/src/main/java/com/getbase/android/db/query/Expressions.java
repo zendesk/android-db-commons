@@ -1,5 +1,12 @@
 package com.getbase.android.db.query;
 
+import com.google.common.base.Function;
+import com.google.common.base.Joiner;
+import com.google.common.base.Preconditions;
+import com.google.common.collect.Iterables;
+
+import java.util.Arrays;
+
 public final class Expressions {
   private Expressions() {
   }
@@ -27,6 +34,11 @@ public final class Expressions {
     ExpressionCombiner count();
     ExpressionCombiner max(Expression e);
     ExpressionCombiner min(Expression e);
+
+    // coalescing functions
+    ExpressionCombiner ifNull(Expression left, Expression right);
+    ExpressionCombiner nullIf(Expression left, Expression right);
+    ExpressionCombiner coalesce(Expression... expressions);
   }
 
   public interface BinaryOperator {
@@ -91,13 +103,33 @@ public final class Expressions {
     return new Builder().min(e);
   }
 
+  public static ExpressionCombiner ifNull(Expression left, Expression right) {
+    return new Builder().ifNull(left, right);
+  }
+
+  public static ExpressionCombiner nullIf(Expression left, Expression right) {
+    return new Builder().nullIf(left, right);
+  }
+
+  public static ExpressionCombiner coalesce(Expression... expressions) {
+    return new Builder().coalesce(expressions);
+  }
+
   private static class Builder implements ExpressionBuilder, ExpressionCombiner {
     private StringBuilder mBuilder = new StringBuilder();
 
-    private void expr(Expression e) {
+    private static final Joiner ARGS_JOINER = Joiner.on(", ");
+    private static final Function<Expression, String> GET_EXPR_SQL = new Function<Expression, String>() {
+      @Override
+      public String apply(Expression e) {
+        return e.toRawSql();
+      }
+    };
+
+    private void expr(Expression... e) {
       mBuilder
           .append("(")
-          .append(e.toRawSql())
+          .append(ARGS_JOINER.join(Iterables.transform(Arrays.asList(e), GET_EXPR_SQL)))
           .append(")");
     }
 
@@ -175,12 +207,12 @@ public final class Expressions {
 
     @Override
     public ExpressionCombiner sum(Expression e) {
-      return aggregateFunction("SUM", e);
+      return function("SUM", e);
     }
 
     @Override
     public ExpressionCombiner count(Expression e) {
-      return aggregateFunction("COUNT", e);
+      return function("COUNT", e);
     }
 
     @Override
@@ -191,15 +223,31 @@ public final class Expressions {
 
     @Override
     public ExpressionCombiner max(Expression e) {
-      return aggregateFunction("MAX", e);
+      return function("MAX", e);
     }
 
     @Override
     public ExpressionCombiner min(Expression e) {
-      return aggregateFunction("MIN", e);
+      return function("MIN", e);
     }
 
-    private ExpressionCombiner aggregateFunction(String func, Expression e) {
+    @Override
+    public ExpressionCombiner ifNull(Expression left, Expression right) {
+      return function("ifnull", left, right);
+    }
+
+    @Override
+    public ExpressionCombiner nullIf(Expression left, Expression right) {
+      return function("nullif", left, right);
+    }
+
+    @Override
+    public ExpressionCombiner coalesce(Expression... expressions) {
+      Preconditions.checkArgument(expressions.length >= 2);
+      return function("coalesce", expressions);
+    }
+
+    private ExpressionCombiner function(String func, Expression... e) {
       mBuilder.append(func);
       expr(e);
       return this;
