@@ -1,5 +1,7 @@
 package com.getbase.android.db.query;
 
+import static com.getbase.android.db.query.Expressions.column;
+import static com.getbase.android.db.query.Expressions.sum;
 import static org.fest.assertions.Assertions.assertThat;
 
 import org.junit.Test;
@@ -296,7 +298,7 @@ public class QueryTest {
     Query query = Query
         .select()
         .from("table_a")
-        .where(null)
+        .where((String)null)
         .build();
 
     assertThat(query.mRawQueryArgs).isEmpty();
@@ -308,7 +310,7 @@ public class QueryTest {
     Query query = Query
         .select()
         .from("table_a")
-        .orderBy(null)
+        .orderBy((String)null)
         .build();
 
     assertThat(query.mRawQueryArgs).isEmpty();
@@ -538,5 +540,79 @@ public class QueryTest {
 
     assertThat(query.mRawQueryArgs).isEmpty();
     assertThat(query.mRawQuery).isEqualTo("SELECT * FROM table_a ORDER BY col_a COLLATE NOCASE");
+  }
+
+  @Test
+  public void shouldBuildQueryWithExpressionInProjection() throws Exception {
+    Query query = Query
+        .select()
+        .expr(column("col_a"))
+        .from("table_a")
+        .build();
+
+    assertThat(query.mRawQueryArgs).isEmpty();
+    assertThat(query.mRawQuery).isEqualTo("SELECT col_a FROM table_a");
+  }
+
+  @Test
+  public void shouldBuildQueryWithExpressionInOrderBy() throws Exception {
+    Query query = Query
+        .select()
+        .from("table_a")
+        .orderBy(column("col_a"))
+        .build();
+
+    assertThat(query.mRawQueryArgs).isEmpty();
+    assertThat(query.mRawQuery).isEqualTo("SELECT * FROM table_a ORDER BY col_a");
+  }
+
+  @Test
+  public void shouldBuildQueryWithExpressionInSelection() throws Exception {
+    Query query = Query
+        .select()
+        .from("table_a")
+        .where(column("col_a").is().not().nul())
+        .build();
+
+    assertThat(query.mRawQueryArgs).isEmpty();
+    assertThat(query.mRawQuery).isEqualTo("SELECT * FROM table_a WHERE (col_a IS NOT NULL)");
+  }
+
+  @Test
+  public void shouldBuildQueryWithExpressionInJoinConstraint() throws Exception {
+    Query query = Query
+        .select()
+        .from("table_a")
+        .join("table_b")
+        .on(column("table_a", "id").eq().column("table_b", "id_a"))
+        .build();
+
+    assertThat(query.mRawQueryArgs).isEmpty();
+    assertThat(query.mRawQuery).isEqualTo("SELECT * FROM table_a JOIN table_b ON (table_a.id == table_b.id_a)");
+  }
+
+  @Test
+  public void shouldBuildQueryWithExpressionInGroupByClause() throws Exception {
+    Query query = Query
+        .select()
+        .from("table_a")
+        .groupBy(column("col_a"))
+        .build();
+
+    assertThat(query.mRawQueryArgs).isEmpty();
+    assertThat(query.mRawQuery).isEqualTo("SELECT * FROM table_a GROUP BY col_a");
+  }
+
+  @Test
+  public void shouldBuildQueryWithExpressionInHavingClause() throws Exception {
+    Query query = Query
+        .select()
+        .from("table_a")
+        .groupBy("col_a")
+        .having(sum(column("col_b")).gt().literal(0))
+        .build();
+
+    assertThat(query.mRawQueryArgs).isEmpty();
+    assertThat(query.mRawQuery).isEqualTo("SELECT * FROM table_a GROUP BY col_a HAVING (SUM(col_b) > 0)");
   }
 }

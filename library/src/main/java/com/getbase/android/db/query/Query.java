@@ -1,6 +1,7 @@
 package com.getbase.android.db.query;
 
 import com.getbase.android.db.cursors.FluentCursor;
+import com.getbase.android.db.query.Expressions.Expression;
 import com.google.common.base.Function;
 import com.google.common.base.Functions;
 import com.google.common.base.Joiner;
@@ -257,6 +258,13 @@ public class Query {
     }
 
     @Override
+    public ColumnAliasBuilder expr(Expression expression) {
+      addPendingColumn();
+      mColumnWithPotentialAlias = expression.toRawSql();
+      return this;
+    }
+
+    @Override
     public QueryBuilder as(String alias) {
       Preconditions.checkState(mColumnWithPotentialAlias != null);
       mProjection.add(mColumnWithPotentialAlias + " AS " + alias);
@@ -349,11 +357,21 @@ public class Query {
     }
 
     @Override
+    public QueryBuilder groupBy(Expression expression) {
+      return groupBy(expression.toRawSql());
+    }
+
+    @Override
     public QueryBuilder having(String having, Object... havingArgs) {
       mHaving.add(having);
       Collections.addAll(mHavingArgs, havingArgs);
 
       return this;
+    }
+
+    @Override
+    public QueryBuilder having(Expression having, Object... havingArgs) {
+      return having(having.toRawSql(), havingArgs);
     }
 
     @Override
@@ -427,6 +445,11 @@ public class Query {
         Collections.addAll(mPendingJoin.mConstraintsArgs, constraintArgs);
         return this;
       }
+
+      @Override
+      public JoinOnConstraintBuilder on(Expression constraint, Object... constraintArgs) {
+        return on(constraint.toRawSql(), constraintArgs);
+      }
     };
 
     private static class JoinSpec {
@@ -479,6 +502,11 @@ public class Query {
     }
 
     @Override
+    public OrderingTermBuilder orderBy(Expression expression) {
+      return orderBy(expression.toRawSql());
+    }
+
+    @Override
     public OrderingDirectionSelector collate(String collation) {
       mOrderByCollation = collation;
       return this;
@@ -521,6 +549,14 @@ public class Query {
         Collections.addAll(mSelectionArgs, selectionArgs);
       }
 
+      return this;
+    }
+
+    @Override
+    public QueryBuilder where(Expression selection, Object... selectionArgs) {
+      if (selection != null) {
+        where(selection.toRawSql(), selectionArgs);
+      }
       return this;
     }
 
@@ -613,6 +649,11 @@ public class Query {
     }
 
     @Override
+    public ColumnAliasBuilder expr(Expression expression) {
+      return mDelegate.expr(expression);
+    }
+
+    @Override
     public UnionTypeSelector union() {
       return mDelegate.union();
     }
@@ -633,7 +674,17 @@ public class Query {
     }
 
     @Override
+    public QueryBuilder groupBy(Expression expression) {
+      return mDelegate.groupBy(expression);
+    }
+
+    @Override
     public QueryBuilder having(String having, Object... havingArgs) {
+      return mDelegate.having(having, havingArgs);
+    }
+
+    @Override
+    public QueryBuilder having(Expression having, Object... havingArgs) {
       return mDelegate.having(having, havingArgs);
     }
 
@@ -678,7 +729,17 @@ public class Query {
     }
 
     @Override
+    public OrderingTermBuilder orderBy(Expression expression) {
+      return mDelegate.orderBy(expression);
+    }
+
+    @Override
     public QueryBuilder where(String selection, Object... selectionArgs) {
+      return mDelegate.where(selection, selectionArgs);
+    }
+
+    @Override
+    public QueryBuilder where(Expression selection, Object... selectionArgs) {
       return mDelegate.where(selection, selectionArgs);
     }
 
@@ -707,6 +768,7 @@ public class Query {
     QueryBuilder columns(String... columns);
     QueryBuilder allColumns();
     QueryBuilder allColumnsOf(String table);
+    ColumnAliasBuilder expr(Expression expression);
   }
 
   public interface ColumnAliasBuilder extends QueryBuilder {
@@ -715,6 +777,7 @@ public class Query {
 
   public interface SelectionBuilder {
     QueryBuilder where(String selection, Object... selectionArgs);
+    QueryBuilder where(Expression selection, Object... selectionArgs);
   }
 
   public interface JoinTypeBuilder extends JoinBuilder {
@@ -741,18 +804,22 @@ public class Query {
 
   public interface JoinOnConstraintBuilder extends QueryBuilder {
     JoinOnConstraintBuilder on(String constraint, Object... constraintArgs);
+    JoinOnConstraintBuilder on(Expression constraint, Object... constraintArgs);
   }
 
   public interface GroupByBuilder {
     QueryBuilder groupBy(String expression);
+    QueryBuilder groupBy(Expression expression);
   }
 
   public interface HavingBuilder {
     QueryBuilder having(String having, Object... havingArgs);
+    QueryBuilder having(Expression having, Object... havingArgs);
   }
 
   public interface OrderByBuilder {
     OrderingTermBuilder orderBy(String expression);
+    OrderingTermBuilder orderBy(Expression expression);
   }
 
   public interface OrderingTermBuilder extends OrderingDirectionSelector {
