@@ -1,5 +1,6 @@
 package com.getbase.android.db.query;
 
+import static com.getbase.android.db.query.Expressions.column;
 import static org.fest.assertions.Assertions.assertThat;
 
 import org.junit.Test;
@@ -21,6 +22,13 @@ public class DeleteTest {
   @Test
   public void shouldBuildTheDeleteWithSingleSelection() throws Exception {
     Delete delete = Delete.delete().from("A").where("a IS NULL").build();
+
+    assertThat(delete.mSelection).isEqualTo("(a IS NULL)");
+  }
+
+  @Test
+  public void shouldBuildTheDeleteWithSingleSelectionBuiltFromExpressions() throws Exception {
+    Delete delete = Delete.delete().from("A").where(column("a").is().nul()).build();
 
     assertThat(delete.mSelection).isEqualTo("(a IS NULL)");
   }

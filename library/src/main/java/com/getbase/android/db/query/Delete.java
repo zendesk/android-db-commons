@@ -2,6 +2,7 @@ package com.getbase.android.db.query;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import com.getbase.android.db.query.Expressions.Expression;
 import com.google.common.base.Functions;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Collections2;
@@ -54,6 +55,11 @@ public class Delete {
     }
 
     @Override
+    public SelectionBuilder where(Expression expression, Object... selectionArgs) {
+      return where(expression.toRawSql(), selectionArgs);
+    }
+
+    @Override
     public Delete build() {
       return new Delete(
           mTable,
@@ -69,6 +75,7 @@ public class Delete {
 
   public interface SelectionBuilder {
     SelectionBuilder where(String selection, Object... selectionArgs);
+    SelectionBuilder where(Expression selection, Object... selectionArgs);
     Delete build();
   }
 }
