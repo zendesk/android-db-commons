@@ -400,7 +400,7 @@ public class QueryTest {
   }
 
   @Test
-  public void shouldBuildQueryWithMulipleGroupByClauses() throws Exception {
+  public void shouldBuildQueryWithMultipleGroupByClauses() throws Exception {
     Query query = Query
         .select()
         .from("table_a")
@@ -517,7 +517,7 @@ public class QueryTest {
   }
 
   @Test
-  public void shouldBuildQueryWithMiltipleOrderByClauses() throws Exception {
+  public void shouldBuildQueryWithMultipleOrderByClauses() throws Exception {
     Query query = Query
         .select()
         .from("table_a")
