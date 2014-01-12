@@ -3,6 +3,7 @@ package com.getbase.android.db.query;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import com.getbase.android.db.provider.Utils;
+import com.getbase.android.db.query.Expressions.Expression;
 import com.google.common.base.Function;
 import com.google.common.base.Functions;
 import com.google.common.base.Joiner;
@@ -123,6 +124,11 @@ public class Update {
     }
 
     @Override
+    public UpdateBuilder where(Expression expression, Object... selectionArgs) {
+      return where(expression.toRawSql(), selectionArgs);
+    }
+
+    @Override
     public Update build() {
       return new Update(
           mTable,
@@ -154,6 +160,11 @@ public class Update {
       mCustomExpressions.put(column, "(" + expression + ")");
       return this;
     }
+
+    @Override
+    public UpdateBuilder setColumn(String column, Expression expression) {
+      return setColumn(column, expression.toRawSql());
+    }
   }
 
   public interface TableSelector {
@@ -164,7 +175,9 @@ public class Update {
     UpdateBuilder values(ContentValues values);
     UpdateBuilder value(String column, Object value);
     UpdateBuilder setColumn(String column, String expression);
+    UpdateBuilder setColumn(String column, Expression expression);
     UpdateBuilder where(String selection, Object... selectionArgs);
+    UpdateBuilder where(Expression expression, Object... selectionArgs);
     Update build();
   }
 }
