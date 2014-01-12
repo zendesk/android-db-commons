@@ -49,9 +49,10 @@ public class Query {
     return new FluentCursor(db.rawQuery(mRawQuery, mRawQueryArgs.toArray(new String[mRawQueryArgs.size()])));
   }
 
-  private static class QueryBuilderImpl implements QueryBuilder, ColumnAliasBuilder, LimitOffsetBuilder, OrderingTermBuilder {
+  private static class QueryBuilderImpl implements QueryBuilder, ColumnAliasBuilder, LimitOffsetBuilder, OrderingTermBuilder, ColumnsTableSelector {
     private List<String> mProjection = Lists.newArrayList();
     private String mColumnWithPotentialAlias;
+    private List<String> mColumnsWithPotentialTable = Lists.newArrayList();
 
     private List<String> mGroupByExpressions = Lists.newArrayList();
     private List<String> mHaving = Lists.newArrayList();
@@ -245,6 +246,7 @@ public class Query {
 
     private void processPendingParts() {
       addPendingColumn();
+      addPendingColumns();
       buildPendingOrderByClause();
       addPendingTable(null);
       addPendingJoin();
@@ -252,9 +254,27 @@ public class Query {
 
     @Override
     public ColumnAliasBuilder column(String column) {
-      addPendingColumn();
-      mColumnWithPotentialAlias = column;
-      return this;
+      return expr(Expressions.column(column));
+    }
+
+    @Override
+    public ColumnAliasBuilder column(String table, String column) {
+      return expr(Expressions.column(table, column));
+    }
+
+    @Override
+    public ColumnAliasBuilder literal(Number number) {
+      return expr(Expressions.literal(number));
+    }
+
+    @Override
+    public ColumnAliasBuilder literal(Object object) {
+      return expr(Expressions.literal(object));
+    }
+
+    @Override
+    public ColumnAliasBuilder nul() {
+      return expr(Expressions.nul());
     }
 
     @Override
@@ -280,9 +300,10 @@ public class Query {
     }
 
     @Override
-    public QueryBuilder columns(String... columns) {
+    public ColumnsTableSelector columns(String... columns) {
+      addPendingColumns();
       if (columns != null) {
-        Collections.addAll(mProjection, columns);
+        Collections.addAll(mColumnsWithPotentialTable, columns);
         return this;
       } else {
         return allColumns();
@@ -290,14 +311,24 @@ public class Query {
     }
 
     @Override
-    public QueryBuilder allColumns() {
-      mProjection.add("*");
+    public ColumnsTableSelector allColumns() {
+      addPendingColumns();
+      mColumnsWithPotentialTable.add("*");
       return this;
     }
 
+    private void addPendingColumns() {
+      mProjection.addAll(mColumnsWithPotentialTable);
+      mColumnsWithPotentialTable.clear();
+    }
+
     @Override
-    public QueryBuilder allColumnsOf(String table) {
-      mProjection.add(table + ".*");
+    public QueryBuilder of(String table) {
+      for (String column : mColumnsWithPotentialTable) {
+        mProjection.add(table + "." + column);
+      }
+      mColumnsWithPotentialTable.clear();
+
       return this;
     }
 
@@ -634,18 +665,33 @@ public class Query {
     }
 
     @Override
-    public QueryBuilder columns(String... columns) {
+    public ColumnAliasBuilder column(String table, String column) {
+      return mDelegate.column(table, column);
+    }
+
+    @Override
+    public ColumnAliasBuilder literal(Number number) {
+      return mDelegate.literal(number);
+    }
+
+    @Override
+    public ColumnAliasBuilder literal(Object object) {
+      return mDelegate.literal(object);
+    }
+
+    @Override
+    public ColumnAliasBuilder nul() {
+      return mDelegate.nul();
+    }
+
+    @Override
+    public ColumnsTableSelector columns(String... columns) {
       return mDelegate.columns(columns);
     }
 
     @Override
-    public QueryBuilder allColumns() {
+    public ColumnsTableSelector allColumns() {
       return mDelegate.allColumns();
-    }
-
-    @Override
-    public QueryBuilder allColumnsOf(String table) {
-      return mDelegate.allColumnsOf(table);
     }
 
     @Override
@@ -765,10 +811,17 @@ public class Query {
 
   public interface ColumnSelector {
     ColumnAliasBuilder column(String column);
-    QueryBuilder columns(String... columns);
-    QueryBuilder allColumns();
-    QueryBuilder allColumnsOf(String table);
+    ColumnAliasBuilder column(String table, String column);
+    ColumnAliasBuilder literal(Number number);
+    ColumnAliasBuilder literal(Object object);
+    ColumnAliasBuilder nul();
+    ColumnsTableSelector columns(String... columns);
+    ColumnsTableSelector allColumns();
     ColumnAliasBuilder expr(Expression expression);
+  }
+
+  public interface ColumnsTableSelector extends QueryBuilder {
+    QueryBuilder of(String table);
   }
 
   public interface ColumnAliasBuilder extends QueryBuilder {

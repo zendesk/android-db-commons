@@ -238,7 +238,7 @@ public class QueryTest {
   public void shouldBuildQueryForAllColumnsFromSpecifiedTable() throws Exception {
     Query query = Query
         .select()
-        .allColumnsOf("table_a")
+        .allColumns().of("table_a")
         .from("table_a")
         .build();
 
@@ -614,5 +614,65 @@ public class QueryTest {
 
     assertThat(query.mRawQueryArgs).isEmpty();
     assertThat(query.mRawQuery).isEqualTo("SELECT * FROM table_a GROUP BY col_a HAVING (SUM(col_b) > 0)");
+  }
+
+  @Test
+  public void shouldBuildQueryWithMultipleColumnsFromSingleTable() throws Exception {
+    Query query = Query
+        .select()
+        .columns("col_a", "col_b", "col_c").of("table_a")
+        .from("table_a")
+        .build();
+
+    assertThat(query.mRawQueryArgs).isEmpty();
+    assertThat(query.mRawQuery).isEqualTo("SELECT table_a.col_a, table_a.col_b, table_a.col_c FROM table_a");
+  }
+
+  @Test
+  public void shouldBuildQueryWithProjectionContainingNullBuildByConvenienceMethod() throws Exception {
+    Query query = Query
+        .select()
+        .nul().as("col_a")
+        .from("table_a")
+        .build();
+
+    assertThat(query.mRawQueryArgs).isEmpty();
+    assertThat(query.mRawQuery).isEqualTo("SELECT NULL AS col_a FROM table_a");
+  }
+
+  @Test
+  public void shouldBuildQueryWithProjectionContainingNumericLiteralBuildByConvenienceMethod() throws Exception {
+    Query query = Query
+        .select()
+        .literal(1500).as("col_a")
+        .from("table_a")
+        .build();
+
+    assertThat(query.mRawQueryArgs).isEmpty();
+    assertThat(query.mRawQuery).isEqualTo("SELECT 1500 AS col_a FROM table_a");
+  }
+
+  @Test
+  public void shouldBuildQueryWithProjectionContainingObjectLiteralBuildByConvenienceMethod() throws Exception {
+    Query query = Query
+        .select()
+        .literal("test").as("col_a")
+        .from("table_a")
+        .build();
+
+    assertThat(query.mRawQueryArgs).isEmpty();
+    assertThat(query.mRawQuery).isEqualTo("SELECT 'test' AS col_a FROM table_a");
+  }
+
+  @Test
+  public void shouldBuildQueryWithProjectionContainingFullyQualifiedTableBuildByConvenienceMethod() throws Exception {
+    Query query = Query
+        .select()
+        .column("table_a", "col_a")
+        .from("table_a")
+        .build();
+
+    assertThat(query.mRawQueryArgs).isEmpty();
+    assertThat(query.mRawQuery).isEqualTo("SELECT table_a.col_a FROM table_a");
   }
 }
