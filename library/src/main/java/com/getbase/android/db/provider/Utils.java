@@ -2,7 +2,7 @@ package com.getbase.android.db.provider;
 
 import android.content.ContentValues;
 
-final class Utils {
+public final class Utils {
   private Utils() {
   }
 

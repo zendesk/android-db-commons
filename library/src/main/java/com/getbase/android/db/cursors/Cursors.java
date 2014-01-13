@@ -8,7 +8,9 @@ import android.database.Cursor;
 
 import java.util.List;
 
-public class Cursors {
+public final class Cursors {
+  private Cursors() {
+  }
 
   public static <T> FluentIterable<T> toFluentIterable(Cursor cursor, Function<? super Cursor, T> singleRowTransform) {
     List<T> transformed = Lists.newArrayList();

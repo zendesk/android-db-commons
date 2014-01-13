@@ -5,7 +5,7 @@ import com.google.common.base.Objects;
 
 import android.database.Cursor;
 
-public abstract class SingleRowTransforms {
+public final class SingleRowTransforms {
   private SingleRowTransforms() {
   }
 
