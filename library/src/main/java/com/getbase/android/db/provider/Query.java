@@ -30,7 +30,7 @@ public class Query extends ProviderAction<FluentCursor> {
     return this;
   }
 
-  public <T> Query whereIn(String column, Collection<T> collection) {
+  public <T extends Number> Query whereIn(String column, Collection<T> collection) {
     this.selection.append(column + " IN (" + Joiner.on(",").join(collection) + ")");
     return this;
   }

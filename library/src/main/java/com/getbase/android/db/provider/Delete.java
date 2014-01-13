@@ -20,7 +20,7 @@ public class Delete extends ProviderAction<Integer> {
     return this;
   }
 
-  public <T> Delete whereIn(String column, Collection<T> collection) {
+  public <T extends Number> Delete whereIn(String column, Collection<T> collection) {
     this.selection.append(column + " IN (" + Joiner.on(",").join(collection) + ")");
     return this;
   }
