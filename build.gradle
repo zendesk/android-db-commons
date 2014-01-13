@@ -1,0 +1,21 @@
+buildscript {
+  repositories {
+    mavenCentral()
+  }
+  dependencies {
+    classpath 'com.android.tools.build:gradle:0.7.+'
+  }
+}
+
+allprojects {
+  dependencies {
+    repositories {
+      mavenCentral()
+    }
+  }
+
+  group = GROUP
+  version = VERSION_NAME
+
+  apply plugin: 'maven'
+}

@@ -1,0 +1,28 @@
+import com.android.builder.BuilderConstants; 
+
+apply plugin: 'android-library'
+
+dependencies {
+  compile 'com.android.support:support-v4:+'
+  compile 'com.google.guava:guava:13.0.1'
+  compile 'com.google.code.findbugs:jsr305:2.0.3'
+}
+
+android {
+  compileSdkVersion 19
+  buildToolsVersion "19.0.1"
+
+  defaultConfig {
+    versionName VERSION_NAME
+  }
+}
+
+android.libraryVariants.all { variant ->
+  def name = variant.buildType.name
+  if (!BuilderConstants.DEBUG.equals(name)) {
+    def task = project.tasks.create "jar${name.capitalize()}", Jar
+    task.dependsOn variant.javaCompile
+    task.from variant.javaCompile.destinationDir
+    artifacts.add('archives', task);
+  }
+} 

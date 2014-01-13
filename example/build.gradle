@@ -1,0 +1,16 @@
+apply plugin: 'android'
+
+dependencies {
+  compile project(':library')
+  compile 'com.android.support:support-v4:+'
+  compile 'com.google.guava:guava:13.0.1'
+}
+
+android {
+  compileSdkVersion 19
+  buildToolsVersion "19.0.1"
+
+  defaultConfig {
+    versionName VERSION_NAME
+  }
+}
