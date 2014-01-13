@@ -1,11 +1,13 @@
 package com.getbase.android.db.example.content;
 
+import com.getbase.android.db.query.Insert;
+import com.getbase.android.db.query.Query;
+
 import android.content.ContentProvider;
 import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.UriMatcher;
 import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 
 public class PeopleProvider extends ContentProvider {
@@ -30,10 +32,14 @@ public class PeopleProvider extends ContentProvider {
   public Cursor query(Uri uri, String[] projection, String selection, String[] selectionArgs, String orderBy) {
     switch (sUriMatcher.match(uri)) {
     case PEOPLE_DIR:
-      final Cursor result = mDatabase.getReadableDatabase().query(Database.Tables.PEOPLE,
-          projection,
-          selection, selectionArgs,
-          null, null, orderBy);
+      final Cursor result = Query.select()
+          .columns(projection)
+          .from(Database.Tables.PEOPLE)
+          .where(selection, selectionArgs)
+          .orderBy(orderBy)
+          .build()
+          .perform(mDatabase.getReadableDatabase());
+
       result.setNotificationUri(getContentResolver(), Contract.People.CONTENT_URI);
       return result;
     default:
@@ -54,8 +60,12 @@ public class PeopleProvider extends ContentProvider {
   public Uri insert(Uri uri, ContentValues contentValues) {
     switch (sUriMatcher.match(uri)) {
     case PEOPLE_DIR:
-      final SQLiteDatabase db = mDatabase.getWritableDatabase();
-      final long id = db.insert(Database.Tables.PEOPLE, null, contentValues);
+      final long id = Insert.insert()
+          .into(Database.Tables.PEOPLE)
+          .values(contentValues)
+          .build()
+          .perform(mDatabase.getWritableDatabase());
+
       getContentResolver().notifyChange(Contract.People.CONTENT_URI, null);
       return Contract.People.buildUriForItem(id);
     }
