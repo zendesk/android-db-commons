@@ -1,11 +1,30 @@
 import com.android.builder.BuilderConstants; 
 
+buildscript {
+  repositories {
+    mavenCentral()
+    maven {
+      url 'https://oss.sonatype.org/content/repositories/snapshots/'
+    }
+  }
+  dependencies {
+    classpath 'com.squareup.gradle:gradle-android-test-plugin:0.9.1-SNAPSHOT'
+  }
+}
+
 apply plugin: 'android-library'
+apply plugin: 'android-test'
 
 dependencies {
   compile 'com.android.support:support-v4:+'
   compile 'com.google.guava:guava:13.0.1'
   compile 'com.google.code.findbugs:jsr305:2.0.3'
+
+  testCompile 'junit:junit:4.11'
+  testCompile 'org.easytesting:fest-assert:1.4'
+  testCompile 'org.robolectric:robolectric:2.2'
+  testCompile 'org.mockito:mockito-core:1.9.5'
+  testCompile 'com.squareup:fest-android:1.0.7'
 }
 
 android {
