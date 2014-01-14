@@ -2,6 +2,7 @@ package com.getbase.android.db.query;
 
 import static com.getbase.android.db.query.Expressions.column;
 import static com.getbase.android.db.query.Update.update;
+import static org.fest.assertions.Assertions.assertThat;
 import static org.fest.assertions.api.ANDROID.assertThat;
 import static org.fest.assertions.api.android.content.ContentValuesEntry.entry;
 import static org.mockito.Matchers.any;
@@ -151,6 +152,29 @@ public class UpdateTest {
   }
 
   @Test
+  public void shouldBuildColumnExpressionsWithSelection() throws Exception {
+    update()
+        .table("test")
+        .setColumn("num", "666")
+        .where("t=?", "test")
+        .build()
+        .perform(mDb);
+
+    verify(mDb).compileStatement(eq("UPDATE test SET num=(666) WHERE (t=?)"));
+  }
+
+  @Test
+  public void shouldBuildColumnExpressionsFromExpression() throws Exception {
+    update()
+        .table("test")
+        .setColumn("num", Expressions.literal(666))
+        .build()
+        .perform(mDb);
+
+    verify(mDb).compileStatement(eq("UPDATE test SET num=(666)"));
+  }
+
+  @Test
   public void shouldPassContentValuesArgsAsBoundArgsWhenCustomColumnExpressionsIsUsed() throws Exception {
     update()
         .table("test")
@@ -200,5 +224,104 @@ public class UpdateTest {
 
     verify(mDb).update(anyString(), any(ContentValues.class), anyString(), any(String[].class));
     verify(mDb, never()).compileStatement(anyString());
+  }
+
+  @Test
+  public void shouldNotModifyPassedContentValues() throws Exception {
+    ContentValues values = new ContentValues();
+
+    update()
+        .table("A")
+        .values(values)
+        .value("key", "value")
+        .build();
+
+    assertThat(values.containsKey("key")).isFalse();
+
+    ContentValues valuesToConcatenate = new ContentValues();
+    valuesToConcatenate.put("another_key", "another_value");
+
+    update()
+        .table("A")
+        .values(values)
+        .values(valuesToConcatenate)
+        .build();
+
+    assertThat(values.containsKey("another_key")).isFalse();
+  }
+
+  @Test
+  public void shouldBuildInsertWithConcatenatedContentValues() throws Exception {
+    ContentValues firstValues = new ContentValues();
+    firstValues.put("col1", "val1");
+
+    ContentValues secondValues = new ContentValues();
+    secondValues.put("col2", "val2");
+
+    update()
+        .table("A")
+        .values(firstValues)
+        .values(secondValues)
+        .build()
+        .perform(mDb);
+
+    ArgumentCaptor<ContentValues> contentValuesArgument = ArgumentCaptor.forClass(ContentValues.class);
+    verify(mDb).update(
+        anyString(),
+        contentValuesArgument.capture(),
+        anyString(),
+        any(String[].class)
+    );
+    assertThat(contentValuesArgument.getValue()).contains(entry("col1", "val1"), entry("col2", "val2"));
+  }
+
+  @Test
+  public void shouldPerformInsertWithContentValuesOverriddenBySingleValue() throws Exception {
+    ContentValues values = new ContentValues();
+    values.put("col1", "val1");
+    values.put("col2", "val2");
+
+    update()
+        .table("A")
+        .values(values)
+        .value("col2", null)
+        .build()
+        .perform(mDb);
+
+    ArgumentCaptor<ContentValues> contentValuesArgument = ArgumentCaptor.forClass(ContentValues.class);
+    verify(mDb).update(
+        anyString(),
+        contentValuesArgument.capture(),
+        anyString(),
+        any(String[].class)
+    );
+    assertThat(contentValuesArgument.getValue()).contains(entry("col1", "val1"), entry("col2", null));
+  }
+
+  @Test
+  public void shouldPerformInsertWithContentValuesOverriddenByOtherContentValues() throws Exception {
+    ContentValues firstValues = new ContentValues();
+    firstValues.put("col1", "val1");
+    firstValues.put("col2", "val2");
+
+    ContentValues secondValues = new ContentValues();
+    secondValues.putNull("col2");
+    secondValues.put("col3", "val3");
+
+    update()
+        .table("A")
+        .values(firstValues)
+        .values(secondValues)
+        .build()
+        .perform(mDb);
+
+    ArgumentCaptor<ContentValues> contentValuesArgument = ArgumentCaptor.forClass(ContentValues.class);
+    verify(mDb).update(
+        anyString(),
+        contentValuesArgument.capture(),
+        anyString(),
+        any(String[].class)
+    );
+    assertThat(contentValuesArgument.getValue()).contains(entry("col1", "val1"), entry("col3", "val3"), entry("col2", null));
   }
 }
