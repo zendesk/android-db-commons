@@ -1,50 +1,70 @@
 package com.getbase.android.db.query;
 
+import static com.getbase.android.db.query.Delete.delete;
 import static com.getbase.android.db.query.Expressions.column;
-import static org.fest.assertions.Assertions.assertThat;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.*;
 
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
+
+import android.database.sqlite.SQLiteDatabase;
 
 @RunWith(RobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
 public class DeleteTest {
 
+  @Mock
+  private SQLiteDatabase mDb;
+
+  @Before
+  public void setUp() throws Exception {
+    MockitoAnnotations.initMocks(this);
+  }
+
   @Test
   public void shouldBuildTheDeleteWithoutSelection() throws Exception {
-    Delete delete = Delete.delete().from("A").build();
+    delete().from("A").perform(mDb);
 
-    assertThat(delete.mTable).isEqualTo("A");
+    verify(mDb).delete(eq("A"), anyString(), any(String[].class));
   }
 
   @Test
   public void shouldBuildTheDeleteWithSingleSelection() throws Exception {
-    Delete delete = Delete.delete().from("A").where("a IS NULL").build();
+    delete().from("A").where("a IS NULL").perform(mDb);
 
-    assertThat(delete.mSelection).isEqualTo("(a IS NULL)");
+    verify(mDb).delete(anyString(), eq("(a IS NULL)"), any(String[].class));
   }
 
   @Test
   public void shouldBuildTheDeleteWithSingleSelectionBuiltFromExpressions() throws Exception {
-    Delete delete = Delete.delete().from("A").where(column("a").is().nul()).build();
+    delete().from("A").where(column("a").is().nul()).perform(mDb);
 
-    assertThat(delete.mSelection).isEqualTo("(a IS NULL)");
+    verify(mDb).delete(anyString(), eq("(a IS NULL)"), any(String[].class));
   }
 
   @Test
   public void shouldBuildTheDeleteWithMultipleSelections() throws Exception {
-    Delete delete = Delete.delete().from("A").where("a IS NULL").where("b IS NULL").build();
+    delete().from("A").where("a IS NULL").where("b IS NULL").perform(mDb);
 
-    assertThat(delete.mSelection).isEqualTo("(a IS NULL) AND (b IS NULL)");
+    verify(mDb).delete(anyString(), eq("(a IS NULL) AND (b IS NULL)"), any(String[].class));
   }
 
   @Test
   public void shouldBuildTheDeleteWithBoundParams() throws Exception {
-    Delete delete = Delete.delete().from("A").where("a=?", 0).build();
+    delete().from("A").where("a=?", 0).perform(mDb);
 
-    assertThat(delete.mSelection).isEqualTo("(a=?)");
-    assertThat(delete.mSelectionArgs).containsOnly("0");
+    verify(mDb).delete(
+        anyString(),
+        eq("(a=?)"),
+        eq(new String[] { "0" })
+    );
   }
 }

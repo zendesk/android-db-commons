@@ -13,69 +13,40 @@ import android.database.sqlite.SQLiteDatabase;
 import java.util.Arrays;
 import java.util.List;
 
-public class Delete {
-  final String mTable;
-  final String mSelection;
-  final String[] mSelectionArgs;
+public class Delete implements DeleteTableSelector {
+  private String mTable;
+  private List<String> mSelections = Lists.newArrayList();
+  private List<String> mSelectionArgs = Lists.newArrayList();
 
-  private Delete(String table, String selection, String[] selectionArgs) {
-    mTable = table;
-    mSelection = selection;
-    mSelectionArgs = selectionArgs;
+  private Delete() {
   }
 
-  public static TableSelector delete() {
-    return new DeleteBuilder();
+  public static DeleteTableSelector delete() {
+    return new Delete();
   }
 
   public int perform(SQLiteDatabase db) {
-    return db.delete(mTable, mSelection, mSelectionArgs);
+    return db.delete(
+        mTable,
+        Joiner.on(" AND ").join(mSelections),
+        mSelectionArgs.toArray(new String[mSelectionArgs.size()])
+    );
   }
 
-  public static class DeleteBuilder implements TableSelector, SelectionBuilder {
-    private String mTable;
-    private List<String> mSelections = Lists.newArrayList();
-    private List<String> mSelectionArgs = Lists.newArrayList();
-
-    private DeleteBuilder() {
-    }
-
-    @Override
-    public SelectionBuilder from(String table) {
-      mTable = checkNotNull(table);
-      return this;
-    }
-
-    @Override
-    public SelectionBuilder where(String selection, Object... selectionArgs) {
-      mSelections.add("(" + selection + ")");
-      mSelectionArgs.addAll(Collections2.transform(Arrays.asList(selectionArgs), Functions.toStringFunction()));
-
-      return this;
-    }
-
-    @Override
-    public SelectionBuilder where(Expression expression, Object... selectionArgs) {
-      return where(expression.toRawSql(), selectionArgs);
-    }
-
-    @Override
-    public Delete build() {
-      return new Delete(
-          mTable,
-          Joiner.on(" AND ").join(mSelections),
-          mSelectionArgs.toArray(new String[mSelectionArgs.size()])
-      );
-    }
+  @Override
+  public Delete from(String table) {
+    mTable = checkNotNull(table);
+    return this;
   }
 
-  public interface TableSelector {
-    SelectionBuilder from(String table);
+  public Delete where(String selection, Object... selectionArgs) {
+    mSelections.add("(" + selection + ")");
+    mSelectionArgs.addAll(Collections2.transform(Arrays.asList(selectionArgs), Functions.toStringFunction()));
+
+    return this;
   }
 
-  public interface SelectionBuilder {
-    SelectionBuilder where(String selection, Object... selectionArgs);
-    SelectionBuilder where(Expression selection, Object... selectionArgs);
-    Delete build();
+  public Delete where(Expression expression, Object... selectionArgs) {
+    return where(expression.toRawSql(), selectionArgs);
   }
 }
