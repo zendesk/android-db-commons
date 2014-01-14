@@ -46,7 +46,6 @@ public class UpdateTest {
         .table("test")
         .value("num", 666)
         .where("num=?", 0)
-        .build()
         .perform(mDb);
 
     verify(mDb).update(
@@ -63,7 +62,6 @@ public class UpdateTest {
         .table("test")
         .value("num", 666)
         .where("num=?", 0)
-        .build()
         .perform(mDb);
 
     ArgumentCaptor<ContentValues> contentValuesArgument = ArgumentCaptor.forClass(ContentValues.class);
@@ -82,7 +80,6 @@ public class UpdateTest {
         .table("test")
         .value("num", 666)
         .where("num=?", 0)
-        .build()
         .perform(mDb);
 
     verify(mDb).update(
@@ -100,7 +97,6 @@ public class UpdateTest {
         .value("num", 666)
         .where("num=?", 0)
         .where("t=?", "test")
-        .build()
         .perform(mDb);
 
     verify(mDb).update(
@@ -117,7 +113,6 @@ public class UpdateTest {
         .table("test")
         .value("num", 666)
         .where(column("num").eq().arg(), 0)
-        .build()
         .perform(mDb);
 
     verify(mDb).update(
@@ -133,7 +128,6 @@ public class UpdateTest {
     update()
         .table("test")
         .setColumn("num", "666")
-        .build()
         .perform(mDb);
 
     verify(mDb, never()).update(anyString(), any(ContentValues.class), anyString(), any(String[].class));
@@ -145,7 +139,6 @@ public class UpdateTest {
     update()
         .table("test")
         .setColumn("num", "666")
-        .build()
         .perform(mDb);
 
     verify(mDb).compileStatement(eq("UPDATE test SET num=(666)"));
@@ -157,7 +150,6 @@ public class UpdateTest {
         .table("test")
         .setColumn("num", "666")
         .where("t=?", "test")
-        .build()
         .perform(mDb);
 
     verify(mDb).compileStatement(eq("UPDATE test SET num=(666) WHERE (t=?)"));
@@ -168,7 +160,6 @@ public class UpdateTest {
     update()
         .table("test")
         .setColumn("num", Expressions.literal(666))
-        .build()
         .perform(mDb);
 
     verify(mDb).compileStatement(eq("UPDATE test SET num=(666)"));
@@ -180,7 +171,6 @@ public class UpdateTest {
         .table("test")
         .setColumn("num", "666")
         .value("t", "666")
-        .build()
         .perform(mDb);
 
     verify(mDb).compileStatement(eq("UPDATE test SET num=(666), t=?"));
@@ -193,7 +183,6 @@ public class UpdateTest {
         .value("num", "667")
         .value("t", "666")
         .setColumn("num", "666")
-        .build()
         .perform(mDb);
 
     verify(mDb).compileStatement(eq("UPDATE test SET num=(666), t=?"));
@@ -206,7 +195,6 @@ public class UpdateTest {
         .setColumn("t", "666")
         .setColumn("num", "666")
         .value("num", "667")
-        .build()
         .perform(mDb);
 
     verify(mDb).compileStatement(eq("UPDATE test SET t=(666), num=?"));
@@ -219,7 +207,6 @@ public class UpdateTest {
         .setColumn("num", "666")
         .value("num", "667")
         .value("t", "666")
-        .build()
         .perform(mDb);
 
     verify(mDb).update(anyString(), any(ContentValues.class), anyString(), any(String[].class));
@@ -233,8 +220,7 @@ public class UpdateTest {
     update()
         .table("A")
         .values(values)
-        .value("key", "value")
-        .build();
+        .value("key", "value");
 
     assertThat(values.containsKey("key")).isFalse();
 
@@ -244,8 +230,7 @@ public class UpdateTest {
     update()
         .table("A")
         .values(values)
-        .values(valuesToConcatenate)
-        .build();
+        .values(valuesToConcatenate);
 
     assertThat(values.containsKey("another_key")).isFalse();
   }
@@ -262,7 +247,6 @@ public class UpdateTest {
         .table("A")
         .values(firstValues)
         .values(secondValues)
-        .build()
         .perform(mDb);
 
     ArgumentCaptor<ContentValues> contentValuesArgument = ArgumentCaptor.forClass(ContentValues.class);
@@ -285,7 +269,6 @@ public class UpdateTest {
         .table("A")
         .values(values)
         .value("col2", null)
-        .build()
         .perform(mDb);
 
     ArgumentCaptor<ContentValues> contentValuesArgument = ArgumentCaptor.forClass(ContentValues.class);
@@ -312,7 +295,6 @@ public class UpdateTest {
         .table("A")
         .values(firstValues)
         .values(secondValues)
-        .build()
         .perform(mDb);
 
     ArgumentCaptor<ContentValues> contentValuesArgument = ArgumentCaptor.forClass(ContentValues.class);

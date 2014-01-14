@@ -9,6 +9,7 @@ import com.google.common.base.Functions;
 import com.google.common.base.Joiner;
 import com.google.common.base.Strings;
 import com.google.common.collect.Collections2;
+import com.google.common.collect.FluentIterable;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
@@ -16,35 +17,30 @@ import android.content.ContentValues;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteStatement;
 
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-public class Update {
-  final String mTable;
-  final String mSelection;
-  final String[] mSelectionArgs;
-  final ContentValues mValues;
-  final Map<String, String> mCustomExpressions;
+public class Update implements UpdateTableSelector {
+  private String mTable;
+  private List<String> mSelections = Lists.newArrayList();
+  private List<Object> mSelectionArgs = Lists.newArrayList();
+  private ContentValues mValues = new ContentValues();
+  private Map<String, String> mCustomExpressions = Maps.newHashMap();
 
-  private Update(String table, String selection, String[] selectionArgs, ContentValues values, Map<String, String> customExpressions) {
-    mTable = table;
-    mSelection = selection;
-    mSelectionArgs = selectionArgs;
-    mValues = values;
-    mCustomExpressions = customExpressions;
+  private Update() {
   }
 
-  public static TableSelector update() {
-    return new UpdateBuilderImpl();
+  public static UpdateTableSelector update() {
+    return new Update();
   }
 
   public int perform(SQLiteDatabase db) {
+    String mSelection = Joiner.on(" AND ").join(mSelections);
     if (mCustomExpressions.isEmpty()) {
-      return db.update(mTable, mValues, mSelection, mSelectionArgs);
+      return db.update(mTable, mValues, mSelection, FluentIterable.from(mSelectionArgs).transform(Functions.toStringFunction()).toArray(String.class));
     } else {
       List<Object> args = Lists.newArrayList();
 
@@ -78,7 +74,7 @@ public class Update {
           return value.getValue();
         }
       }));
-      Collections.addAll(args, mSelectionArgs);
+      args.addAll(mSelectionArgs);
 
       if (!Strings.isNullOrEmpty(mSelection)) {
         builder
@@ -99,85 +95,44 @@ public class Update {
     }
   }
 
-  public static class UpdateBuilderImpl implements TableSelector, UpdateBuilder {
-    private String mTable;
-    private List<String> mSelections = Lists.newArrayList();
-    private List<String> mSelectionArgs = Lists.newArrayList();
-    private ContentValues mContentValues = new ContentValues();
-    private Map<String, String> mCustomExpressions = Maps.newHashMap();
-
-    private UpdateBuilderImpl() {
-    }
-
-    @Override
-    public UpdateBuilder table(String table) {
-      mTable = checkNotNull(table);
-      return this;
-    }
-
-    @Override
-    public UpdateBuilder where(String selection, Object... selectionArgs) {
-      mSelections.add("(" + selection + ")");
-      mSelectionArgs.addAll(Collections2.transform(Arrays.asList(selectionArgs), Functions.toStringFunction()));
-
-      return this;
-    }
-
-    @Override
-    public UpdateBuilder where(Expression expression, Object... selectionArgs) {
-      return where(expression.toRawSql(), selectionArgs);
-    }
-
-    @Override
-    public Update build() {
-      return new Update(
-          mTable,
-          Joiner.on(" AND ").join(mSelections),
-          mSelectionArgs.toArray(new String[mSelectionArgs.size()]),
-          mContentValues,
-          mCustomExpressions);
-    }
-
-    @Override
-    public UpdateBuilder values(ContentValues values) {
-      for (Entry<String, Object> value : values.valueSet()) {
-        mCustomExpressions.remove(value.getKey());
-      }
-      mContentValues.putAll(values);
-      return this;
-    }
-
-    @Override
-    public UpdateBuilder value(String column, Object value) {
-      mCustomExpressions.remove(column);
-      Utils.addToContentValues(column, value, mContentValues);
-      return this;
-    }
-
-    @Override
-    public UpdateBuilder setColumn(String column, String expression) {
-      mContentValues.remove(column);
-      mCustomExpressions.put(column, "(" + expression + ")");
-      return this;
-    }
-
-    @Override
-    public UpdateBuilder setColumn(String column, Expression expression) {
-      return setColumn(column, expression.toRawSql());
-    }
+  @Override
+  public Update table(String table) {
+    mTable = checkNotNull(table);
+    return this;
   }
 
-  public interface TableSelector {
-    UpdateBuilder table(String table);
+  public Update values(ContentValues values) {
+    for (Entry<String, Object> value : values.valueSet()) {
+      mCustomExpressions.remove(value.getKey());
+    }
+    mValues.putAll(values);
+    return this;
   }
 
-  public interface UpdateBuilder {
-    UpdateBuilder values(ContentValues values);
-    UpdateBuilder value(String column, Object value);
-    UpdateBuilder setColumn(String column, String expression);
-    UpdateBuilder setColumn(String column, Expression expression);
-    UpdateBuilder where(String selection, Object... selectionArgs);
-    UpdateBuilder where(Expression expression, Object... selectionArgs);
-    Update build();
+  public Update value(String column, Object value) {
+    mCustomExpressions.remove(column);
+    Utils.addToContentValues(column, value, mValues);
+    return this;
+  }
+
+  public Update setColumn(String column, String expression) {
+    mValues.remove(column);
+    mCustomExpressions.put(column, "(" + expression + ")");
+    return this;
+  }
+
+  public Update setColumn(String column, Expression expression) {
+    return setColumn(column, expression.toRawSql());
+  }
+
+  public Update where(String selection, Object... selectionArgs) {
+    mSelections.add("(" + selection + ")");
+    Collections.addAll(mSelectionArgs, selectionArgs);
+
+    return this;
+  }
+
+  public Update where(Expression expression, Object... selectionArgs) {
+    return where(expression.toRawSql(), selectionArgs);
   }
 }
