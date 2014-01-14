@@ -60,7 +60,7 @@ public class Update {
             }
           })));
 
-      if (mValues.size() != 0 && !mCustomExpressions.isEmpty()) {
+      if (mValues.size() != 0) {
         builder.append(", ");
       }
 
