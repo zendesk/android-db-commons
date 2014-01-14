@@ -168,4 +168,26 @@ public class InsertTest {
 
     assertThat(insert.mValues).contains(entry("col1", "val1"), entry("col3", "val3"), entry("col2", null));
   }
+
+  @Test
+  public void shouldPerformInsertWithDefaultValues() throws Exception {
+    insert()
+        .into("A")
+        .defaultValues("nullable_col")
+        .perform(mDb);
+
+    verify(mDb).insert(eq("A"), eq("nullable_col"), isNull(ContentValues.class));
+  }
+
+  @Test
+  public void shouldPerformInsertWithValues() throws Exception {
+    insert()
+        .into("A")
+        .value("col_a", 42)
+        .perform(mDb);
+
+    ArgumentCaptor<ContentValues> contentValuesArgument = ArgumentCaptor.forClass(ContentValues.class);
+    verify(mDb).insert(eq("A"), isNull(String.class), contentValuesArgument.capture());
+    assertThat(contentValuesArgument.getValue()).contains(entry("col_a", 42));
+  }
 }
