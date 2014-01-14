@@ -1,4 +1,4 @@
-package com.getbase.android.db.query;
+package com.getbase.android.db.query.update;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 

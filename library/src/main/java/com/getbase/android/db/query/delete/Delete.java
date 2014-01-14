@@ -1,4 +1,4 @@
-package com.getbase.android.db.query;
+package com.getbase.android.db.query.delete;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 

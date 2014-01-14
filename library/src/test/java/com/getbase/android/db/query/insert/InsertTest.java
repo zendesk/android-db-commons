@@ -1,14 +1,15 @@
-package com.getbase.android.db.query;
+package com.getbase.android.db.query.insert;
 
-import static com.getbase.android.db.query.Insert.insert;
-import static com.getbase.android.db.query.Query.select;
+import static com.getbase.android.db.query.insert.Insert.insert;
+import static com.getbase.android.db.query.query.Query.select;
 import static org.fest.assertions.Assertions.assertThat;
 import static org.fest.assertions.api.ANDROID.assertThat;
 import static org.fest.assertions.api.android.content.ContentValuesEntry.entry;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.*;
 
-import com.getbase.android.db.query.Insert.DefaultValuesInsert;
+import com.getbase.android.db.query.insert.Insert.DefaultValuesInsert;
+import com.getbase.android.db.query.query.Query;
 
 import org.fest.assertions.Assertions;
 import org.junit.Before;
@@ -61,7 +62,7 @@ public class InsertTest {
     Query query = select().allColumns().from("B").build();
     insert().into("A").resultOf(query).perform(mDb);
 
-    verify(mDb).execSQL(eq("INSERT INTO A " + query.mRawQuery));
+    verify(mDb).execSQL(eq("INSERT INTO A " + query.toRawQuery().mRawQuery));
   }
 
   @Test(expected = IllegalArgumentException.class)
@@ -81,7 +82,7 @@ public class InsertTest {
     Query query = select().allColumns().from("B").build();
     insert().into("A").columns("a", "b", "c").resultOf(query).perform(mDb);
 
-    verify(mDb).execSQL(eq("INSERT INTO A (a, b, c) " + query.mRawQuery));
+    verify(mDb).execSQL(eq("INSERT INTO A (a, b, c) " + query.toRawQuery().mRawQuery));
   }
 
   @Test
@@ -89,7 +90,7 @@ public class InsertTest {
     Query query = select().allColumns().from("B").build();
     insert().into("A").columns("a", "b").columns("c").resultOf(query).perform(mDb);
 
-    verify(mDb).execSQL(eq("INSERT INTO A (a, b, c) " + query.mRawQuery));
+    verify(mDb).execSQL(eq("INSERT INTO A (a, b, c) " + query.toRawQuery().mRawQuery));
   }
 
   @Test

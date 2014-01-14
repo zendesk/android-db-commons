@@ -1,8 +1,10 @@
-package com.getbase.android.db.query;
+package com.getbase.android.db.query.query;
 
 import static com.getbase.android.db.query.Expressions.column;
 import static com.getbase.android.db.query.Expressions.sum;
 import static org.fest.assertions.Assertions.assertThat;
+
+import com.getbase.android.db.query.query.Query;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;

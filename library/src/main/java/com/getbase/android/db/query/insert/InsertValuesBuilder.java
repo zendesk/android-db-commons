@@ -1,4 +1,4 @@
-package com.getbase.android.db.query;
+package com.getbase.android.db.query.insert;
 
 import android.content.ContentValues;
 

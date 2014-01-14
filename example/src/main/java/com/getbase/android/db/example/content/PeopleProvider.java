@@ -1,7 +1,7 @@
 package com.getbase.android.db.example.content;
 
-import com.getbase.android.db.query.Insert;
-import com.getbase.android.db.query.Query;
+import com.getbase.android.db.query.insert.Insert;
+import com.getbase.android.db.query.query.Query;
 
 import android.content.ContentProvider;
 import android.content.ContentResolver;
@@ -63,7 +63,6 @@ public class PeopleProvider extends ContentProvider {
       final long id = Insert.insert()
           .into(Database.Tables.PEOPLE)
           .values(contentValues)
-          .build()
           .perform(mDatabase.getWritableDatabase());
 
       getContentResolver().notifyChange(Contract.People.CONTENT_URI, null);

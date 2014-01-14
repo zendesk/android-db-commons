@@ -1,6 +1,7 @@
-package com.getbase.android.db.query;
+package com.getbase.android.db.query.query;
 
 import com.getbase.android.db.cursors.FluentCursor;
+import com.getbase.android.db.query.Expressions;
 import com.getbase.android.db.query.Expressions.Expression;
 import com.google.common.base.Function;
 import com.google.common.base.Functions;
@@ -47,6 +48,10 @@ public class Query {
 
   public FluentCursor perform(SQLiteDatabase db) {
     return new FluentCursor(db.rawQuery(mRawQuery, mRawQueryArgs.toArray(new String[mRawQueryArgs.size()])));
+  }
+
+  public RawQuery toRawQuery() {
+    return new RawQuery(mRawQuery, mRawQueryArgs.toArray(new String[mRawQueryArgs.size()]));
   }
 
   private static class QueryBuilderImpl implements QueryBuilder, ColumnAliasBuilder, LimitOffsetBuilder, OrderingTermBuilder, ColumnsTableSelector {

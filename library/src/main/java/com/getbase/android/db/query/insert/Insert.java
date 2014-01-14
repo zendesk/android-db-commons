@@ -1,9 +1,10 @@
-package com.getbase.android.db.query;
+package com.getbase.android.db.query.insert;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import com.getbase.android.db.provider.Utils;
+import com.getbase.android.db.query.query.Query;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
 
@@ -49,7 +50,7 @@ public class Insert implements InsertTableSelector, InsertFormSelector, InsertVa
             .append(Joiner.on(", ").join(mQueryFormColumns))
             .append(") ");
       }
-      builder.append(mQuery.mRawQuery);
+      builder.append(mQuery.toRawQuery().mRawQuery);
 
       db.execSQL(builder.toString());
     }
@@ -90,7 +91,7 @@ public class Insert implements InsertTableSelector, InsertFormSelector, InsertVa
   @Override
   public InsertWithSelect resultOf(Query query) {
     checkNotNull(query);
-    checkArgument(query.mRawQueryArgs.isEmpty());
+    checkArgument(query.toRawQuery().mRawQueryArgs.length == 0);
 
     return new InsertWithSelect(mTable, query, mQueryFormColumns);
   }

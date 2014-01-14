@@ -1,7 +1,7 @@
 package com.getbase.android.db.query;
 
 import static com.getbase.android.db.query.Expressions.column;
-import static com.getbase.android.db.query.Query.select;
+import static com.getbase.android.db.query.query.Query.select;
 
 import org.junit.Before;
 import org.junit.Test;

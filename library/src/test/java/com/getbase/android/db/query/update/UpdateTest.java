@@ -1,7 +1,7 @@
-package com.getbase.android.db.query;
+package com.getbase.android.db.query.update;
 
 import static com.getbase.android.db.query.Expressions.column;
-import static com.getbase.android.db.query.Update.update;
+import static com.getbase.android.db.query.update.Update.update;
 import static org.fest.assertions.Assertions.assertThat;
 import static org.fest.assertions.api.ANDROID.assertThat;
 import static org.fest.assertions.api.android.content.ContentValuesEntry.entry;
@@ -9,6 +9,8 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.*;
+
+import com.getbase.android.db.query.Expressions;
 
 import org.junit.Before;
 import org.junit.Test;

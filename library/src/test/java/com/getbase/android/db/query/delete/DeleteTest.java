@@ -1,6 +1,6 @@
-package com.getbase.android.db.query;
+package com.getbase.android.db.query.delete;
 
-import static com.getbase.android.db.query.Delete.delete;
+import static com.getbase.android.db.query.delete.Delete.delete;
 import static com.getbase.android.db.query.Expressions.column;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
