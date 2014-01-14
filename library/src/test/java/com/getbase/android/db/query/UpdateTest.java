@@ -1,6 +1,7 @@
 package com.getbase.android.db.query;
 
 import static com.getbase.android.db.query.Expressions.column;
+import static com.getbase.android.db.query.Update.update;
 import static org.fest.assertions.api.ANDROID.assertThat;
 import static org.fest.assertions.api.android.content.ContentValuesEntry.entry;
 import static org.mockito.Matchers.any;
@@ -40,8 +41,7 @@ public class UpdateTest {
 
   @Test
   public void shouldUpdateCorrectTableWhenDoingSimpleUpdate() throws Exception {
-    Update
-        .update()
+    update()
         .table("test")
         .value("num", 666)
         .where("num=?", 0)
@@ -58,8 +58,7 @@ public class UpdateTest {
 
   @Test
   public void shouldPassCorrectValuesWhenDoingSimpleUpdate() throws Exception {
-    Update
-        .update()
+    update()
         .table("test")
         .value("num", 666)
         .where("num=?", 0)
@@ -78,8 +77,7 @@ public class UpdateTest {
 
   @Test
   public void shouldUseCorrectSelectionAndArgsWhenDoingSimpleUpdate() throws Exception {
-    Update
-        .update()
+    update()
         .table("test")
         .value("num", 666)
         .where("num=?", 0)
@@ -96,8 +94,7 @@ public class UpdateTest {
 
   @Test
   public void shouldConcatenateSelectionAndArgs() throws Exception {
-    Update
-        .update()
+    update()
         .table("test")
         .value("num", 666)
         .where("num=?", 0)
@@ -115,8 +112,7 @@ public class UpdateTest {
 
   @Test
   public void shouldBuildSelectionFromExpression() throws Exception {
-    Update
-        .update()
+    update()
         .table("test")
         .value("num", 666)
         .where(column("num").eq().arg(), 0)
@@ -133,8 +129,7 @@ public class UpdateTest {
 
   @Test
   public void shouldUseSQLiteStatementWhenColumnExpressionIsUsed() throws Exception {
-    Update
-        .update()
+    update()
         .table("test")
         .setColumn("num", "666")
         .build()
@@ -146,8 +141,7 @@ public class UpdateTest {
 
   @Test
   public void shouldCopyColumnExpressionsDirectlyIntoStatement() throws Exception {
-    Update
-        .update()
+    update()
         .table("test")
         .setColumn("num", "666")
         .build()
@@ -158,8 +152,7 @@ public class UpdateTest {
 
   @Test
   public void shouldPassContentValuesArgsAsBoundArgsWhenCustomColumnExpressionsIsUsed() throws Exception {
-    Update
-        .update()
+    update()
         .table("test")
         .setColumn("num", "666")
         .value("t", "666")
@@ -171,8 +164,7 @@ public class UpdateTest {
 
   @Test
   public void shouldOverrideContentValuesAddedEarlierWithCustomColumnExpressionForTheSameColumn() throws Exception {
-    Update
-        .update()
+    update()
         .table("test")
         .value("num", "667")
         .value("t", "666")
@@ -185,8 +177,7 @@ public class UpdateTest {
 
   @Test
   public void shouldOverrideCustomColumnExpressionAddedEarlierWithContentValuesForTheSameColumn() throws Exception {
-    Update
-        .update()
+    update()
         .table("test")
         .setColumn("t", "666")
         .setColumn("num", "666")
@@ -199,8 +190,7 @@ public class UpdateTest {
 
   @Test
   public void shouldRevertToSimpleUpdateWhenAllCustomColumnExpressionsAreOverridden() throws Exception {
-    Update
-        .update()
+    update()
         .table("test")
         .setColumn("num", "666")
         .value("num", "667")
