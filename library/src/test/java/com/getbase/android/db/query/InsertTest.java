@@ -1,51 +1,72 @@
 package com.getbase.android.db.query;
 
+import static com.getbase.android.db.query.Insert.insert;
 import static com.getbase.android.db.query.Query.select;
 import static org.fest.assertions.Assertions.assertThat;
 import static org.fest.assertions.api.ANDROID.assertThat;
 import static org.fest.assertions.api.android.content.ContentValuesEntry.entry;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.*;
 
-import com.getbase.android.db.query.Insert.InsertWithSelect;
+import com.getbase.android.db.query.Insert.DefaultValuesInsert;
 
 import org.fest.assertions.Assertions;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 
 import android.content.ContentValues;
+import android.database.sqlite.SQLiteDatabase;
 
 @RunWith(RobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
 public class InsertTest {
 
+  @Mock
+  private SQLiteDatabase mDb;
+
+  @Before
+  public void setUp() throws Exception {
+    MockitoAnnotations.initMocks(this);
+  }
+
   @Test
-  public void shouldUseTableSpecifiedInIntoStep() throws Exception {
-    Insert insert = Insert.insert().into("A").defaultValues("nullable_col");
+  public void shouldUseTableSpecifiedInIntoStepInInsertForDefaultValues() throws Exception {
+    DefaultValuesInsert insert = insert().into("A").defaultValues("nullable_col");
+
+    assertThat(insert.mTable).isEqualTo("A");
+  }
+
+  @Test
+  public void shouldUseTableSpecifiedInIntoStepInInsertWithValues() throws Exception {
+    Insert insert = insert().into("A").value("nullable_col", null);
 
     assertThat(insert.mTable).isEqualTo("A");
   }
 
   @Test
   public void shouldBuildTheInsertForDefaultValues() throws Exception {
-    Insert insert = Insert.insert().into("A").defaultValues("nullable_col");
+    DefaultValuesInsert insert = insert().into("A").defaultValues("nullable_col");
 
-    assertThat(insert.mValues).isEmpty();
     assertThat(insert.mNullColumnHack).isEqualTo("nullable_col");
   }
 
   @Test
   public void shouldBuildTheInsertInSelectFormWithoutSpecifiedColumns() throws Exception {
     Query query = select().allColumns().from("B").build();
-    InsertWithSelect insert = Insert.insert().into("A").resultOf(query);
+    insert().into("A").resultOf(query).perform(mDb);
 
-    assertThat(insert.mQueryFormString).isEqualTo("INSERT INTO A " + query.mRawQuery);
+    verify(mDb).execSQL(eq("INSERT INTO A " + query.mRawQuery));
   }
 
   @Test(expected = IllegalArgumentException.class)
   public void shouldNotAllowUsingQueryWithBoundArgsForInsertInSelectForm() throws Exception {
-    Insert
-        .insert()
+    insert()
         .into("A")
         .resultOf(select()
             .allColumns()
@@ -58,22 +79,22 @@ public class InsertTest {
   @Test
   public void shouldBuildTheInsertInSelectFormWithSpecifiedColumns() throws Exception {
     Query query = select().allColumns().from("B").build();
-    InsertWithSelect insert = Insert.insert().into("A").columns("a", "b", "c").resultOf(query);
+    insert().into("A").columns("a", "b", "c").resultOf(query).perform(mDb);
 
-    assertThat(insert.mQueryFormString).isEqualTo("INSERT INTO A (a, b, c) " + query.mRawQuery);
+    verify(mDb).execSQL(eq("INSERT INTO A (a, b, c) " + query.mRawQuery));
   }
 
   @Test
   public void shouldConcatenateSpecifiedColumnsForInsertInSelectForm() throws Exception {
     Query query = select().allColumns().from("B").build();
-    InsertWithSelect insert = Insert.insert().into("A").columns("a", "b").columns("c").resultOf(query);
+    insert().into("A").columns("a", "b").columns("c").resultOf(query).perform(mDb);
 
-    assertThat(insert.mQueryFormString).isEqualTo("INSERT INTO A (a, b, c) " + query.mRawQuery);
+    verify(mDb).execSQL(eq("INSERT INTO A (a, b, c) " + query.mRawQuery));
   }
 
   @Test
   public void shouldBuildInsertWithSingleValue() throws Exception {
-    Insert insert = Insert.insert().into("A").value("col1", "val1").build();
+    Insert insert = insert().into("A").value("col1", "val1");
 
     assertThat(insert.mValues).contains(entry("col1", "val1"));
   }
@@ -82,22 +103,20 @@ public class InsertTest {
   public void shouldNotModifyPassedContentValues() throws Exception {
     ContentValues values = new ContentValues();
 
-    Insert.insert()
+    insert()
         .into("A")
         .values(values)
-        .value("key", "value")
-        .build();
+        .value("key", "value");
 
     assertThat(values.containsKey("key")).isFalse();
 
     ContentValues valuesToConcatenate = new ContentValues();
     valuesToConcatenate.put("another_key", "another_value");
 
-    Insert.insert()
+    insert()
         .into("A")
         .values(values)
-        .values(valuesToConcatenate)
-        .build();
+        .values(valuesToConcatenate);
 
     Assertions.assertThat(values.containsKey("another_key")).isFalse();
   }
@@ -110,11 +129,10 @@ public class InsertTest {
     ContentValues secondValues = new ContentValues();
     secondValues.put("col2", "val2");
 
-    Insert insert = Insert.insert()
+    Insert insert = insert()
         .into("A")
         .values(firstValues)
-        .values(secondValues)
-        .build();
+        .values(secondValues);
 
     assertThat(insert.mValues).contains(entry("col1", "val1"), entry("col2", "val2"));
   }
@@ -125,11 +143,10 @@ public class InsertTest {
     values.put("col1", "val1");
     values.put("col2", "val2");
 
-    Insert insert = Insert.insert()
+    Insert insert = insert()
         .into("A")
         .values(values)
-        .value("col2", null)
-        .build();
+        .value("col2", null);
 
     assertThat(insert.mValues).contains(entry("col1", "val1"), entry("col2", null));
   }
@@ -144,11 +161,10 @@ public class InsertTest {
     secondValues.putNull("col2");
     secondValues.put("col3", "val3");
 
-    Insert insert = Insert.insert()
+    Insert insert = insert()
         .into("A")
         .values(firstValues)
-        .values(secondValues)
-        .build();
+        .values(secondValues);
 
     assertThat(insert.mValues).contains(entry("col1", "val1"), entry("col3", "val3"), entry("col2", null));
   }
