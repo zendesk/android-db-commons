@@ -35,7 +35,7 @@ public class PeopleProvider extends ContentProvider {
       final Cursor result = Query.select()
           .columns(projection)
           .from(Database.Tables.PEOPLE)
-          .where(selection, selectionArgs)
+          .where(selection, (Object[]) selectionArgs)
           .orderBy(orderBy)
           .build()
           .perform(mDatabase.getReadableDatabase());
