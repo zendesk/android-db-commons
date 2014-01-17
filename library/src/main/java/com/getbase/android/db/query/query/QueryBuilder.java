@@ -19,7 +19,9 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map.Entry;
 
-public class QueryBuilder {
+public final class QueryBuilder {
+  private QueryBuilder(){
+  }
 
   private static final Function<String, String> SURROUND_WITH_PARENS = new Function<String, String>() {
     @Override
@@ -34,14 +36,6 @@ public class QueryBuilder {
 
   public static Query selectDistinct() {
     return new QueryImpl(true);
-  }
-
-  final String mRawQuery;
-  final List<String> mRawQueryArgs;
-
-  private QueryBuilder(String rawQuery, List<String> rawQueryArgs) {
-    mRawQuery = rawQuery;
-    mRawQueryArgs = rawQueryArgs;
   }
 
   private static class QueryImpl implements Query, ColumnAliasBuilder, LimitOffsetBuilder, OrderingTermBuilder, ColumnsTableSelector {
@@ -73,7 +67,7 @@ public class QueryBuilder {
     private JoinSpec mPendingJoin;
     private List<JoinSpec> mJoins = Lists.newArrayList();
 
-    private LinkedHashMap<QueryBuilder, String> mCompoundQueryParts = Maps.newLinkedHashMap();
+    private LinkedHashMap<RawQuery, String> mCompoundQueryParts = Maps.newLinkedHashMap();
 
     private QueryImpl(boolean isDistinct) {
       mIsDistinct = isDistinct;
@@ -107,7 +101,7 @@ public class QueryBuilder {
       List<String> args = Lists.newArrayList();
       StringBuilder builder = new StringBuilder();
 
-      for (Entry<QueryBuilder, String> entry : mCompoundQueryParts.entrySet()) {
+      for (Entry<RawQuery, String> entry : mCompoundQueryParts.entrySet()) {
         builder.append(entry.getKey().mRawQuery);
         builder.append(" ");
         builder.append(entry.getValue());
@@ -115,7 +109,7 @@ public class QueryBuilder {
         args.addAll(entry.getKey().mRawQueryArgs);
       }
 
-      QueryBuilder lastQueryPart = buildCompoundQueryPart();
+      RawQuery lastQueryPart = buildCompoundQueryPart();
       args.addAll(lastQueryPart.mRawQueryArgs);
       builder.append(lastQueryPart.mRawQuery);
 
@@ -142,7 +136,7 @@ public class QueryBuilder {
       return new FluentCursor(db.rawQuery(rawQuery.mRawQuery, rawQuery.mRawQueryArgs.toArray(new String[rawQuery.mRawQueryArgs.size()])));
     }
 
-    private QueryBuilder buildCompoundQueryPart() {
+    private RawQuery buildCompoundQueryPart() {
       processPendingParts();
 
       Preconditions.checkState(!(!mHaving.isEmpty() && mGroupByExpressions.isEmpty()), "a GROUP BY clause is required when using HAVING clause");
@@ -232,7 +226,7 @@ public class QueryBuilder {
         }
       }
 
-      return new QueryBuilder(builder.toString(), args);
+      return new RawQuery(builder.toString(), args);
     }
 
     private void processPendingParts() {
