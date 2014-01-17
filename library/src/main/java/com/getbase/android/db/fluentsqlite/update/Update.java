@@ -1,9 +1,9 @@
-package com.getbase.android.db.query.update;
+package com.getbase.android.db.fluentsqlite.update;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import com.getbase.android.db.provider.Utils;
-import com.getbase.android.db.query.Expressions.Expression;
+import com.getbase.android.db.fluentsqlite.Expressions.Expression;
 import com.google.common.base.Function;
 import com.google.common.base.Functions;
 import com.google.common.base.Joiner;

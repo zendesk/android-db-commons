@@ -1,8 +1,8 @@
-package com.getbase.android.db.query.query;
+package com.getbase.android.db.fluentsqlite.query;
 
-import static com.getbase.android.db.query.Expressions.column;
-import static com.getbase.android.db.query.Expressions.sum;
-import static com.getbase.android.db.query.query.QueryBuilder.select;
+import static com.getbase.android.db.fluentsqlite.Expressions.column;
+import static com.getbase.android.db.fluentsqlite.Expressions.sum;
+import static com.getbase.android.db.fluentsqlite.query.QueryBuilder.select;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.*;
 

@@ -5,7 +5,7 @@ import static org.fest.assertions.Assertions.assertThat;
 import com.getbase.android.db.cursors.Cursors;
 import com.getbase.android.db.cursors.SingleRowTransforms;
 import com.getbase.android.db.provider.Utils;
-import com.getbase.android.db.query.query.QueryBuilder;
+import com.getbase.android.db.fluentsqlite.query.QueryBuilder;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;

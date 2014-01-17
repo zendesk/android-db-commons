@@ -1,11 +1,11 @@
-package com.getbase.android.db.query.insert;
+package com.getbase.android.db.fluentsqlite.insert;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import com.getbase.android.db.provider.Utils;
-import com.getbase.android.db.query.query.QueryBuilder.Query;
-import com.getbase.android.db.query.query.RawQuery;
+import com.getbase.android.db.fluentsqlite.query.QueryBuilder.Query;
+import com.getbase.android.db.fluentsqlite.query.RawQuery;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
 

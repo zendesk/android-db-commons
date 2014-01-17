@@ -1,4 +1,4 @@
-package com.getbase.android.db.query.insert;
+package com.getbase.android.db.fluentsqlite.insert;
 
 import android.content.ContentValues;
 

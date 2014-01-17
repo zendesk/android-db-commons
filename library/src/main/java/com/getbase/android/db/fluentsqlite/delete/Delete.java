@@ -1,8 +1,8 @@
-package com.getbase.android.db.query.delete;
+package com.getbase.android.db.fluentsqlite.delete;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-import com.getbase.android.db.query.Expressions.Expression;
+import com.getbase.android.db.fluentsqlite.Expressions.Expression;
 import com.google.common.base.Functions;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Collections2;

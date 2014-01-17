@@ -1,4 +1,4 @@
-package com.getbase.android.db.query;
+package com.getbase.android.db.fluentsqlite;
 
 import com.google.common.base.Function;
 import com.google.common.base.Joiner;

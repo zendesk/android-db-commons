@@ -1,7 +1,7 @@
-package com.getbase.android.db.query;
+package com.getbase.android.db.fluentsqlite;
 
-import static com.getbase.android.db.query.Expressions.coalesce;
-import static com.getbase.android.db.query.Expressions.literal;
+import static com.getbase.android.db.fluentsqlite.Expressions.coalesce;
+import static com.getbase.android.db.fluentsqlite.Expressions.literal;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;

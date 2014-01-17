@@ -1,4 +1,4 @@
-package com.getbase.android.db.query.query;
+package com.getbase.android.db.fluentsqlite.query;
 
 import java.util.List;
 

@@ -1,15 +1,15 @@
-package com.getbase.android.db.query.insert;
+package com.getbase.android.db.fluentsqlite.insert;
 
-import static com.getbase.android.db.query.insert.Insert.insert;
-import static com.getbase.android.db.query.query.QueryBuilder.select;
+import static com.getbase.android.db.fluentsqlite.insert.Insert.insert;
+import static com.getbase.android.db.fluentsqlite.query.QueryBuilder.select;
 import static org.fest.assertions.Assertions.assertThat;
 import static org.fest.assertions.api.ANDROID.assertThat;
 import static org.fest.assertions.api.android.content.ContentValuesEntry.entry;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.*;
 
-import com.getbase.android.db.query.insert.Insert.DefaultValuesInsert;
-import com.getbase.android.db.query.query.QueryBuilder.Query;
+import com.getbase.android.db.fluentsqlite.insert.Insert.DefaultValuesInsert;
+import com.getbase.android.db.fluentsqlite.query.QueryBuilder.Query;
 
 import org.fest.assertions.Assertions;
 import org.junit.Before;

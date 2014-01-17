@@ -1,8 +1,8 @@
-package com.getbase.android.db.query.query;
+package com.getbase.android.db.fluentsqlite.query;
 
 import com.getbase.android.db.cursors.FluentCursor;
-import com.getbase.android.db.query.Expressions;
-import com.getbase.android.db.query.Expressions.Expression;
+import com.getbase.android.db.fluentsqlite.Expressions;
+import com.getbase.android.db.fluentsqlite.Expressions.Expression;
 import com.google.common.base.Function;
 import com.google.common.base.Functions;
 import com.google.common.base.Joiner;

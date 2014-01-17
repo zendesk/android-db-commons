@@ -1,7 +1,7 @@
-package com.getbase.android.db.query;
+package com.getbase.android.db.fluentsqlite;
 
-import static com.getbase.android.db.query.Expressions.column;
-import static com.getbase.android.db.query.query.QueryBuilder.select;
+import static com.getbase.android.db.fluentsqlite.Expressions.column;
+import static com.getbase.android.db.fluentsqlite.query.QueryBuilder.select;
 
 import org.junit.Before;
 import org.junit.Test;
