@@ -1,7 +1,7 @@
 package com.getbase.android.db.query;
 
 import static com.getbase.android.db.query.Expressions.column;
-import static com.getbase.android.db.query.query.Query.select;
+import static com.getbase.android.db.query.query.QueryBuilder.select;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -31,7 +31,7 @@ public class ViewActionsTest {
     ViewActions
         .create()
         .view("view_a")
-        .as(select().from("table_a").build())
+        .as(select().from("table_a"))
         .perform(db);
 
     Mockito.verify(db).execSQL("CREATE VIEW view_a AS SELECT * FROM table_a");
@@ -46,7 +46,6 @@ public class ViewActionsTest {
             select()
                 .from("table_a")
                 .where(column("col_a").eq().arg(), "test")
-                .build()
         );
   }
 

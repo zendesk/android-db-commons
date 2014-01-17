@@ -1,10 +1,12 @@
 package com.getbase.android.db.query.query;
 
+import java.util.List;
+
 public class RawQuery {
   public final String mRawQuery;
-  public final String[] mRawQueryArgs;
+  public final List<String> mRawQueryArgs;
 
-  public RawQuery(String rawQuery, String... rawQueryArgs) {
+  public RawQuery(String rawQuery, List<String> rawQueryArgs) {
     mRawQuery = rawQuery;
     mRawQueryArgs = rawQueryArgs;
   }

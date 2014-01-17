@@ -3,7 +3,8 @@ package com.getbase.android.db.query;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
-import com.getbase.android.db.query.query.Query;
+import com.getbase.android.db.query.query.QueryBuilder.Query;
+import com.getbase.android.db.query.query.RawQuery;
 
 import android.database.sqlite.SQLiteDatabase;
 
@@ -39,21 +40,23 @@ public final class ViewActions {
 
   public static class CreateViewAction implements ViewSelector<ViewSelectStatementChooser>, ViewAction, ViewSelectStatementChooser {
     private String mView;
-    private Query mQuery;
+    private RawQuery mQuery;
 
     CreateViewAction() {
     }
 
     @Override
     public void perform(SQLiteDatabase db) {
-      db.execSQL("CREATE VIEW " + mView + " AS " + mQuery.toRawQuery().mRawQuery);
+      db.execSQL("CREATE VIEW " + mView + " AS " + mQuery.mRawQuery);
     }
 
     @Override
     public ViewAction as(Query query) {
-      mQuery = checkNotNull(query);
+      checkNotNull(query);
 
-      checkArgument(query.toRawQuery().mRawQueryArgs.length == 0, "Cannot use query with bound args for View creation");
+      mQuery = query.toRawQuery();
+
+      checkArgument(mQuery.mRawQueryArgs.isEmpty(), "Cannot use query with bound args for View creation");
 
       return this;
     }

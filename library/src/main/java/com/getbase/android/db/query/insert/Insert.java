@@ -4,7 +4,8 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import com.getbase.android.db.provider.Utils;
-import com.getbase.android.db.query.query.Query;
+import com.getbase.android.db.query.query.QueryBuilder.Query;
+import com.getbase.android.db.query.query.RawQuery;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
 
@@ -32,10 +33,12 @@ public class Insert implements InsertTableSelector, InsertFormSelector, InsertVa
 
   public static class InsertWithSelect {
     private final String mTable;
-    private final Query mQuery;
+    private final RawQuery mQuery;
     private final List<String> mQueryFormColumns;
 
-    InsertWithSelect(String table, Query query, List<String> queryFormColumns) {
+    InsertWithSelect(String table, RawQuery query, List<String> queryFormColumns) {
+      checkArgument(query.mRawQueryArgs.isEmpty());
+
       mTable = table;
       mQuery = query;
       mQueryFormColumns = queryFormColumns;
@@ -50,7 +53,7 @@ public class Insert implements InsertTableSelector, InsertFormSelector, InsertVa
             .append(Joiner.on(", ").join(mQueryFormColumns))
             .append(") ");
       }
-      builder.append(mQuery.toRawQuery().mRawQuery);
+      builder.append(mQuery.mRawQuery);
 
       db.execSQL(builder.toString());
     }
@@ -91,9 +94,8 @@ public class Insert implements InsertTableSelector, InsertFormSelector, InsertVa
   @Override
   public InsertWithSelect resultOf(Query query) {
     checkNotNull(query);
-    checkArgument(query.toRawQuery().mRawQueryArgs.length == 0);
 
-    return new InsertWithSelect(mTable, query, mQueryFormColumns);
+    return new InsertWithSelect(mTable, query.toRawQuery(), mQueryFormColumns);
   }
 
   @Override
