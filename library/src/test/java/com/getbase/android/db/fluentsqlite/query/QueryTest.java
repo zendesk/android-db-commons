@@ -6,6 +6,7 @@ import static com.getbase.android.db.fluentsqlite.query.QueryBuilder.select;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.*;
 
+import com.getbase.android.db.fluentsqlite.Expressions.Expression;
 import com.getbase.android.db.fluentsqlite.query.QueryBuilder.Query;
 
 import org.junit.Before;
@@ -290,6 +291,16 @@ public class QueryTest {
     select()
         .from("table_a")
         .where((String) null)
+        .perform(mDb);
+
+    verify(mDb).rawQuery(eq("SELECT * FROM table_a"), eq(new String[0]));
+  }
+
+  @Test
+  public void shouldAcceptNullExpressionSelection() throws Exception {
+    select()
+        .from("table_a")
+        .where((Expression) null)
         .perform(mDb);
 
     verify(mDb).rawQuery(eq("SELECT * FROM table_a"), eq(new String[0]));
