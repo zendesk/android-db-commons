@@ -205,6 +205,16 @@ public class QueryTest {
   }
 
   @Test
+  public void shouldBuildQueryWithAliasedColumnListProjection() throws Exception {
+    select()
+        .columns("a", "b", "c").of("table_a").asColumnNames()
+        .from("table_a")
+        .perform(mDb);
+
+    verify(mDb).rawQuery(eq("SELECT table_a.a AS a, table_a.b AS b, table_a.c AS c FROM table_a"), eq(new String[0]));
+  }
+
+  @Test
   public void shouldConcatenateProjections() throws Exception {
     select()
         .column("a")
