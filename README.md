@@ -94,7 +94,7 @@ Wanna transform your Cursor into a collection of something? Easy.
 
 private static final Function<Cursor,String> ROW_TRANSFORM = new Function<Cursor, String>() {
     @Override public String apply(Cursor cursor) {
-      return cursor.getString(0);
+      return cursor.getString(cursor.getColumnIndexOrThrow(People.NAME));
     }
   };
 
@@ -104,7 +104,26 @@ CursorLoaderBuilder.forUri(uri)
   .transform(ROW_TRANSFORM)
   .build(getActivity());
 ```
-Your Loader will return List<String> as a result in this case. It's lazy list. We do not iterate through your 100K-rows Cursor. Every row's transformation is calculated at its access time.
+Your Loader will return List<String> as a result in this case. But we still can do better - instead of writing simple row transformations by hand we can use a factory method:
+```java
+import static com.getbase.android.db.cursors.SingleRowTransforms.getColumn;
+
+CursorLoaderBuilder.forUri(uri)
+  .projection(People.NAME)
+  .where(People.AGE + ">?", 18)
+  .transform(getColumn(People.NAME).asString())
+  .build(getActivity());
+```
+What if the Cursor has 100K rows? Transforming it into collection would take way too much time and would have huge memory footprint.
+```java
+CursorLoaderBuilder.forUri(uri)
+  .projection(People.NAME)
+  .where(People.AGE + ">?", 18)
+  .transform(getColumn(People.NAME).asString())
+  .lazy()
+  .build(getActivity());
+```
+The result of this loader is lazy list. We do not iterate through your 100K-rows Cursor. Every row's transformation is calculated at its access time.
 
 Sure, you can still wrap() your transformed() result.
 ```java
