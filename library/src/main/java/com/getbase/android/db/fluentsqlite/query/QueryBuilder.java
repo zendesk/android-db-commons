@@ -228,7 +228,9 @@ public final class QueryBuilder {
 
       for (JoinSpec join : mJoins) {
         builder.append(" ");
-        builder.append(join.mJoinType);
+        if (join.mJoinType != null) {
+          builder.append(join.mJoinType);
+        }
         builder.append("JOIN ");
 
         builder.append(join.mJoinSource.mTable != null

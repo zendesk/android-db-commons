@@ -163,6 +163,17 @@ public class QueryTest {
   }
 
   @Test
+  public void shouldBuildTheQueryWithMultipleJoins() throws Exception {
+    select()
+        .from("table_a")
+        .join("table_b")
+        .join("table_c")
+        .perform(mDb);
+
+    verify(mDb).rawQuery(eq("SELECT * FROM table_a JOIN table_b JOIN table_c"), eq(new String[0]));
+  }
+
+  @Test
   public void shouldBuildTheQueryFromSubquery() throws Exception {
     select()
         .allColumns()
