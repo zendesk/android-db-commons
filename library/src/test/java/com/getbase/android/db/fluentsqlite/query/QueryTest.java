@@ -6,6 +6,8 @@ import static com.getbase.android.db.fluentsqlite.query.QueryBuilder.select;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.*;
 
+import com.getbase.android.db.fluentsqlite.query.QueryBuilder.Query;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -583,5 +585,97 @@ public class QueryTest {
         .perform(mDb);
 
     verify(mDb).rawQuery(eq("SELECT table_a.col_a FROM table_a"), eq(new String[0]));
+  }
+
+  private Query buildComplexQuery() {
+    return select()
+        .column("table_a", "col_a")
+        .from("table_a")
+        .left().join("table_b").as("b")
+        .on("b.id > ?", 1)
+        .groupBy(column("b", "id"))
+        .having(column("col_a").lt().arg(), 2)
+        .limit(10)
+        .offset(20)
+        .orderBy(column("table_a", "col_a"))
+        .except()
+        .selectDistinct()
+        .column("col_a")
+        .from("table_a")
+        .where(column("col_a").eq().literal(-1));
+  }
+
+  @Test
+  public void shouldCopyQuery() throws Exception {
+    Query originalQuery = buildComplexQuery();
+
+    originalQuery.perform(mDb);
+    verify(mDb).rawQuery(eq("SELECT table_a.col_a FROM table_a LEFT JOIN table_b AS b ON (b.id > ?) GROUP BY b.id HAVING (col_a < ?) EXCEPT SELECT DISTINCT col_a FROM table_a WHERE (col_a == -1) ORDER BY table_a.col_a LIMIT 10 OFFSET 20"), eq(new String[] { "1", "2" }));
+
+    Query copy = originalQuery.copy();
+
+    copy.perform(mDb);
+    verify(mDb, times(2)).rawQuery(eq("SELECT table_a.col_a FROM table_a LEFT JOIN table_b AS b ON (b.id > ?) GROUP BY b.id HAVING (col_a < ?) EXCEPT SELECT DISTINCT col_a FROM table_a WHERE (col_a == -1) ORDER BY table_a.col_a LIMIT 10 OFFSET 20"), eq(new String[] { "1", "2" }));
+  }
+
+  @Test
+  public void shouldNotChangeOriginalQueryWhenChangingACopy() throws Exception {
+    Query originalQuery = buildComplexQuery();
+
+    originalQuery.perform(mDb);
+    verify(mDb).rawQuery(eq("SELECT table_a.col_a FROM table_a LEFT JOIN table_b AS b ON (b.id > ?) GROUP BY b.id HAVING (col_a < ?) EXCEPT SELECT DISTINCT col_a FROM table_a WHERE (col_a == -1) ORDER BY table_a.col_a LIMIT 10 OFFSET 20"), eq(new String[] { "1", "2" }));
+
+    Query copy = originalQuery.copy();
+    copy.where(column("a").is().not().nul());
+
+    copy.perform(mDb);
+    verify(mDb).rawQuery(eq("SELECT table_a.col_a FROM table_a LEFT JOIN table_b AS b ON (b.id > ?) GROUP BY b.id HAVING (col_a < ?) EXCEPT SELECT DISTINCT col_a FROM table_a WHERE (col_a == -1) AND (a IS NOT NULL) ORDER BY table_a.col_a LIMIT 10 OFFSET 20"), eq(new String[] { "1", "2" }));
+
+    originalQuery.perform(mDb);
+    verify(mDb, times(2)).rawQuery(eq("SELECT table_a.col_a FROM table_a LEFT JOIN table_b AS b ON (b.id > ?) GROUP BY b.id HAVING (col_a < ?) EXCEPT SELECT DISTINCT col_a FROM table_a WHERE (col_a == -1) ORDER BY table_a.col_a LIMIT 10 OFFSET 20"), eq(new String[] { "1", "2" }));
+  }
+
+  @Test
+  public void shouldNotChangeACopyWhenChangingTheOriginalQuery() throws Exception {
+    Query originalQuery = buildComplexQuery();
+
+    originalQuery.perform(mDb);
+    verify(mDb).rawQuery(eq("SELECT table_a.col_a FROM table_a LEFT JOIN table_b AS b ON (b.id > ?) GROUP BY b.id HAVING (col_a < ?) EXCEPT SELECT DISTINCT col_a FROM table_a WHERE (col_a == -1) ORDER BY table_a.col_a LIMIT 10 OFFSET 20"), eq(new String[] { "1", "2" }));
+
+    Query copy = originalQuery.copy();
+
+    originalQuery.where(column("a").is().not().nul());
+    originalQuery.perform(mDb);
+    verify(mDb).rawQuery(eq("SELECT table_a.col_a FROM table_a LEFT JOIN table_b AS b ON (b.id > ?) GROUP BY b.id HAVING (col_a < ?) EXCEPT SELECT DISTINCT col_a FROM table_a WHERE (col_a == -1) AND (a IS NOT NULL) ORDER BY table_a.col_a LIMIT 10 OFFSET 20"), eq(new String[] { "1", "2" }));
+
+    copy.perform(mDb);
+    verify(mDb, times(2)).rawQuery(eq("SELECT table_a.col_a FROM table_a LEFT JOIN table_b AS b ON (b.id > ?) GROUP BY b.id HAVING (col_a < ?) EXCEPT SELECT DISTINCT col_a FROM table_a WHERE (col_a == -1) ORDER BY table_a.col_a LIMIT 10 OFFSET 20"), eq(new String[] { "1", "2" }));
+  }
+
+  @Test
+  public void shouldCopyTheQueryWithIncompleteJoinStatement() throws Exception {
+    Query originalQuery = select()
+        .from("table_a")
+        .join("table_b");
+    Query copy = originalQuery.copy();
+
+    originalQuery.perform(mDb);
+    copy.perform(mDb);
+
+    verify(mDb, times(2)).rawQuery(eq("SELECT * FROM table_a JOIN table_b"), eq(new String[0]));
+  }
+
+  @Test
+  public void shouldCopyTheQueryWithMultipleJoinStatements() throws Exception {
+    Query originalQuery = select()
+        .from("table_a")
+        .join("table_b")
+        .join("table_c");
+    Query copy = originalQuery.copy();
+
+    originalQuery.perform(mDb);
+    copy.perform(mDb);
+
+    verify(mDb, times(2)).rawQuery(eq("SELECT * FROM table_a JOIN table_b JOIN table_c"), eq(new String[0]));
   }
 }

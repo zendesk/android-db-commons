@@ -14,6 +14,7 @@ import com.google.common.collect.Maps;
 
 import android.database.sqlite.SQLiteDatabase;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -71,6 +72,47 @@ public final class QueryBuilder {
 
     private QueryImpl(boolean isDistinct) {
       mIsDistinct = isDistinct;
+    }
+
+    private QueryImpl(QueryImpl other) {
+      mIsDistinct = other.mIsDistinct;
+      mProjection = Lists.newCopyOnWriteArrayList(other.mProjection);
+      mColumnWithPotentialAlias = other.mColumnWithPotentialAlias;
+      mColumnsWithPotentialTable = Lists.newCopyOnWriteArrayList(other.mColumnsWithPotentialTable);
+
+      mGroupByExpressions = Lists.newCopyOnWriteArrayList(other.mGroupByExpressions);
+      mHaving = Lists.newCopyOnWriteArrayList(other.mHaving);
+      mHavingArgs = Lists.newCopyOnWriteArrayList(other.mHavingArgs);
+
+      mLimit = other.mLimit;
+      mOffset = other.mOffset;
+
+      mOrderByExpression = other.mOrderByExpression;
+      mOrderByCollation = other.mOrderByCollation;
+      mOrderByOrder = other.mOrderByOrder;
+      mOrderClauses = Lists.newCopyOnWriteArrayList(other.mOrderClauses);
+
+      mSelection = Lists.newCopyOnWriteArrayList(other.mSelection);
+      mSelectionArgs = Lists.newCopyOnWriteArrayList(other.mSelectionArgs);
+
+      mPendingTable = other.mPendingTable;
+
+      mTables = Maps.newLinkedHashMap(other.mTables);
+
+      mPendingJoinType = other.mPendingJoinType;
+      mPendingJoin = other.mPendingJoin != null ? new JoinSpec(other.mPendingJoin) : null;
+
+      mJoins = Lists.newArrayListWithCapacity(other.mJoins.size());
+      for (JoinSpec join : other.mJoins) {
+        mJoins.add(new JoinSpec(join));
+      }
+
+      mCompoundQueryParts = Maps.newLinkedHashMap(other.mCompoundQueryParts);
+    }
+
+    @Override
+    public Query copy() {
+      return new QueryImpl(this);
     }
 
     private void resetCoreSelectParts(boolean distinct) {
@@ -483,6 +525,15 @@ public final class QueryBuilder {
         mJoinType = joinType;
         mJoinSource = joinSource;
       }
+
+      private JoinSpec(JoinSpec other) {
+        mJoinType = other.mJoinType;
+        mJoinSource = other.mJoinSource;
+        mAlias = other.mAlias;
+        mUsingColumns = mUsingColumns != null ? Arrays.copyOf(other.mUsingColumns, other.mUsingColumns.length) : null;
+        mConstraints = Lists.newCopyOnWriteArrayList(mConstraints);
+        mConstraintsArgs = Lists.newCopyOnWriteArrayList(mConstraintsArgs);
+      }
     }
 
     @Override
@@ -630,6 +681,7 @@ public final class QueryBuilder {
   public interface Query extends TableSelector, ColumnSelector, SelectionBuilder, NaturalJoinTypeBuilder, GroupByBuilder, HavingBuilder, OrderByBuilder, LimitBuilder, CompoundQueryBuilder {
     FluentCursor perform(SQLiteDatabase db);
     RawQuery toRawQuery();
+    Query copy();
   }
 
   private static class QueryBuilderProxy implements Query {
@@ -788,6 +840,11 @@ public final class QueryBuilder {
     @Override
     public RawQuery toRawQuery() {
       return mDelegate.toRawQuery();
+    }
+
+    @Override
+    public Query copy() {
+      return mDelegate.copy();
     }
   }
 
