@@ -20,7 +20,7 @@ import java.util.List;
 import java.util.Map.Entry;
 
 public final class QueryBuilder {
-  private QueryBuilder(){
+  private QueryBuilder() {
   }
 
   private static final Function<String, String> SURROUND_WITH_PARENS = new Function<String, String>() {
