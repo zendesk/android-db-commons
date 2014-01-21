@@ -15,6 +15,7 @@ import static com.getbase.android.db.fluentsqlite.Expressions.not;
 import static com.getbase.android.db.fluentsqlite.Expressions.nul;
 import static com.getbase.android.db.fluentsqlite.Expressions.nullIf;
 import static com.getbase.android.db.fluentsqlite.Expressions.sum;
+import static com.getbase.android.db.fluentsqlite.query.QueryBuilder.select;
 import static org.fest.assertions.Assertions.assertThat;
 
 import com.getbase.android.db.fluentsqlite.Expressions.Expression;
@@ -82,6 +83,8 @@ public class ExpressionsBuilderTest {
       .put(column("col_a").or(column("col_b")), "col_a OR (col_b)")
       .put(column("col_a").and().column("col_b"), "col_a AND col_b")
       .put(column("col_a").and(column("col_b")), "col_a AND (col_b)")
+      .put(column("col_a").in(literal(1), literal(2), literal(3)), "col_a IN (1, 2, 3)")
+      .put(column("col_a").in(select().column("id").from("table_a")), "col_a IN (SELECT id FROM table_a)")
       .build();
 
   @Parameters

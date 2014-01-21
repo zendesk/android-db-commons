@@ -1,5 +1,7 @@
 package com.getbase.android.db.fluentsqlite;
 
+import com.getbase.android.db.fluentsqlite.query.QueryBuilder.Query;
+import com.getbase.android.db.fluentsqlite.query.RawQuery;
 import com.google.common.base.Function;
 import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
@@ -65,6 +67,9 @@ public final class Expressions {
 
     ExpressionBuilder is();
     ExpressionCombiner is(Expression e);
+
+    ExpressionCombiner in(Query subquery);
+    ExpressionCombiner in(Expression... e);
 
     ExpressionBuilder or();
     ExpressionCombiner or(Expression e);
@@ -257,6 +262,28 @@ public final class Expressions {
     @Override
     public ExpressionCombiner is(Expression e) {
       is();
+      expr(e);
+      return this;
+    }
+
+    @Override
+    public ExpressionCombiner in(Query subquery) {
+      RawQuery rawQuery = subquery.toRawQuery();
+      Preconditions.checkArgument(rawQuery.mRawQueryArgs.isEmpty(), "Queries with bound args in expressions are not supported yet");
+
+      binaryOperator("IN");
+
+      mBuilder
+          .append("(")
+          .append(rawQuery.mRawQuery)
+          .append(")");
+
+      return this;
+    }
+
+    @Override
+    public ExpressionCombiner in(Expression... e) {
+      binaryOperator("IN");
       expr(e);
       return this;
     }
