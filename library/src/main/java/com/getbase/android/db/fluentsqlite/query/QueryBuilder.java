@@ -223,9 +223,7 @@ public final class QueryBuilder {
 
       for (JoinSpec join : mJoins) {
         builder.append(" ");
-        if (join.mJoinType != null) {
-          builder.append(join.mJoinType);
-        }
+        builder.append(join.mJoinType);
         builder.append("JOIN ");
 
         builder.append(join.mJoinSource.mTable != null
@@ -496,7 +494,7 @@ public final class QueryBuilder {
       addPendingJoin();
 
       mPendingJoin = new JoinSpec(mPendingJoinType, new TableOrSubquery(table));
-      mPendingJoinType = null;
+      mPendingJoinType = "";
 
       return mJoinHelper;
     }
@@ -506,7 +504,7 @@ public final class QueryBuilder {
       addPendingJoin();
 
       mPendingJoin = new JoinSpec(mPendingJoinType, new TableOrSubquery(subquery));
-      mPendingJoinType = null;
+      mPendingJoinType = "";
 
       return mJoinHelper;
     }

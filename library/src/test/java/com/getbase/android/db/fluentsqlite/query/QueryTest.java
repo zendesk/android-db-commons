@@ -165,7 +165,7 @@ public class QueryTest {
   }
 
   @Test
-  public void shouldBuildTheQueryWithMultipleJoins() throws Exception {
+  public void shouldBuildTheQueryWithMultipleInnerJoins() throws Exception {
     select()
         .from("table_a")
         .join("table_b")
@@ -173,6 +173,18 @@ public class QueryTest {
         .perform(mDb);
 
     verify(mDb).rawQuery(eq("SELECT * FROM table_a JOIN table_b JOIN table_c"), eq(new String[0]));
+  }
+
+
+  @Test
+  public void shouldBuildTheQueryWithMultipleJoins() throws Exception {
+    select()
+        .from("table_a")
+        .join("table_b")
+        .left().join("table_c")
+        .perform(mDb);
+
+    verify(mDb).rawQuery(eq("SELECT * FROM table_a JOIN table_b LEFT JOIN table_c"), eq(new String[0]));
   }
 
   @Test
