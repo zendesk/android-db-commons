@@ -735,4 +735,19 @@ public class QueryTest {
 
     verify(mDb).rawQuery(eq("SELECT * FROM table_a"), eq(new String[0]));
   }
+
+  @Test
+  public void shouldCopyTheQueryWithJoinStatementWithConstraint() throws Exception {
+    Query originalQuery = select()
+        .from("table_a")
+        .join("table_b")
+        .on(column("id").eq().column("id_a"));
+
+    Query copy = originalQuery.copy();
+
+    originalQuery.perform(mDb);
+    copy.perform(mDb);
+
+    verify(mDb, times(2)).rawQuery(eq("SELECT * FROM table_a JOIN table_b ON (id == id_a)"), eq(new String[0]));
+  }
 }
