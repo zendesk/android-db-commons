@@ -32,11 +32,7 @@ public final class QueryBuilder {
   };
 
   public static Query select() {
-    return new QueryImpl(false);
-  }
-
-  public static Query selectDistinct() {
-    return new QueryImpl(true);
+    return new QueryImpl();
   }
 
   private static class QueryImpl implements Query, ColumnAliasBuilder, LimitOffsetBuilder, OrderingTermBuilder, ColumnListTableSelector, ColumnsListAliasBuilder {
@@ -63,7 +59,7 @@ public final class QueryBuilder {
     private TableOrSubquery mPendingTable;
     private LinkedHashMap<TableOrSubquery, String> mTables = Maps.newLinkedHashMap();
 
-    private boolean mIsDistinct;
+    private boolean mIsDistinct = false;
 
     private String mPendingJoinType = "";
     private JoinSpec mPendingJoin;
@@ -71,8 +67,7 @@ public final class QueryBuilder {
 
     private LinkedHashMap<RawQuery, String> mCompoundQueryParts = Maps.newLinkedHashMap();
 
-    private QueryImpl(boolean isDistinct) {
-      mIsDistinct = isDistinct;
+    private QueryImpl() {
     }
 
     private QueryImpl(QueryImpl other) {
@@ -117,8 +112,8 @@ public final class QueryBuilder {
       return new QueryImpl(this);
     }
 
-    private void resetCoreSelectParts(boolean distinct) {
-      mIsDistinct = distinct;
+    private void resetCoreSelectParts() {
+      mIsDistinct = false;
 
       mProjection = Lists.newArrayList();
       mColumnWithPotentialAlias = null;
@@ -377,6 +372,18 @@ public final class QueryBuilder {
       return this;
     }
 
+    @Override
+    public Query distinct() {
+      mIsDistinct = true;
+      return this;
+    }
+
+    @Override
+    public Query all() {
+      mIsDistinct = false;
+      return this;
+    }
+
     private static abstract class ColumnsTableSelectorHelper extends QueryBuilderProxy implements ColumnsTableSelector {
       private ColumnsTableSelectorHelper(Query delegate) {
         super(delegate);
@@ -401,12 +408,12 @@ public final class QueryBuilder {
     }
 
     @Override
-    public SelectTypeSelector intersect() {
+    public NextQueryPartStart intersect() {
       return mCompoundQueryHelper.withOperation("INTERSECT");
     }
 
     @Override
-    public SelectTypeSelector except() {
+    public NextQueryPartStart except() {
       return mCompoundQueryHelper.withOperation("EXCEPT");
     }
 
@@ -419,7 +426,7 @@ public final class QueryBuilder {
       }
 
       @Override
-      public SelectTypeSelector all() {
+      public NextQueryPartStart all() {
         return withOperation("UNION ALL");
       }
     }
@@ -427,18 +434,9 @@ public final class QueryBuilder {
     private CompoundQueryHelper mCompoundQueryHelper = new CompoundQueryHelper() {
       @Override
       public Query select() {
-        return select(false);
-      }
-
-      @Override
-      public Query selectDistinct() {
-        return select(true);
-      }
-
-      private Query select(boolean distinct) {
         mCompoundQueryParts.put(buildCompoundQueryPart(), mOperation);
 
-        resetCoreSelectParts(distinct);
+        resetCoreSelectParts();
 
         return QueryImpl.this;
       }
@@ -714,7 +712,7 @@ public final class QueryBuilder {
     }
   }
 
-  public interface Query extends TableSelector, ColumnSelector, SelectionBuilder, NaturalJoinTypeBuilder, GroupByBuilder, HavingBuilder, OrderByBuilder, LimitBuilder, CompoundQueryBuilder {
+  public interface Query extends DistinctSelector, TableSelector, ColumnSelector, SelectionBuilder, NaturalJoinTypeBuilder, GroupByBuilder, HavingBuilder, OrderByBuilder, LimitBuilder, CompoundQueryBuilder {
     FluentCursor perform(SQLiteDatabase db);
     RawQuery toRawQuery();
     Query copy();
@@ -774,12 +772,12 @@ public final class QueryBuilder {
     }
 
     @Override
-    public SelectTypeSelector intersect() {
+    public NextQueryPartStart intersect() {
       return mDelegate.intersect();
     }
 
     @Override
-    public SelectTypeSelector except() {
+    public NextQueryPartStart except() {
       return mDelegate.except();
     }
 
@@ -882,11 +880,26 @@ public final class QueryBuilder {
     public Query copy() {
       return mDelegate.copy();
     }
+
+    @Override
+    public Query distinct() {
+      return mDelegate.distinct();
+    }
+
+    @Override
+    public Query all() {
+      return mDelegate.all();
+    }
   }
 
   public interface TableSelector {
     TableAliasBuilder from(String table);
     TableAliasBuilder from(Query subquery);
+  }
+
+  public interface DistinctSelector {
+    Query distinct();
+    Query all();
   }
 
   public interface TableAliasBuilder extends Query {
@@ -988,16 +1001,15 @@ public final class QueryBuilder {
 
   public interface CompoundQueryBuilder {
     UnionTypeSelector union();
-    SelectTypeSelector intersect();
-    SelectTypeSelector except();
+    NextQueryPartStart intersect();
+    NextQueryPartStart except();
   }
 
-  public interface UnionTypeSelector extends SelectTypeSelector {
-    SelectTypeSelector all();
+  public interface UnionTypeSelector extends NextQueryPartStart {
+    NextQueryPartStart all();
   }
 
-  public interface SelectTypeSelector {
+  public interface NextQueryPartStart {
     Query select();
-    Query selectDistinct();
   }
 }

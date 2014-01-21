@@ -40,7 +40,7 @@ public class QueryTest {
 
   @Test
   public void shouldBuildTheSimpleDistinctSelect() throws Exception {
-    QueryBuilder.selectDistinct().allColumns().from("table_a").perform(mDb);
+    QueryBuilder.select().distinct().allColumns().from("table_a").perform(mDb);
 
     verify(mDb).rawQuery(eq("SELECT DISTINCT * FROM table_a"), eq(new String[0]));
   }
@@ -59,7 +59,8 @@ public class QueryTest {
   public void shouldBuildTheUnionCompoundQueryWithDistinctSelect() throws Exception {
     select().allColumns().from("table_a")
         .union()
-        .selectDistinct().allColumns().from("table_b")
+        .select()
+        .distinct().allColumns().from("table_b")
         .perform(mDb);
 
     verify(mDb).rawQuery(eq("SELECT * FROM table_a UNION SELECT DISTINCT * FROM table_b"), eq(new String[0]));
@@ -631,7 +632,8 @@ public class QueryTest {
         .offset(20)
         .orderBy(column("table_a", "col_a"))
         .except()
-        .selectDistinct()
+        .select()
+        .distinct()
         .column("col_a")
         .from("table_a")
         .where(column("col_a").eq().literal(-1));
@@ -709,5 +711,16 @@ public class QueryTest {
     copy.perform(mDb);
 
     verify(mDb, times(2)).rawQuery(eq("SELECT * FROM table_a JOIN table_b JOIN table_c"), eq(new String[0]));
+  }
+
+  @Test
+  public void shouldOverrideSelectDistinctWithLaterCallToSelectAll() throws Exception {
+    select()
+        .distinct()
+        .from("table_a")
+        .all()
+        .perform(mDb);
+
+    verify(mDb).rawQuery(eq("SELECT * FROM table_a"), eq(new String[0]));
   }
 }
