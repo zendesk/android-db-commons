@@ -3,7 +3,6 @@ package com.getbase.android.db.loaders;
 import static org.fest.assertions.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 
-import com.getbase.android.db.CustomRobolectricTestRunner;
 import com.google.common.base.Function;
 import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
@@ -14,6 +13,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.robolectric.Robolectric;
+import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowContentResolver;
 
@@ -25,7 +25,7 @@ import android.support.v4.content.Loader;
 
 import java.util.List;
 
-@RunWith(CustomRobolectricTestRunner.class)
+@RunWith(RobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
 public class ComposedCursorLoaderTest {
 

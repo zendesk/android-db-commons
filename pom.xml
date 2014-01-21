@@ -8,6 +8,18 @@
   <packaging>pom</packaging>
   <name>android-db-utils parent project</name>
 
+  <repositories>
+    <repository>
+      <id>snapshots-repo</id>
+      <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+      <releases>
+        <enabled>false</enabled>
+      </releases>
+      <snapshots>
+        <enabled>true</enabled>
+      </snapshots>
+    </repository>
+  </repositories>
 
   <modules>
     <module>library</module>
@@ -33,7 +45,7 @@
       <dependency>
         <groupId>org.robolectric</groupId>
         <artifactId>robolectric</artifactId>
-        <version>2.2</version>
+        <version>2.3-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>com.google.android</groupId>
@@ -65,6 +77,13 @@
         <artifactId>fest-android</artifactId>
         <version>1.0.7</version>
       </dependency>
+      <dependency>
+        <groupId>com.sun</groupId>
+        <artifactId>tools</artifactId>
+        <version>1.6</version>
+        <scope>system</scope>
+        <systemPath>${tools-jar}</systemPath>
+      </dependency>
     </dependencies>
   </dependencyManagement>
 
@@ -78,15 +97,54 @@
           <target>1.6</target>
         </configuration>
       </plugin>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>cobertura-maven-plugin</artifactId>
+        <version>2.6</version>
+        <dependencies>
+          <dependency>
+            <groupId>com.sun</groupId>
+            <artifactId>tools</artifactId>
+            <version>1.6</version>
+            <scope>system</scope>
+            <systemPath>${tools-jar}</systemPath>
+          </dependency>
+        </dependencies>
+      </plugin>
     </plugins>
   </build>
+
+  <profiles>
+    <profile>
+      <id>standard-jdk</id>
+      <activation>
+        <file>
+          <exists>${java.home}/../lib/tools.jar</exists>
+        </file>
+      </activation>
+      <properties>
+        <tools-jar>${java.home}/../lib/tools.jar</tools-jar>
+      </properties>
+    </profile>
+    <profile>
+      <id>apple-jdk</id>
+      <activation>
+        <file>
+          <exists>${java.home}/../Classes/classes.jar</exists>
+        </file>
+      </activation>
+      <properties>
+        <tools-jar>${java.home}/../Classes/classes.jar</tools-jar>
+      </properties>
+    </profile>
+  </profiles>
 
   <reporting>
     <plugins>
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>cobertura-maven-plugin</artifactId>
-        <version>2.5.2</version>
+        <version>2.6</version>
       </plugin>
     </plugins>
   </reporting>
