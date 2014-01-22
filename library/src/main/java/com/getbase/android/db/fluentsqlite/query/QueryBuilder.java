@@ -562,7 +562,7 @@ public final class QueryBuilder {
         mJoinType = other.mJoinType;
         mJoinSource = other.mJoinSource;
         mAlias = other.mAlias;
-        mUsingColumns = mUsingColumns != null ? Arrays.copyOf(other.mUsingColumns, other.mUsingColumns.length) : null;
+        mUsingColumns = other.mUsingColumns != null ? Arrays.copyOf(other.mUsingColumns, other.mUsingColumns.length) : null;
         mConstraints = Lists.newCopyOnWriteArrayList(other.mConstraints);
         mConstraintsArgs = Lists.newCopyOnWriteArrayList(other.mConstraintsArgs);
       }
