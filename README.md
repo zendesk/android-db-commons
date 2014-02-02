@@ -189,6 +189,12 @@ mvn clean package
 ```
 in directory with pom.xml.
 
+minSdkVersion = 10
+------------------
+android-db-commons is compatible with Android 2.3 and newer.
+
+The last version supporting older Android versions was [v0.6.3](https://github.com/futuresimple/android-db-commons/tree/v0.6.3).
+
 Other libraries
 ---------------
 android-db-commons works even better when combined with some other cool libraries. You may want to try them!

@@ -100,7 +100,7 @@ public class ExpressionsBuilderTest {
             };
           }
         })
-        .toImmutableList();
+        .toList();
   }
 
   @Test
