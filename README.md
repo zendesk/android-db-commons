@@ -189,6 +189,10 @@ mvn clean package
 ```
 in directory with pom.xml.
 
+minSdkVersion = 10
+------------------
+android-db-commons is compatible with Android 2.3 and newer.
+
 Other libraries
 ---------------
 android-db-commons works even better when combined with some other cool libraries. You may want to try them!
