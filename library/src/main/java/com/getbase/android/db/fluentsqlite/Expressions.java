@@ -104,7 +104,7 @@ public final class Expressions {
   public interface ExpressionCombiner extends BinaryOperator, Expression {
   }
 
-  // mirror all method from UnaryOperator and ExpressionCore interfaces
+  // mirror all method from ExpressionBuilder interface
   public static ExpressionCore not() {
     return new Builder().not();
   }
