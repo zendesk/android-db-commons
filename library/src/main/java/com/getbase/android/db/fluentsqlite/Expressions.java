@@ -98,7 +98,7 @@ public final class Expressions {
     ExpressionCombiner and(Expression e);
   }
 
-  public interface ExpressionBuilder extends UnaryOperator, ExpressionCore {
+  public interface ExpressionBuilder extends UnaryOperator, ExpressionCore, CaseExpressions {
   }
 
   public interface ExpressionCombiner extends BinaryOperator, Expression {
@@ -177,7 +177,15 @@ public final class Expressions {
     return new Builder().join(on, e);
   }
 
-  private static class Builder implements ExpressionBuilder, ExpressionCombiner {
+  public static CaseCondition cases() {
+    return new Builder().cases();
+  }
+
+  public static CaseCondition cases(Expression e) {
+    return new Builder().cases(e);
+  }
+
+  private static class Builder implements ExpressionBuilder, ExpressionCombiner, CaseExpressionBuilder, CaseValue {
     private StringBuilder mBuilder = new StringBuilder();
 
     private static final Joiner ARGS_JOINER = Joiner.on(", ");
@@ -484,6 +492,46 @@ public final class Expressions {
     @Override
     public ExpressionCore not() {
       mBuilder.append("NOT ");
+      return this;
+    }
+
+    @Override
+    public ExpressionCombiner otherwise(Expression e) {
+      mBuilder.append(" ELSE ");
+      expr(e);
+      return end();
+    }
+
+    @Override
+    public CaseValue when(Expression e) {
+      mBuilder.append(" WHEN ");
+      expr(e);
+      return this;
+    }
+
+    @Override
+    public ExpressionCombiner end() {
+      mBuilder.append(" END");
+      return this;
+    }
+
+    @Override
+    public CaseCondition cases() {
+      mBuilder.append("CASE");
+      return this;
+    }
+
+    @Override
+    public CaseCondition cases(Expression e) {
+      mBuilder.append("CASE ");
+      expr(e);
+      return this;
+    }
+
+    @Override
+    public CaseExpressionBuilder then(Expression e) {
+      mBuilder.append(" THEN ");
+      expr(e);
       return this;
     }
   }
