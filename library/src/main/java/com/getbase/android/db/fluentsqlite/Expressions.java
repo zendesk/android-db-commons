@@ -51,6 +51,27 @@ public final class Expressions {
     ExpressionCombiner join(String on, Expression... e);
   }
 
+  public interface CaseExpressions {
+    CaseCondition cases();
+    CaseCondition cases(Expression e);
+  }
+
+  public interface CaseCondition {
+    CaseValue when(Expression e);
+  }
+
+  public interface CaseValue {
+    CaseExpressionBuilder then(Expression e);
+  }
+
+  public interface CaseExpressionBuilder extends CaseCondition, CaseExpressionEndStep {
+    ExpressionCombiner otherwise(Expression e);
+  }
+
+  public interface CaseExpressionEndStep {
+    ExpressionCombiner end();
+  }
+
   public interface BinaryOperator {
     ExpressionBuilder eq();
     ExpressionCombiner eq(Expression e);
