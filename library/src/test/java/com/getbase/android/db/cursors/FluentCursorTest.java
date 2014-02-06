@@ -39,12 +39,7 @@ public class FluentCursorTest {
   public void shouldCloseCursorAfterItIsTransformed() throws Exception {
     final MatrixCursor cursor = new MatrixCursor(new String[] { TEST_COLUMN });
     final FluentCursor fluentCursor = new FluentCursor(cursor);
-    fluentCursor.toFluentIterable(new Function<Cursor, Object>() {
-      @Override
-      public Object apply(Cursor cursor) {
-        return null;
-      }
-    });
+    fluentCursor.toFluentIterable(Functions.constant(null));
     assertThat(fluentCursor.isClosed()).isTrue();
   }
 
