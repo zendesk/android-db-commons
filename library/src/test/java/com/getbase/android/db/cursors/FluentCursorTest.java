@@ -28,6 +28,13 @@ public class FluentCursorTest {
   private static final String TEST_COLUMN = "test_column";
   private static final String OTHER_COLUMN = "other_column";
 
+  private static final Function<Cursor, Object> KABOOM = new Function<Cursor, Object>() {
+    @Override
+    public Object apply(Cursor input) {
+      throw new RuntimeException();
+    }
+  };
+
   @Test
   public void shouldCloseCursorAfterItIsTransformed() throws Exception {
     final MatrixCursor cursor = new MatrixCursor(new String[] { TEST_COLUMN });
@@ -84,12 +91,7 @@ public class FluentCursorTest {
     final FluentCursor fluentCursor = new FluentCursor(buildMatrixCursor(10));
 
     try {
-      fluentCursor.toFluentIterable(new Function<Cursor, Object>() {
-        @Override
-        public Object apply(Cursor input) {
-          throw new RuntimeException();
-        }
-      });
+      fluentCursor.toFluentIterable(KABOOM);
     } catch (Throwable t) {
       // ignore
     }
