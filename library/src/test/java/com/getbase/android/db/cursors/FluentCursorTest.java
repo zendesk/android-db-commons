@@ -26,6 +26,7 @@ import java.util.NoSuchElementException;
 public class FluentCursorTest {
 
   private static final String TEST_COLUMN = "test_column";
+  private static final String OTHER_COLUMN = "other_column";
 
   @Test
   public void shouldCloseCursorAfterItIsTransformed() throws Exception {
@@ -214,9 +215,9 @@ public class FluentCursorTest {
   }
 
   private MatrixCursor buildMatrixCursor(int count) {
-    final MatrixCursor cursor = new MatrixCursor(new String[] { TEST_COLUMN });
+    final MatrixCursor cursor = new MatrixCursor(new String[] { OTHER_COLUMN, TEST_COLUMN });
     for (int i = 0; i < count; i++) {
-      cursor.addRow(new Object[] { 18L });
+      cursor.addRow(new Object[] { i, 18L });
     }
     return cursor;
   }
