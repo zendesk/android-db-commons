@@ -45,7 +45,7 @@ public class FluentCursor extends CursorWrapper {
    * @param <TValue> Type of values in the returned multimap
    * @return Transformed map
    */
-  public <TKey, TValue> LinkedHashMultimap<TKey, TValue> toMap(Function<? super Cursor, TKey> keyTransform, Function<? super Cursor, TValue> valueTransform) {
+  public <TKey, TValue> LinkedHashMultimap<TKey, TValue> toMultimap(Function<? super Cursor, TKey> keyTransform, Function<? super Cursor, TValue> valueTransform) {
     try {
       LinkedHashMultimap<TKey, TValue> result = LinkedHashMultimap.create(getCount(), 1);
 

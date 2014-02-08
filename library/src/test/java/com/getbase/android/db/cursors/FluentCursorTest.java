@@ -103,7 +103,7 @@ public class FluentCursorTest {
   public void shouldSuccessfullyTransformToMap() throws Exception {
     final MatrixCursor cursor = buildMatrixCursor(10);
     final FluentCursor fluentCursor = new FluentCursor(cursor);
-    final LinkedHashMultimap<Integer, Long> transformed = fluentCursor.toMap(
+    final LinkedHashMultimap<Integer, Long> transformed = fluentCursor.toMultimap(
         SingleRowTransforms.getColumn(OTHER_COLUMN).asInteger(),
         SingleRowTransforms.getColumn(TEST_COLUMN).asLong());
 
@@ -116,7 +116,7 @@ public class FluentCursorTest {
   public void shouldTransformToMapWithTheSameIterationOrderAsCursorRows() throws Exception {
     final MatrixCursor cursor = buildMatrixCursor(3);
     final FluentCursor fluentCursor = new FluentCursor(cursor);
-    final LinkedHashMultimap<Integer, Long> transformed = fluentCursor.toMap(
+    final LinkedHashMultimap<Integer, Long> transformed = fluentCursor.toMultimap(
         SingleRowTransforms.getColumn(OTHER_COLUMN).asInteger(),
         SingleRowTransforms.getColumn(TEST_COLUMN).asLong());
 
@@ -127,7 +127,7 @@ public class FluentCursorTest {
   public void shouldCloseCursorAfterItIsTransformedToMap() throws Exception {
     final MatrixCursor cursor = new MatrixCursor(new String[] { TEST_COLUMN });
     final FluentCursor fluentCursor = new FluentCursor(cursor);
-    fluentCursor.toMap(Functions.constant(null), Functions.constant(null));
+    fluentCursor.toMultimap(Functions.constant(null), Functions.constant(null));
     assertThat(fluentCursor.isClosed()).isTrue();
   }
 
@@ -136,7 +136,7 @@ public class FluentCursorTest {
     final FluentCursor fluentCursor = new FluentCursor(buildMatrixCursor(10));
 
     try {
-      fluentCursor.toMap(KABOOM, KABOOM);
+      fluentCursor.toMultimap(KABOOM, KABOOM);
     } catch (Throwable t) {
       // ignore
     }
