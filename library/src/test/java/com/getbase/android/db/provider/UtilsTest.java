@@ -1,5 +1,6 @@
 package com.getbase.android.db.provider;
 
+import static org.fest.assertions.Assertions.assertThat;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.*;
 
@@ -94,5 +95,25 @@ public class UtilsTest {
   @Test(expected = IllegalArgumentException.class)
   public void shouldFailToBindArgsOfOtherType() throws Exception {
     Utils.bindContentValueArg(mStatement, 1, new Object());
+  }
+
+  @Test
+  public void shouldReturnNull() throws Exception {
+    assertThat(Utils.escapeSqlArg(null)).isNull();
+  }
+
+  @Test
+  public void shouldReturnSqlBoolean() throws Exception {
+    assertThat(Utils.escapeSqlArg(true)).isEqualTo(1);
+  }
+
+  @Test
+  public void shouldReturnNumber() throws Exception {
+    assertThat(Utils.escapeSqlArg(1L)).isEqualTo(1L);
+  }
+
+  @Test
+  public void shouldReturnEscapedString() throws Exception {
+    assertThat(Utils.escapeSqlArg("test")).isEqualTo("'test'");
   }
 }

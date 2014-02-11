@@ -1,7 +1,12 @@
 package com.getbase.android.db.provider;
 
+import com.google.common.base.Function;
+
 import android.content.ContentValues;
+import android.database.DatabaseUtils;
 import android.database.sqlite.SQLiteStatement;
+
+import javax.annotation.Nullable;
 
 public final class Utils {
   private Utils() {
@@ -57,5 +62,28 @@ public final class Utils {
     } else {
       throw new IllegalArgumentException("bad value type: " + value.getClass().getName());
     }
+  }
+
+  public static Object escapeSqlArg(Object arg) {
+    if (arg == null) {
+      return null;
+    }
+    if (arg instanceof Boolean) {
+      return (Boolean) arg ? 1 : 0;
+    }
+    if(arg instanceof Number) {
+      return arg;
+    }
+    return DatabaseUtils.sqlEscapeString(arg.toString());
+  }
+
+  public static <T> Function<T, Object> toEscapedSqlFunction() {
+    return new Function<T, Object>() {
+      @Nullable
+      @Override
+      public Object apply(@Nullable T arg) {
+        return escapeSqlArg(arg);
+      }
+    };
   }
 }
