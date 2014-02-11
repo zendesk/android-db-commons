@@ -23,6 +23,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.eq;
 
 import com.google.common.base.Joiner;
+import com.google.common.collect.Collections2;
 import com.google.common.collect.Lists;
 
 import java.util.List;
@@ -346,11 +347,11 @@ public class ProviderActionsTest {
 
   @Test
   public void shouldBeAbleToCreateASelectionWithWhereIn() throws Exception {
-    final List<Long> inSet = Lists.newArrayList(1L, 2L, 3L);
+    final List<?> inSet = Lists.newArrayList(1L, "two", 3L);
     ProviderAction.query(TEST_URI)
         .whereIn("col1", inSet)
         .perform(contentResolverMock);
-    final String expectedSelection = "(" + "col1 IN (" + Joiner.on(",").join(inSet) + ")" + ")";
+    final String expectedSelection = "(" + "col1 IN (" + Joiner.on(",").join(Collections2.transform(inSet, Utils.toEscapedSqlFunction())) + ")" + ")";
     verify(contentResolverMock).query(eq(TEST_URI),
         eq((String[]) null),
         eq(expectedSelection),
@@ -360,11 +361,11 @@ public class ProviderActionsTest {
 
   @Test
   public void shouldBeAbleToCreateAnUpdateWithWhereIn() throws Exception {
-    final List<Long> inSet = Lists.newArrayList(1L, 2L, 3L);
+    final List<? extends Object> inSet = Lists.newArrayList(1L, "two", 3L);
     ProviderAction.update(TEST_URI)
         .whereIn("col1", inSet)
         .perform(contentResolverMock);
-    final String expectedSelection = "(" + "col1 IN (" + Joiner.on(",").join(inSet) + ")" + ")";
+    final String expectedSelection = "(" + "col1 IN (" + Joiner.on(",").join(Collections2.transform(inSet, Utils.toEscapedSqlFunction())) + ")" + ")";
     verify(contentResolverMock).update(eq(TEST_URI),
         any(ContentValues.class),
         eq(expectedSelection),
@@ -373,11 +374,11 @@ public class ProviderActionsTest {
 
   @Test
   public void shouldBeAbleToCreateADeleteWithWhereIn() throws Exception {
-    final List<Long> inSet = Lists.newArrayList(1L, 2L, 3L);
+    final List<? extends Object> inSet = Lists.newArrayList(1L, "two", 3L);
     ProviderAction.delete(TEST_URI)
         .whereIn("col1", inSet)
         .perform(contentResolverMock);
-    final String expectedSelection = "(" + "col1 IN (" + Joiner.on(",").join(inSet) + ")" + ")";
+    final String expectedSelection = "(" + "col1 IN (" + Joiner.on(",").join(Collections2.transform(inSet, Utils.toEscapedSqlFunction())) + ")" + ")";
     verify(contentResolverMock).delete(eq(TEST_URI),
         eq(expectedSelection),
         eq((String[]) null));

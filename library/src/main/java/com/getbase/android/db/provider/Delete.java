@@ -1,6 +1,7 @@
 package com.getbase.android.db.provider;
 
 import com.google.common.base.Joiner;
+import com.google.common.collect.Collections2;
 
 import android.net.Uri;
 import android.os.RemoteException;
@@ -20,8 +21,8 @@ public class Delete extends ProviderAction<Integer> {
     return this;
   }
 
-  public <T extends Number> Delete whereIn(String column, Collection<T> collection) {
-    this.selection.append(column + " IN (" + Joiner.on(",").join(collection) + ")");
+  public <T> Delete whereIn(String column, Collection<T> collection) {
+    this.selection.append(column + " IN (" + Joiner.on(",").join(Collections2.transform(collection, Utils.toEscapedSqlFunction())) + ")");
     return this;
   }
 

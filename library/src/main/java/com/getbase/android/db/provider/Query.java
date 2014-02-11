@@ -3,6 +3,7 @@ package com.getbase.android.db.provider;
 import com.getbase.android.db.common.QueryData;
 import com.getbase.android.db.cursors.FluentCursor;
 import com.google.common.base.Joiner;
+import com.google.common.collect.Collections2;
 
 import android.database.Cursor;
 import android.net.Uri;
@@ -30,8 +31,8 @@ public class Query extends ProviderAction<FluentCursor> {
     return this;
   }
 
-  public <T extends Number> Query whereIn(String column, Collection<T> collection) {
-    this.selection.append(column + " IN (" + Joiner.on(",").join(collection) + ")");
+  public <T> Query whereIn(String column, Collection<T> collection) {
+    this.selection.append(column + " IN (" + Joiner.on(",").join(Collections2.transform(collection, Utils.toEscapedSqlFunction())) + ")");
     return this;
   }
 
