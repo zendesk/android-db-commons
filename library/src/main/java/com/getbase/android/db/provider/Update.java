@@ -1,6 +1,7 @@
 package com.getbase.android.db.provider;
 
 import com.google.common.base.Joiner;
+import com.google.common.collect.Collections2;
 
 import android.content.ContentValues;
 import android.net.Uri;
@@ -32,8 +33,8 @@ public class Update extends ProviderAction<Integer> {
     return this;
   }
 
-  public <T extends Number> Update whereIn(String column, Collection<T> collection) {
-    this.selection.append(column + " IN (" + Joiner.on(",").join(collection) + ")");
+  public <T> Update whereIn(String column, Collection<T> collection) {
+    this.selection.append(column + " IN (" + Joiner.on(",").join(Collections2.transform(collection, Utils.toEscapedSqlFunction())) + ")");
     return this;
   }
 
