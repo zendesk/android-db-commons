@@ -9,7 +9,7 @@
   <parent>
     <groupId>com.getbase.android.db</groupId>
     <artifactId>parent</artifactId>
-    <version>0.6.3</version>
+    <version>0.6.4</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
