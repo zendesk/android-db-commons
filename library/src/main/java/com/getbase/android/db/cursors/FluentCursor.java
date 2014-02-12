@@ -9,6 +9,11 @@ import android.database.CursorWrapper;
 
 import java.util.NoSuchElementException;
 
+/**
+ * Wrapper for Android {@link android.database.Cursor} providing methods
+ * for transforming Cursor into other Java types. It also wraps null Cursors
+ * into valid Cursor instance with no data and no columns.
+ */
 public class FluentCursor extends CursorWrapper {
 
   public FluentCursor(Cursor cursor) {
