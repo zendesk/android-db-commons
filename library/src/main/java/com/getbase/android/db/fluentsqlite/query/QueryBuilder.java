@@ -225,6 +225,13 @@ public final class QueryBuilder {
 
         return new RawQuery(builder.toString(), args);
       }
+
+      public void getTables(ImmutableSet.Builder<String> builder) {
+        addTableOrSubquery(builder, mPendingTable);
+        for (TableOrSubquery tableOrSubquery : mTables.keySet()) {
+          addTableOrSubquery(builder, tableOrSubquery);
+        }
+      }
     }
 
     private CompoundQueryPart mCurrentQueryPart = new CompoundQueryPart();
@@ -263,7 +270,21 @@ public final class QueryBuilder {
 
     @Override
     public Set<String> getTables() {
-      return null;
+      Builder<String> builder = ImmutableSet.builder();
+
+      mCurrentQueryPart.getTables(builder);
+
+      return builder.build();
+    }
+
+    private static void addTableOrSubquery(ImmutableSet.Builder<String> builder, TableOrSubquery tableOrSubquery) {
+      if (tableOrSubquery != null) {
+        if (tableOrSubquery.mSubquery != null) {
+          builder.addAll(tableOrSubquery.mSubquery.getTables());
+        } else {
+          builder.add(tableOrSubquery.mTable);
+        }
+      }
     }
 
     @Override
