@@ -273,6 +273,9 @@ public final class QueryBuilder {
       Builder<String> builder = ImmutableSet.builder();
 
       mCurrentQueryPart.getTables(builder);
+      for (CompoundQueryPart part : mCompoundQueryParts.keySet()) {
+        part.getTables(builder);
+      }
 
       return builder.build();
     }
