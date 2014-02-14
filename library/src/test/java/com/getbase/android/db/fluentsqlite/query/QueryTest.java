@@ -3,6 +3,7 @@ package com.getbase.android.db.fluentsqlite.query;
 import static com.getbase.android.db.fluentsqlite.Expressions.column;
 import static com.getbase.android.db.fluentsqlite.Expressions.sum;
 import static com.getbase.android.db.fluentsqlite.query.QueryBuilder.select;
+import static org.fest.assertions.Assertions.assertThat;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.*;
 
@@ -18,6 +19,8 @@ import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 
 import android.database.sqlite.SQLiteDatabase;
+
+import java.util.Set;
 
 @RunWith(RobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
@@ -174,7 +177,6 @@ public class QueryTest {
 
     verify(mDb).rawQuery(eq("SELECT * FROM table_a JOIN table_b JOIN table_c"), eq(new String[0]));
   }
-
 
   @Test
   public void shouldBuildTheQueryWithMultipleJoins() throws Exception {
@@ -764,5 +766,101 @@ public class QueryTest {
     copy.perform(mDb);
 
     verify(mDb, times(2)).rawQuery(eq("SELECT * FROM table_a LEFT JOIN table_b USING (id)"), eq(new String[0]));
+  }
+
+  @Test
+  public void shouldGetListOfTablesForSimpleQuery() throws Exception {
+    Set<String> tables = select().from("table_a").getTables();
+
+    assertThat(tables).containsOnly("table_a");
+  }
+
+  @Test
+  public void shouldGetListOfTablesFromSubqueries() throws Exception {
+    Set<String> tables = select().from(select().from("table_a")).getTables();
+
+    assertThat(tables).containsOnly("table_a");
+  }
+
+  @Test
+  public void shouldGetListOfTablesFromJoins() throws Exception {
+    Set<String> tables = select().from("table_a").join("table_b").getTables();
+
+    assertThat(tables).containsOnly("table_a", "table_b");
+  }
+
+  @Test
+  public void shouldGetListOfTablesFromJoinedSubqueries() throws Exception {
+    Set<String> tables = select().from("table_a").join(select().from("table_b")).getTables();
+
+    assertThat(tables).containsOnly("table_a", "table_b");
+  }
+
+  @Test
+  public void shouldGetListOfTablesForCompoundQuery() throws Exception {
+    Set<String> tables =
+        select().from("table_a")
+            .union()
+            .select().from("table_b")
+            .getTables();
+
+    assertThat(tables).containsOnly("table_a", "table_b");
+  }
+
+  @Test
+  public void shouldGetTablesFromInExpressionInSelection() throws Exception {
+    Set<String> tables =
+        select()
+            .from("table_a")
+            .where(column("col_a").in(select().column("id_a").from("table_b")))
+            .getTables();
+
+    assertThat(tables).containsOnly("table_a", "table_b");
+  }
+
+  @Test
+  public void shouldGetTablesFromInExpressionInHavingClause() throws Exception {
+    Set<String> tables =
+        select()
+            .from("table_a")
+            .groupBy("col_b")
+            .having(column("col_a").in(select().column("id_a").from("table_b")))
+            .getTables();
+
+    assertThat(tables).containsOnly("table_a", "table_b");
+  }
+
+  @Test
+  public void shouldGetTablesFromInExpressionInProjection() throws Exception {
+    Set<String> tables =
+        select()
+            .expr(column("col_a").in(select().column("id_a").from("table_b")))
+            .from("table_a")
+            .getTables();
+
+    assertThat(tables).containsOnly("table_a", "table_b");
+  }
+
+  @Test
+  public void shouldGetTablesFromInExpressionInOrderBy() throws Exception {
+    Set<String> tables =
+        select()
+            .from("table_a")
+            .orderBy(column("col_a").in(select().column("id_a").from("table_b")))
+            .getTables();
+
+    assertThat(tables).containsOnly("table_a", "table_b");
+  }
+
+  @Test
+  public void shouldGetTablesFromInExpressionInJoinConstraints() throws Exception {
+    Set<String> tables =
+        select()
+            .from("table_a")
+            .join("table_b")
+            .on(column("table_b", "col_a").in(select().column("id_a").from("table_c")))
+            .getTables();
+
+    assertThat(tables).containsOnly("table_a", "table_b", "table_c");
   }
 }

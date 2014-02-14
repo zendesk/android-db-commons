@@ -19,6 +19,7 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.Set;
 
 public final class QueryBuilder {
   private QueryBuilder() {
@@ -110,6 +111,11 @@ public final class QueryBuilder {
     @Override
     public Query copy() {
       return new QueryImpl(this);
+    }
+
+    @Override
+    public Set<String> getTables() {
+      return null;
     }
 
     private void resetCoreSelectParts() {
@@ -714,6 +720,7 @@ public final class QueryBuilder {
     FluentCursor perform(SQLiteDatabase db);
     RawQuery toRawQuery();
     Query copy();
+    Set<String> getTables();
   }
 
   private static class QueryBuilderProxy implements Query {
@@ -877,6 +884,11 @@ public final class QueryBuilder {
     @Override
     public Query copy() {
       return mDelegate.copy();
+    }
+
+    @Override
+    public Set<String> getTables() {
+      return mDelegate.getTables();
     }
 
     @Override
