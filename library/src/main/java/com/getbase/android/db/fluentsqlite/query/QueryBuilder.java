@@ -231,6 +231,14 @@ public final class QueryBuilder {
         for (TableOrSubquery tableOrSubquery : mTables.keySet()) {
           addTableOrSubquery(builder, tableOrSubquery);
         }
+
+        if (mPendingJoin != null) {
+          addTableOrSubquery(builder, mPendingJoin.mJoinSource);
+        }
+
+        for (JoinSpec join : mJoins) {
+          addTableOrSubquery(builder, join.mJoinSource);
+        }
       }
     }
 

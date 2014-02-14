@@ -790,6 +790,13 @@ public class QueryTest {
   }
 
   @Test
+  public void shouldGetListOfTablesFromMultipleJoins() throws Exception {
+    Set<String> tables = select().from("table_a").join("table_b").join("table_c").getTables();
+
+    assertThat(tables).containsOnly("table_a", "table_b", "table_c");
+  }
+
+  @Test
   public void shouldGetListOfTablesFromJoinedSubqueries() throws Exception {
     Set<String> tables = select().from("table_a").join(select().from("table_b")).getTables();
 
