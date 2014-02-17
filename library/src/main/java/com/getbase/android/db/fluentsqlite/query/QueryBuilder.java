@@ -11,6 +11,7 @@ import com.google.common.base.Strings;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSet.Builder;
+import com.google.common.collect.LinkedListMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
@@ -41,6 +42,7 @@ public final class QueryBuilder {
   private static class QueryImpl implements Query, ColumnAliasBuilder, LimitOffsetBuilder, OrderingTermBuilder, ColumnListTableSelector, ColumnsListAliasBuilder {
 
     private static class CompoundQueryPart {
+
       private List<String> mProjection = Lists.newArrayList();
       private String mColumnWithPotentialAlias;
       private List<String> mColumnsWithPotentialTable = Lists.newArrayList();
@@ -48,10 +50,9 @@ public final class QueryBuilder {
 
       private List<String> mGroupByExpressions = Lists.newArrayList();
       private List<String> mHaving = Lists.newArrayList();
-      private List<Object> mHavingArgs = Lists.newArrayList();
-
       private List<String> mSelection = Lists.newArrayList();
-      private List<Object> mSelectionArgs = Lists.newArrayList();
+
+      private LinkedListMultimap<QueryPart, Object> mArgs = LinkedListMultimap.create();
 
       private TableOrSubquery mPendingTable;
       private LinkedHashMap<TableOrSubquery, String> mTables = Maps.newLinkedHashMap();
@@ -74,10 +75,10 @@ public final class QueryBuilder {
 
         mGroupByExpressions = Lists.newCopyOnWriteArrayList(other.mGroupByExpressions);
         mHaving = Lists.newCopyOnWriteArrayList(other.mHaving);
-        mHavingArgs = Lists.newCopyOnWriteArrayList(other.mHavingArgs);
 
         mSelection = Lists.newCopyOnWriteArrayList(other.mSelection);
-        mSelectionArgs = Lists.newCopyOnWriteArrayList(other.mSelectionArgs);
+
+        mArgs = LinkedListMultimap.create(other.mArgs);
 
         mPendingTable = other.mPendingTable;
 
@@ -209,7 +210,7 @@ public final class QueryBuilder {
         if (!mSelection.isEmpty()) {
           builder.append(" WHERE ");
           builder.append(Joiner.on(" AND ").join(Collections2.transform(mSelection, SURROUND_WITH_PARENS)));
-          args.addAll(Collections2.transform(mSelectionArgs, Functions.toStringFunction()));
+          args.addAll(Collections2.transform(mArgs.get(QueryPart.SELECTION), Functions.toStringFunction()));
         }
 
         if (!mGroupByExpressions.isEmpty()) {
@@ -219,7 +220,7 @@ public final class QueryBuilder {
           if (!mHaving.isEmpty()) {
             builder.append(" HAVING ");
             builder.append(Joiner.on(" AND ").join(Collections2.transform(mHaving, SURROUND_WITH_PARENS)));
-            args.addAll(Collections2.transform(mHavingArgs, Functions.toStringFunction()));
+            args.addAll(Collections2.transform(mArgs.get(QueryPart.HAVING), Functions.toStringFunction()));
           }
         }
 
@@ -499,7 +500,7 @@ public final class QueryBuilder {
     @Override
     public Query having(String having, Object... havingArgs) {
       mCurrentQueryPart.mHaving.add(having);
-      Collections.addAll(mCurrentQueryPart.mHavingArgs, havingArgs);
+      mCurrentQueryPart.mArgs.putAll(QueryPart.HAVING, Arrays.asList(havingArgs));
 
       return this;
     }
@@ -683,7 +684,7 @@ public final class QueryBuilder {
     public Query where(String selection, Object... selectionArgs) {
       if (!Strings.isNullOrEmpty(selection)) {
         mCurrentQueryPart.mSelection.add(selection);
-        Collections.addAll(mCurrentQueryPart.mSelectionArgs, selectionArgs);
+        mCurrentQueryPart.mArgs.putAll(QueryPart.SELECTION, Arrays.asList(selectionArgs));
       }
 
       return this;
