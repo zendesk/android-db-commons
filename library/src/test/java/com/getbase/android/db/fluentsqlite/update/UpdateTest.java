@@ -395,4 +395,17 @@ public class UpdateTest {
 
     verify(mStatement).bindString(eq(1), eq("old"));
   }
+
+  @Test
+  public void shouldOverrideBoundArgsFromColumnExpressionsWithSimpleColumnExpression() throws Exception {
+    update()
+        .table("test")
+        .setColumn("col_a", column("col_b").in(select().column("id").from("B").where("status=?", "new")))
+        .setColumn("col_a", "666")
+        .perform(mDb);
+
+    verify(mStatement).executeUpdateDelete();
+    verify(mStatement).close();
+    verifyNoMoreInteractions(mStatement);
+  }
 }

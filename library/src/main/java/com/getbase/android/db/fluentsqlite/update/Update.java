@@ -127,6 +127,7 @@ public class Update implements UpdateTableSelector {
 
   public Update setColumn(String column, String expression) {
     mValues.remove(column);
+    mCustomExpressionsArgs.removeAll(column);
     mCustomExpressions.put(column, "(" + expression + ")");
     return this;
   }
@@ -134,7 +135,7 @@ public class Update implements UpdateTableSelector {
   public Update setColumn(String column, Expression expression) {
     setColumn(column, expression.toRawSql());
 
-    mCustomExpressionsArgs.replaceValues(column, Arrays.asList(expression.getMergedArgs()));
+    mCustomExpressionsArgs.putAll(column, Arrays.asList(expression.getMergedArgs()));
 
     return this;
   }
