@@ -23,6 +23,7 @@ import org.robolectric.annotation.Config;
 
 import android.content.ContentValues;
 import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteStatement;
 
 @RunWith(RobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
@@ -31,9 +32,14 @@ public class InsertTest {
   @Mock
   private SQLiteDatabase mDb;
 
+  @Mock
+  private SQLiteStatement mStatement;
+
   @Before
   public void setUp() throws Exception {
     MockitoAnnotations.initMocks(this);
+
+    when(mDb.compileStatement(anyString())).thenReturn(mStatement);
   }
 
   @Test
@@ -62,7 +68,8 @@ public class InsertTest {
     Query query = select().allColumns().from("B");
     insert().into("A").resultOf(query).perform(mDb);
 
-    verify(mDb).execSQL(eq("INSERT INTO A " + query.toRawQuery().mRawQuery));
+    verify(mDb).compileStatement(eq("INSERT INTO A " + query.toRawQuery().mRawQuery));
+    verify(mStatement).executeInsert();
   }
 
   @Test
@@ -76,10 +83,9 @@ public class InsertTest {
         )
         .perform(mDb);
 
-    verify(mDb).execSQL(
-        eq("INSERT INTO A SELECT * FROM B WHERE (col=?)"),
-        eq(new Object[] { 0 })
-    );
+    verify(mDb).compileStatement(eq("INSERT INTO A SELECT * FROM B WHERE (col=?)"));
+    verify(mStatement).bindString(eq(1), eq("0"));
+    verify(mStatement).executeInsert();
   }
 
   @Test
@@ -87,7 +93,8 @@ public class InsertTest {
     Query query = select().allColumns().from("B");
     insert().into("A").columns("a", "b", "c").resultOf(query).perform(mDb);
 
-    verify(mDb).execSQL(eq("INSERT INTO A (a, b, c) " + query.toRawQuery().mRawQuery));
+    verify(mDb).compileStatement(eq("INSERT INTO A (a, b, c) " + query.toRawQuery().mRawQuery));
+    verify(mStatement).executeInsert();
   }
 
   @Test
@@ -95,7 +102,8 @@ public class InsertTest {
     Query query = select().allColumns().from("B");
     insert().into("A").columns("a", "b").columns("c").resultOf(query).perform(mDb);
 
-    verify(mDb).execSQL(eq("INSERT INTO A (a, b, c) " + query.toRawQuery().mRawQuery));
+    verify(mDb).compileStatement(eq("INSERT INTO A (a, b, c) " + query.toRawQuery().mRawQuery));
+    verify(mStatement).executeInsert();
   }
 
   @Test

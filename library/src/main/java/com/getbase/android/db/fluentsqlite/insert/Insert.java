@@ -1,16 +1,16 @@
 package com.getbase.android.db.fluentsqlite.insert;
 
-import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
-import com.getbase.android.db.provider.Utils;
 import com.getbase.android.db.fluentsqlite.query.QueryBuilder.Query;
 import com.getbase.android.db.fluentsqlite.query.RawQuery;
+import com.getbase.android.db.provider.Utils;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
 
 import android.content.ContentValues;
 import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteStatement;
 
 import java.util.Collections;
 import java.util.List;
@@ -37,14 +37,12 @@ public class Insert implements InsertTableSelector, InsertFormSelector, InsertVa
     private final List<String> mQueryFormColumns;
 
     InsertWithSelect(String table, RawQuery query, List<String> queryFormColumns) {
-      checkArgument(query.mRawQueryArgs.isEmpty());
-
       mTable = table;
       mQuery = query;
       mQueryFormColumns = queryFormColumns;
     }
 
-    public void perform(SQLiteDatabase db) {
+    public long perform(SQLiteDatabase db) {
       StringBuilder builder = new StringBuilder();
       builder.append("INSERT INTO ").append(mTable).append(" ");
       if (!mQueryFormColumns.isEmpty()) {
@@ -55,7 +53,17 @@ public class Insert implements InsertTableSelector, InsertFormSelector, InsertVa
       }
       builder.append(mQuery.mRawQuery);
 
-      db.execSQL(builder.toString());
+      SQLiteStatement statement = db.compileStatement(builder.toString());
+      try {
+        int argIndex = 1;
+        for (String arg : mQuery.mRawQueryArgs) {
+          Utils.bindContentValueArg(statement, argIndex++, arg);
+        }
+
+        return statement.executeInsert();
+      } finally {
+        statement.close();
+      }
     }
   }
 
