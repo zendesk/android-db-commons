@@ -1,9 +1,9 @@
-package com.getbase.android.db.fluentsqlite.update;
+package com.getbase.android.db.fluentsqlite;
 
 import static com.getbase.android.db.fluentsqlite.Expressions.arg;
 import static com.getbase.android.db.fluentsqlite.Expressions.column;
-import static com.getbase.android.db.fluentsqlite.query.QueryBuilder.select;
-import static com.getbase.android.db.fluentsqlite.update.Update.update;
+import static com.getbase.android.db.fluentsqlite.QueryBuilder.select;
+import static com.getbase.android.db.fluentsqlite.Update.update;
 import static org.fest.assertions.Assertions.assertThat;
 import static org.fest.assertions.api.ANDROID.assertThat;
 import static org.fest.assertions.api.android.content.ContentValuesEntry.entry;
@@ -11,8 +11,6 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.*;
-
-import com.getbase.android.db.fluentsqlite.Expressions;
 
 import org.junit.Before;
 import org.junit.Test;

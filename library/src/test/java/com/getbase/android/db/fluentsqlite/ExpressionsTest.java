@@ -4,7 +4,7 @@ import static com.getbase.android.db.fluentsqlite.Expressions.arg;
 import static com.getbase.android.db.fluentsqlite.Expressions.coalesce;
 import static com.getbase.android.db.fluentsqlite.Expressions.column;
 import static com.getbase.android.db.fluentsqlite.Expressions.literal;
-import static com.getbase.android.db.fluentsqlite.query.QueryBuilder.select;
+import static com.getbase.android.db.fluentsqlite.QueryBuilder.select;
 import static org.fest.assertions.Assertions.assertThat;
 
 import com.getbase.android.db.fluentsqlite.Expressions.Expression;

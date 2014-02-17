@@ -1,4 +1,4 @@
-package com.getbase.android.db.fluentsqlite.update;
+package com.getbase.android.db.fluentsqlite;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 

@@ -1,14 +1,14 @@
-package com.getbase.android.db.fluentsqlite.query;
+package com.getbase.android.db.fluentsqlite;
 
 import static com.getbase.android.db.fluentsqlite.Expressions.column;
 import static com.getbase.android.db.fluentsqlite.Expressions.sum;
-import static com.getbase.android.db.fluentsqlite.query.QueryBuilder.select;
+import static com.getbase.android.db.fluentsqlite.QueryBuilder.select;
 import static org.fest.assertions.Assertions.assertThat;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.*;
 
 import com.getbase.android.db.fluentsqlite.Expressions.Expression;
-import com.getbase.android.db.fluentsqlite.query.QueryBuilder.Query;
+import com.getbase.android.db.fluentsqlite.QueryBuilder.Query;
 
 import org.junit.Before;
 import org.junit.Test;

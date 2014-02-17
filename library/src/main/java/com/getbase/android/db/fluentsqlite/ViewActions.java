@@ -3,8 +3,7 @@ package com.getbase.android.db.fluentsqlite;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
-import com.getbase.android.db.fluentsqlite.query.QueryBuilder.Query;
-import com.getbase.android.db.fluentsqlite.query.RawQuery;
+import com.getbase.android.db.fluentsqlite.QueryBuilder.Query;
 
 import android.database.sqlite.SQLiteDatabase;
 

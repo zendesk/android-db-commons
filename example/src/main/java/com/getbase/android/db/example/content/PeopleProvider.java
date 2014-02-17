@@ -1,7 +1,7 @@
 package com.getbase.android.db.example.content;
 
-import com.getbase.android.db.fluentsqlite.insert.Insert;
-import com.getbase.android.db.fluentsqlite.query.QueryBuilder;
+import com.getbase.android.db.fluentsqlite.Insert;
+import com.getbase.android.db.fluentsqlite.QueryBuilder;
 
 import android.content.ContentProvider;
 import android.content.ContentResolver;
