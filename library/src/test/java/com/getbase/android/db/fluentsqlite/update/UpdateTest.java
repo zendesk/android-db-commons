@@ -1,6 +1,8 @@
 package com.getbase.android.db.fluentsqlite.update;
 
+import static com.getbase.android.db.fluentsqlite.Expressions.arg;
 import static com.getbase.android.db.fluentsqlite.Expressions.column;
+import static com.getbase.android.db.fluentsqlite.query.QueryBuilder.select;
 import static com.getbase.android.db.fluentsqlite.update.Update.update;
 import static org.fest.assertions.Assertions.assertThat;
 import static org.fest.assertions.api.ANDROID.assertThat;
@@ -307,5 +309,52 @@ public class UpdateTest {
         any(String[].class)
     );
     assertThat(contentValuesArgument.getValue()).contains(entry("col1", "val1"), entry("col3", "val3"), entry("col2", null));
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void shouldRejectColumnExpressionWithUnboundArgsPlaceholders() throws Exception {
+    update().table("A").setColumn("id", arg());
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void shouldRejectSelectionWithExpressionWithTooManyArgsPlaceholders() throws Exception {
+    update().table("A").value("col1", "val1").where(column("col2").eq().arg());
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void shouldRejectSelectionWithExpressionWithTooFewArgsPlaceholders() throws Exception {
+    update().table("A").value("col1", "val1").where(column("col2").eq().arg(), 1, 2);
+  }
+
+  @Test
+  public void shouldBuildSelectionFromExpressionWithArgsPlaceholders() throws Exception {
+    update()
+        .table("A")
+        .value("col1", "val1")
+        .where(column("col2").eq().arg(), "val2")
+        .perform(mDb);
+
+    verify(mDb).update(
+        anyString(),
+        any(ContentValues.class),
+        eq("(col2 == ?)"),
+        eq(new String[] { "val2" })
+    );
+  }
+
+  @Test
+  public void shouldBuildSelectionFromExpressionWithBoundArgs() throws Exception {
+    update()
+        .table("A")
+        .value("col1", "val1")
+        .where(column("col2").in(select().column("id").from("B").where("status=?", "new")))
+        .perform(mDb);
+
+    verify(mDb).update(
+        anyString(),
+        any(ContentValues.class),
+        anyString(),
+        eq(new String[] { "new" })
+    );
   }
 }

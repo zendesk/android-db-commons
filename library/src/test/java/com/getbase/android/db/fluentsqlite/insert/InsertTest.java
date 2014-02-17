@@ -65,15 +65,21 @@ public class InsertTest {
     verify(mDb).execSQL(eq("INSERT INTO A " + query.toRawQuery().mRawQuery));
   }
 
-  @Test(expected = IllegalArgumentException.class)
-  public void shouldNotAllowUsingQueryWithBoundArgsForInsertInSelectForm() throws Exception {
+  @Test
+  public void shouldAllowUsingQueryWithBoundArgsForInsertInSelectForm() throws Exception {
     insert()
         .into("A")
         .resultOf(select()
             .allColumns()
             .from("B")
             .where("col=?", 0)
-        );
+        )
+        .perform(mDb);
+
+    verify(mDb).execSQL(
+        eq("INSERT INTO A SELECT * FROM B WHERE (col=?)"),
+        eq(new Object[] { 0 })
+    );
   }
 
   @Test

@@ -8,9 +8,11 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.AbstractIterator;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.Iterables;
+import com.google.common.collect.Maps;
 
 import java.util.Arrays;
 import java.util.Iterator;
+import java.util.Map;
 
 public final class Expressions {
   private Expressions() {
@@ -22,6 +24,8 @@ public final class Expressions {
 
   public interface Expression {
     String toRawSql();
+    int getArgsCount();
+    Map<Integer, Object> getBoundArgs();
   }
 
   public interface ExpressionCore {
@@ -187,6 +191,8 @@ public final class Expressions {
 
   private static class Builder implements ExpressionBuilder, ExpressionCombiner, CaseExpressionBuilder, CaseValue {
     private StringBuilder mBuilder = new StringBuilder();
+    private Map<Integer, Object> mArgs = Maps.newHashMap();
+    private int mArgsCount;
 
     private static final Joiner ARGS_JOINER = Joiner.on(", ");
     private static final Joiner CONCAT_JOINER = Joiner.on(" || ");
@@ -344,6 +350,16 @@ public final class Expressions {
     @Override
     public String toRawSql() {
       return mBuilder.toString().trim();
+    }
+
+    @Override
+    public int getArgsCount() {
+      return mArgsCount;
+    }
+
+    @Override
+    public Map<Integer, Object> getBoundArgs() {
+      return mArgs;
     }
 
     @Override

@@ -1,7 +1,8 @@
 package com.getbase.android.db.fluentsqlite.delete;
 
-import static com.getbase.android.db.fluentsqlite.delete.Delete.delete;
 import static com.getbase.android.db.fluentsqlite.Expressions.column;
+import static com.getbase.android.db.fluentsqlite.delete.Delete.delete;
+import static com.getbase.android.db.fluentsqlite.query.QueryBuilder.select;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
@@ -65,6 +66,44 @@ public class DeleteTest {
         anyString(),
         eq("(a=?)"),
         eq(new String[] { "0" })
+    );
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void shouldRejectSelectionWithExpressionWithTooManyArgsPlaceholders() throws Exception {
+    delete().from("A").where(column("col2").eq().arg());
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void shouldRejectSelectionWithExpressionWithTooFewArgsPlaceholders() throws Exception {
+    delete().from("A").where(column("col2").eq().arg(), 1, 2);
+  }
+
+  @Test
+  public void shouldBuildSelectionFromExpressionWithArgsPlaceholders() throws Exception {
+    delete()
+        .from("A")
+        .where(column("col2").eq().arg(), "val2")
+        .perform(mDb);
+
+    verify(mDb).delete(
+        anyString(),
+        eq("(col2 == ?)"),
+        eq(new String[] { "val2" })
+    );
+  }
+
+  @Test
+  public void shouldBuildSelectionFromExpressionWithBoundArgs() throws Exception {
+    delete()
+        .from("A")
+        .where(column("col2").in(select().column("id").from("B").where("status=?", "new")))
+        .perform(mDb);
+
+    verify(mDb).delete(
+        anyString(),
+        anyString(),
+        eq(new String[] { "new" })
     );
   }
 }

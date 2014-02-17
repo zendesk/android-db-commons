@@ -870,4 +870,143 @@ public class QueryTest {
 
     assertThat(tables).containsOnly("table_a", "table_b", "table_c");
   }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void shouldRejectExpressionInProjectionWithUnboundArgsPlaceholders() throws Exception {
+    select().expr(column("col2").eq().arg());
+  }
+
+  @Test
+  public void shouldBuildProjectionFromExpressionWithBoundArgs() throws Exception {
+    select()
+        .expr(column("col_a").in(select().column("id").from("table_b").where("status=?", "new")))
+        .from("table_a")
+        .perform(mDb);
+
+    verify(mDb).rawQuery(eq("SELECT col_a IN (SELECT id FROM table_b WHERE (status=?)) FROM table_a"), eq(new String[] { "new" }));
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void shouldRejectSelectionWithExpressionWithTooManyArgsPlaceholders() throws Exception {
+    select().where(column("col2").eq().arg());
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void shouldRejectSelectionWithExpressionWithTooFewArgsPlaceholders() throws Exception {
+    select().where(column("col2").eq().arg(), 1, 2);
+  }
+
+  @Test
+  public void shouldBuildSelectionFromExpressionWithArgsPlaceholders() throws Exception {
+    select()
+        .from("table_a")
+        .where(column("col_a").eq().arg(), "val2")
+        .perform(mDb);
+
+    verify(mDb).rawQuery(eq("SELECT * FROM table_a WHERE (col_a == ?)"), eq(new String[] { "val2" }));
+  }
+
+  @Test
+  public void shouldBuildSelectionFromExpressionWithBoundArgs() throws Exception {
+    select()
+        .from("table_a")
+        .where(column("col_a").in(select().column("id").from("table_b").where("status=?", "new")))
+        .perform(mDb);
+
+    verify(mDb).rawQuery(eq("SELECT * FROM table_a WHERE (col_a IN (SELECT id FROM table_b WHERE (status=?)))"), eq(new String[] { "new" }));
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void shouldRejectJoinConstraintWithExpressionWithTooManyArgsPlaceholders() throws Exception {
+    select().from("table_a").join("table_b").on(column("col2").eq().arg());
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void shouldRejectJoinConstraintWithExpressionWithTooFewArgsPlaceholders() throws Exception {
+    select().from("table_a").join("table_b").on(column("col2").eq().arg(), 1, 2);
+  }
+
+  @Test
+  public void shouldBuildJoinConstraintFromExpressionWithArgsPlaceholders() throws Exception {
+    select()
+        .from("table_a")
+        .join("table_b")
+        .on(column("col_a").eq().arg(), "val2")
+        .perform(mDb);
+
+    verify(mDb).rawQuery(eq("SELECT * FROM table_a JOIN table_b ON (col_a == ?)"), eq(new String[] { "val2" }));
+  }
+
+  @Test
+  public void shouldBuildJoinConstraintFromExpressionWithBoundArgs() throws Exception {
+    select()
+        .from("table_a")
+        .join("table_b")
+        .on(column("col_a").in(select().column("id").from("table_b").where("status=?", "new")))
+        .perform(mDb);
+
+    verify(mDb).rawQuery(eq("SELECT * FROM table_a JOIN table_b ON (col_a IN (SELECT id FROM table_b WHERE (status=?)))"), eq(new String[] { "new" }));
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void shouldRejectHavingClauseWithExpressionWithTooManyArgsPlaceholders() throws Exception {
+    select().from("table_a").groupBy("col_a").having(column("col2").eq().arg());
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void shouldRejectHavingClauseWithExpressionWithTooFewArgsPlaceholders() throws Exception {
+    select().from("table_a").groupBy("col_a").having(column("col2").eq().arg(), 1, 2);
+  }
+
+  @Test
+  public void shouldBuildHavingClauseFromExpressionWithArgsPlaceholders() throws Exception {
+    select()
+        .from("table_a")
+        .groupBy("col_a")
+        .having(column("col_b").eq().arg(), "val2")
+        .perform(mDb);
+
+    verify(mDb).rawQuery(eq("SELECT * FROM table_a GROUP BY col_a HAVING (col_b == ?)"), eq(new String[] { "val2" }));
+  }
+
+  @Test
+  public void shouldBuildHavingClauseFromExpressionWithBoundArgs() throws Exception {
+    select()
+        .from("table_a")
+        .groupBy("col_a")
+        .having(column("col_a").in(select().column("id").from("table_b").where("status=?", "new")))
+        .perform(mDb);
+
+    verify(mDb).rawQuery(eq("SELECT * FROM table_a GROUP BY col_a HAVING (col_a IN (SELECT id FROM table_b WHERE (status=?)))"), eq(new String[] { "new" }));
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void shouldRejectExpressionInGroupByWithUnboundArgsPlaceholders() throws Exception {
+    select().groupBy(column("col2").eq().arg());
+  }
+
+  @Test
+  public void shouldBuildGroupByFromExpressionWithBoundArgs() throws Exception {
+    select()
+        .from("table_a")
+        .groupBy(column("col_a").in(select().column("id").from("table_b").where("status=?", "new")))
+        .perform(mDb);
+
+    verify(mDb).rawQuery(eq("SELECT * FROM table_a GROUP BY col_a IN (SELECT id FROM table_b WHERE (status=?))"), eq(new String[] { "new" }));
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void shouldRejectExpressionInOrderByWithUnboundArgsPlaceholders() throws Exception {
+    select().orderBy(column("col2").eq().arg());
+  }
+
+  @Test
+  public void shouldBuildOrderByFromExpressionWithBoundArgs() throws Exception {
+    select()
+        .from("table_a")
+        .orderBy(column("col_a").in(select().column("id").from("table_b").where("status=?", "new")))
+        .perform(mDb);
+
+    verify(mDb).rawQuery(eq("SELECT * FROM table_a ORDER BY col_a IN (SELECT id FROM table_b WHERE (status=?))"), eq(new String[] { "new" }));
+  }
 }
