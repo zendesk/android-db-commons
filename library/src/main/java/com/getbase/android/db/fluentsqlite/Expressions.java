@@ -12,11 +12,36 @@ import com.google.common.collect.Maps;
 
 import java.util.Arrays;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
 public final class Expressions {
   private Expressions() {
+  }
+
+  public static void addExpressionArgs(List<Object> args, Expression expression, Object... boundArgs) {
+    Preconditions.checkArgument(
+        expression.getArgsCount() == boundArgs.length + expression.getBoundArgs().size(),
+        "Invalid number of arguments: expression has %s arg placeholders and %s bound args, so I need %s additional args specified, but there was %s args",
+        expression.getArgsCount(),
+        expression.getBoundArgs().size(),
+        (expression.getArgsCount() - expression.getBoundArgs().size()),
+        boundArgs.length
+    );
+
+    int boundArgsIndex = 0;
+    for (int i = 0; i < expression.getArgsCount(); i++) {
+      final Object arg;
+
+      if (expression.getBoundArgs().containsKey(i)) {
+        arg = expression.getBoundArgs().get(i);
+      } else {
+        arg = boundArgs[boundArgsIndex++];
+      }
+
+      args.add(arg);
+    }
   }
 
   public interface UnaryOperator {
