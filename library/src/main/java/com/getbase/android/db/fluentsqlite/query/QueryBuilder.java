@@ -152,6 +152,8 @@ public final class QueryBuilder {
           builder.append("*");
         }
 
+        args.addAll(Collections2.transform(mArgs.get(QueryPart.PROJECTION), Functions.toStringFunction()));
+
         if (!mTables.isEmpty()) {
           builder.append(" FROM ");
 
@@ -217,6 +219,8 @@ public final class QueryBuilder {
           builder.append(" GROUP BY ");
           builder.append(Joiner.on(", ").join(mGroupByExpressions));
 
+          args.addAll(Collections2.transform(mArgs.get(QueryPart.GROUP_BY), Functions.toStringFunction()));
+
           if (!mHaving.isEmpty()) {
             builder.append(" HAVING ");
             builder.append(Joiner.on(" AND ").join(Collections2.transform(mHaving, SURROUND_WITH_PARENS)));
@@ -252,6 +256,7 @@ public final class QueryBuilder {
     private String mOrderByCollation;
     private String mOrderByOrder;
     private List<String> mOrderClauses = Lists.newArrayList();
+    private List<Object> mOrderByArgs = Lists.newArrayList();
 
     private LinkedHashMap<CompoundQueryPart, String> mCompoundQueryParts = Maps.newLinkedHashMap();
 
@@ -324,6 +329,8 @@ public final class QueryBuilder {
         builder.append(Joiner.on(", ").join(mOrderClauses));
       }
 
+      args.addAll(Collections2.transform(mOrderByArgs, Functions.toStringFunction()));
+
       if (mLimit != null) {
         builder.append(" LIMIT ");
         builder.append(mLimit);
@@ -371,6 +378,11 @@ public final class QueryBuilder {
     public ColumnAliasBuilder expr(Expression expression) {
       mCurrentQueryPart.addPendingColumn();
       mCurrentQueryPart.mColumnWithPotentialAlias = expression.toRawSql();
+
+      if (expression.getArgsCount() > 0) {
+        mCurrentQueryPart.mArgs.putAll(QueryPart.PROJECTION, Arrays.asList(expression.getMergedArgs()));
+      }
+
       return this;
     }
 
@@ -494,6 +506,10 @@ public final class QueryBuilder {
 
     @Override
     public Query groupBy(Expression expression) {
+      if (expression.getArgsCount() > 0) {
+        mCurrentQueryPart.mArgs.putAll(QueryPart.GROUP_BY, Arrays.asList(expression.getMergedArgs()));
+      }
+
       return groupBy(expression.toRawSql());
     }
 
@@ -507,7 +523,7 @@ public final class QueryBuilder {
 
     @Override
     public Query having(Expression having, Object... havingArgs) {
-      return having(having.toRawSql(), havingArgs);
+      return having(having.toRawSql(), having.getMergedArgs(havingArgs));
     }
 
     @Override
@@ -577,7 +593,10 @@ public final class QueryBuilder {
 
       @Override
       public JoinOnConstraintBuilder on(Expression constraint, Object... constraintArgs) {
-        return on(constraint.toRawSql(), constraintArgs);
+        mCurrentQueryPart.mPendingJoin.mConstraints.add(constraint.toRawSql());
+        Collections.addAll(mCurrentQueryPart.mPendingJoin.mConstraintsArgs, constraint.getMergedArgs(constraintArgs));
+
+        return this;
       }
     };
 
@@ -641,6 +660,7 @@ public final class QueryBuilder {
 
     @Override
     public OrderingTermBuilder orderBy(Expression expression) {
+      Collections.addAll(mOrderByArgs, expression.getMergedArgs());
       return orderBy(expression.toRawSql());
     }
 
@@ -693,7 +713,7 @@ public final class QueryBuilder {
     @Override
     public Query where(Expression selection, Object... selectionArgs) {
       if (selection != null) {
-        where(selection.toRawSql(), selectionArgs);
+        where(selection.toRawSql(), selection.getMergedArgs(selectionArgs));
       }
       return this;
     }
