@@ -5,7 +5,8 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import com.getbase.android.db.fluentsqlite.Expressions.Expression;
 import com.google.common.base.Functions;
 import com.google.common.base.Joiner;
-import com.google.common.collect.Collections2;
+import com.google.common.base.Preconditions;
+import com.google.common.collect.FluentIterable;
 import com.google.common.collect.Lists;
 
 import android.database.sqlite.SQLiteDatabase;
@@ -16,7 +17,7 @@ import java.util.List;
 public class Delete implements DeleteTableSelector {
   private String mTable;
   private List<String> mSelections = Lists.newArrayList();
-  private List<String> mSelectionArgs = Lists.newArrayList();
+  private List<Object> mSelectionArgs = Lists.newArrayList();
 
   private Delete() {
   }
@@ -29,7 +30,7 @@ public class Delete implements DeleteTableSelector {
     return db.delete(
         mTable,
         Joiner.on(" AND ").join(mSelections),
-        mSelectionArgs.toArray(new String[mSelectionArgs.size()])
+        FluentIterable.from(mSelectionArgs).transform(Functions.toStringFunction()).toArray(String.class)
     );
   }
 
@@ -41,12 +42,38 @@ public class Delete implements DeleteTableSelector {
 
   public Delete where(String selection, Object... selectionArgs) {
     mSelections.add("(" + selection + ")");
-    mSelectionArgs.addAll(Collections2.transform(Arrays.asList(selectionArgs), Functions.toStringFunction()));
+    mSelectionArgs.addAll(Arrays.asList(selectionArgs));
 
     return this;
   }
 
   public Delete where(Expression expression, Object... selectionArgs) {
-    return where(expression.toRawSql(), selectionArgs);
+    mSelections.add("(" + expression.toRawSql() + ")");
+    addExpressionArgs(mSelectionArgs, expression, selectionArgs);
+    return this;
+  }
+
+  private void addExpressionArgs(List<Object> args, Expression expression, Object... boundArgs) {
+    Preconditions.checkArgument(
+        expression.getArgsCount() == boundArgs.length + expression.getBoundArgs().size(),
+        "Invalid number of arguments: expression has %s arg placeholders and %s bound args, so I need %s additional args specified, but there was %s args",
+        expression.getArgsCount(),
+        expression.getBoundArgs().size(),
+        (expression.getArgsCount() - expression.getBoundArgs().size()),
+        boundArgs.length
+    );
+
+    int boundArgsIndex = 0;
+    for (int i = 0; i < expression.getArgsCount(); i++) {
+      final Object arg;
+
+      if (expression.getBoundArgs().containsKey(i)) {
+        arg = expression.getBoundArgs().get(i);
+      } else {
+        arg = boundArgs[boundArgsIndex++];
+      }
+
+      args.add(arg);
+    }
   }
 }

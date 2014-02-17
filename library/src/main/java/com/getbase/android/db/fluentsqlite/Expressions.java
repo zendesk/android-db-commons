@@ -13,6 +13,7 @@ import com.google.common.collect.Maps;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Map.Entry;
 
 public final class Expressions {
   private Expressions() {
@@ -204,6 +205,13 @@ public final class Expressions {
     };
 
     private void expr(Expression... e) {
+      for (Expression expression : e) {
+        for (Entry<Integer, Object> boundArg : expression.getBoundArgs().entrySet()) {
+          mArgs.put(mArgsCount + boundArg.getKey(), boundArg.getValue());
+        }
+        mArgsCount += expression.getArgsCount();
+      }
+
       mBuilder
           .append("(")
           .append(ARGS_JOINER.join(getSQLs(e)))
@@ -304,7 +312,9 @@ public final class Expressions {
     @Override
     public ExpressionCombiner in(Query subquery) {
       RawQuery rawQuery = subquery.toRawQuery();
-      Preconditions.checkArgument(rawQuery.mRawQueryArgs.isEmpty(), "Queries with bound args in expressions are not supported yet");
+      for (String rawQueryArg : rawQuery.mRawQueryArgs) {
+        mArgs.put(mArgsCount++, rawQueryArg);
+      }
 
       binaryOperator("IN");
 
@@ -379,6 +389,7 @@ public final class Expressions {
     @Override
     public ExpressionCombiner arg() {
       mBuilder.append("?");
+      ++mArgsCount;
       return this;
     }
 
