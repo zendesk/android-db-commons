@@ -48,8 +48,6 @@ public class Delete implements DeleteTableSelector {
   }
 
   public Delete where(Expression expression, Object... selectionArgs) {
-    mSelections.add("(" + expression.toRawSql() + ")");
-    Expressions.addExpressionArgs(mSelectionArgs, expression, selectionArgs);
-    return this;
+    return where(expression.toRawSql(), expression.getMergedArgs(selectionArgs));
   }
 }

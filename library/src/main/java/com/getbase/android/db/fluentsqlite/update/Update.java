@@ -2,7 +2,6 @@ package com.getbase.android.db.fluentsqlite.update;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-import com.getbase.android.db.fluentsqlite.Expressions;
 import com.getbase.android.db.fluentsqlite.Expressions.Expression;
 import com.getbase.android.db.provider.Utils;
 import com.google.common.base.Function;
@@ -19,6 +18,7 @@ import android.content.ContentValues;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteStatement;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -134,9 +134,7 @@ public class Update implements UpdateTableSelector {
   public Update setColumn(String column, Expression expression) {
     setColumn(column, expression.toRawSql());
 
-    List<Object> args = Lists.newArrayList();
-    Expressions.addExpressionArgs(args, expression);
-    mCustomExpressionsArgs.replaceValues(column, args);
+    mCustomExpressionsArgs.replaceValues(column, Arrays.asList(expression.getMergedArgs()));
 
     return this;
   }
@@ -149,9 +147,6 @@ public class Update implements UpdateTableSelector {
   }
 
   public Update where(Expression expression, Object... selectionArgs) {
-    mSelections.add("(" + expression.toRawSql() + ")");
-    Expressions.addExpressionArgs(mSelectionArgs, expression, selectionArgs);
-
-    return this;
+    return where(expression.toRawSql(), expression.getMergedArgs(selectionArgs));
   }
 }

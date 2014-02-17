@@ -8,8 +8,10 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.AbstractIterator;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
@@ -20,7 +22,7 @@ public final class Expressions {
   private Expressions() {
   }
 
-  public static void addExpressionArgs(List<Object> args, Expression expression, Object... boundArgs) {
+  private static void addExpressionArgs(List<Object> args, Expression expression, Object... boundArgs) {
     Preconditions.checkArgument(
         expression.getArgsCount() == boundArgs.length + expression.getBoundArgs().size(),
         "Invalid number of arguments: expression has %s arg placeholders and %s bound args, so I need %s additional args specified, but there was %s args",
@@ -52,6 +54,7 @@ public final class Expressions {
     String toRawSql();
     int getArgsCount();
     Map<Integer, Object> getBoundArgs();
+    Object[] getMergedArgs(Object... boundArgs);
   }
 
   public interface ExpressionCore {
@@ -395,6 +398,13 @@ public final class Expressions {
     @Override
     public Map<Integer, Object> getBoundArgs() {
       return mArgs;
+    }
+
+    @Override
+    public Object[] getMergedArgs(Object... boundArgs) {
+      ArrayList<Object> args = Lists.newArrayList();
+      addExpressionArgs(args, this, boundArgs);
+      return args.toArray();
     }
 
     @Override
