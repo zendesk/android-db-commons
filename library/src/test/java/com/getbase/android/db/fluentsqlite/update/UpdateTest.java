@@ -316,6 +316,17 @@ public class UpdateTest {
     update().table("A").setColumn("id", arg());
   }
 
+  @Test
+  public void shouldUseBoundArgsFromColumnExpressions() throws Exception {
+    update()
+        .table("test")
+        .setColumn("col_a", column("col_b").in(select().column("id").from("B").where("status=?", "new")))
+        .perform(mDb);
+
+    verify(mDb).compileStatement(eq("UPDATE test SET col_a=(col_b IN (SELECT id FROM B WHERE (status=?)))"));
+    verify(mStatement).bindString(eq(1), eq("new"));
+  }
+
   @Test(expected = IllegalArgumentException.class)
   public void shouldRejectSelectionWithExpressionWithTooManyArgsPlaceholders() throws Exception {
     update().table("A").value("col1", "val1").where(column("col2").eq().arg());
@@ -356,5 +367,32 @@ public class UpdateTest {
         anyString(),
         eq(new String[] { "new" })
     );
+  }
+
+  @Test
+  public void shouldNotUseBoundArgsFromColumnExpressionsOverriddenByContentValues() throws Exception {
+    update()
+        .table("test")
+        .setColumn("col_a", column("col_b").in(select().column("id").from("B").where("status=?", "new")))
+        .value("col_a", 666)
+        .perform(mDb);
+
+    verify(mDb).update(
+        anyString(),
+        any(ContentValues.class),
+        anyString(),
+        eq(new String[0])
+    );
+  }
+
+  @Test
+  public void shouldOverrideBoundArgsFromColumnExpressionsIfTheExpressionForTheSameColumnIsSpecifiedTwice() throws Exception {
+    update()
+        .table("test")
+        .setColumn("col_a", column("col_b").in(select().column("id").from("B").where("status=?", "new")))
+        .setColumn("col_a", column("col_b").in(select().column("id").from("B").where("status=?", "old")))
+        .perform(mDb);
+
+    verify(mStatement).bindString(eq(1), eq("old"));
   }
 }
