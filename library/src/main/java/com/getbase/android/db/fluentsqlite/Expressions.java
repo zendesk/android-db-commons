@@ -58,12 +58,15 @@ public final class Expressions {
     ExpressionCore not();
   }
 
-  public interface Expression {
-    String toRawSql();
-    int getArgsCount();
-    Map<Integer, Object> getBoundArgs();
-    Set<String> getTables();
-    Object[] getMergedArgs(Object... boundArgs);
+  public static abstract class Expression {
+    Expression() {
+    }
+
+    abstract String toRawSql();
+    abstract int getArgsCount();
+    abstract Map<Integer, Object> getBoundArgs();
+    abstract Set<String> getTables();
+    abstract Object[] getMergedArgs(Object... boundArgs);
   }
 
   public interface ExpressionCore {
@@ -143,7 +146,7 @@ public final class Expressions {
   public interface ExpressionBuilder extends UnaryOperator, ExpressionCore, CaseExpressions {
   }
 
-  public interface ExpressionCombiner extends BinaryOperator, Expression {
+  public static abstract class ExpressionCombiner extends Expression implements BinaryOperator {
   }
 
   // mirror all method from ExpressionBuilder interface
@@ -227,7 +230,7 @@ public final class Expressions {
     return new Builder().cases(e);
   }
 
-  private static class Builder implements ExpressionBuilder, ExpressionCombiner, CaseExpressionBuilder, CaseValue {
+  private static class Builder extends ExpressionCombiner implements ExpressionBuilder, CaseExpressionBuilder, CaseValue {
     private StringBuilder mBuilder = new StringBuilder();
     private Map<Integer, Object> mArgs = Maps.newHashMap();
     private List<Query> mSubqueries = Lists.newArrayList();
