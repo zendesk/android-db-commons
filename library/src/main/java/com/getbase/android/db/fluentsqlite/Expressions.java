@@ -17,8 +17,17 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
 public final class Expressions {
+
+  public static final Function<Query, Iterable<String>> GET_TABLES = new Function<Query, Iterable<String>>() {
+    @Override
+    public Iterable<String> apply(Query subquery) {
+      return subquery.getTables();
+    }
+  };
+
   private Expressions() {
   }
 
@@ -54,6 +63,7 @@ public final class Expressions {
     String toRawSql();
     int getArgsCount();
     Map<Integer, Object> getBoundArgs();
+    Set<String> getTables();
     Object[] getMergedArgs(Object... boundArgs);
   }
 
@@ -221,6 +231,7 @@ public final class Expressions {
   private static class Builder implements ExpressionBuilder, ExpressionCombiner, CaseExpressionBuilder, CaseValue {
     private StringBuilder mBuilder = new StringBuilder();
     private Map<Integer, Object> mArgs = Maps.newHashMap();
+    private List<Query> mSubqueries = Lists.newArrayList();
     private int mArgsCount;
 
     private static final Joiner ARGS_JOINER = Joiner.on(", ");
@@ -343,6 +354,7 @@ public final class Expressions {
       for (String rawQueryArg : rawQuery.mRawQueryArgs) {
         mArgs.put(mArgsCount++, rawQueryArg);
       }
+      mSubqueries.add(subquery);
 
       binaryOperator("IN");
 
@@ -398,6 +410,14 @@ public final class Expressions {
     @Override
     public Map<Integer, Object> getBoundArgs() {
       return mArgs;
+    }
+
+    @Override
+    public Set<String> getTables() {
+      return FluentIterable
+          .from(mSubqueries)
+          .transformAndConcat(GET_TABLES)
+          .toSet();
     }
 
     @Override

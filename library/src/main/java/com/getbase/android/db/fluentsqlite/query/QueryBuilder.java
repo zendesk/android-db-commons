@@ -14,6 +14,7 @@ import com.google.common.collect.ImmutableSet.Builder;
 import com.google.common.collect.LinkedListMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 
 import android.database.sqlite.SQLiteDatabase;
 
@@ -63,6 +64,8 @@ public final class QueryBuilder {
       private JoinSpec mPendingJoin;
       private List<JoinSpec> mJoins = Lists.newArrayList();
 
+      private Set<String> mTablesUsedInExpressions = Sets.newHashSet();
+
       CompoundQueryPart() {
       }
 
@@ -91,6 +94,8 @@ public final class QueryBuilder {
         for (JoinSpec join : other.mJoins) {
           mJoins.add(new JoinSpec(join));
         }
+
+        mTablesUsedInExpressions = Sets.newCopyOnWriteArraySet(other.mTablesUsedInExpressions);
       }
 
       private void addPendingColumn() {
@@ -244,6 +249,8 @@ public final class QueryBuilder {
         for (JoinSpec join : mJoins) {
           addTableOrSubquery(builder, join.mJoinSource);
         }
+
+        builder.addAll(mTablesUsedInExpressions);
       }
     }
 
@@ -257,6 +264,7 @@ public final class QueryBuilder {
     private String mOrderByOrder;
     private List<String> mOrderClauses = Lists.newArrayList();
     private List<Object> mOrderByArgs = Lists.newArrayList();
+    private Set<String> mTablesUsedInExpressions = Sets.newHashSet();
 
     private LinkedHashMap<CompoundQueryPart, String> mCompoundQueryParts = Maps.newLinkedHashMap();
 
@@ -290,6 +298,7 @@ public final class QueryBuilder {
       for (CompoundQueryPart part : mCompoundQueryParts.keySet()) {
         part.getTables(builder);
       }
+      builder.addAll(mTablesUsedInExpressions);
 
       return builder.build();
     }
@@ -378,6 +387,7 @@ public final class QueryBuilder {
     public ColumnAliasBuilder expr(Expression expression) {
       mCurrentQueryPart.addPendingColumn();
       mCurrentQueryPart.mColumnWithPotentialAlias = expression.toRawSql();
+      mCurrentQueryPart.mTablesUsedInExpressions.addAll(expression.getTables());
 
       if (expression.getArgsCount() > 0) {
         mCurrentQueryPart.mArgs.putAll(QueryPart.PROJECTION, Arrays.asList(expression.getMergedArgs()));
@@ -506,6 +516,7 @@ public final class QueryBuilder {
 
     @Override
     public Query groupBy(Expression expression) {
+      mCurrentQueryPart.mTablesUsedInExpressions.addAll(expression.getTables());
       if (expression.getArgsCount() > 0) {
         mCurrentQueryPart.mArgs.putAll(QueryPart.GROUP_BY, Arrays.asList(expression.getMergedArgs()));
       }
@@ -523,6 +534,7 @@ public final class QueryBuilder {
 
     @Override
     public Query having(Expression having, Object... havingArgs) {
+      mCurrentQueryPart.mTablesUsedInExpressions.addAll(having.getTables());
       return having(having.toRawSql(), having.getMergedArgs(havingArgs));
     }
 
@@ -593,6 +605,7 @@ public final class QueryBuilder {
 
       @Override
       public JoinOnConstraintBuilder on(Expression constraint, Object... constraintArgs) {
+        mCurrentQueryPart.mTablesUsedInExpressions.addAll(constraint.getTables());
         mCurrentQueryPart.mPendingJoin.mConstraints.add(constraint.toRawSql());
         Collections.addAll(mCurrentQueryPart.mPendingJoin.mConstraintsArgs, constraint.getMergedArgs(constraintArgs));
 
@@ -660,6 +673,7 @@ public final class QueryBuilder {
 
     @Override
     public OrderingTermBuilder orderBy(Expression expression) {
+      mTablesUsedInExpressions.addAll(expression.getTables());
       Collections.addAll(mOrderByArgs, expression.getMergedArgs());
       return orderBy(expression.toRawSql());
     }
@@ -713,6 +727,7 @@ public final class QueryBuilder {
     @Override
     public Query where(Expression selection, Object... selectionArgs) {
       if (selection != null) {
+        mCurrentQueryPart.mTablesUsedInExpressions.addAll(selection.getTables());
         where(selection.toRawSql(), selection.getMergedArgs(selectionArgs));
       }
       return this;
