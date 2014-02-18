@@ -1,15 +1,15 @@
-package com.getbase.android.db.fluentsqlite.insert;
+package com.getbase.android.db.fluentsqlite;
 
-import static com.getbase.android.db.fluentsqlite.insert.Insert.insert;
-import static com.getbase.android.db.fluentsqlite.query.QueryBuilder.select;
+import static com.getbase.android.db.fluentsqlite.Insert.insert;
+import static com.getbase.android.db.fluentsqlite.QueryBuilder.select;
 import static org.fest.assertions.Assertions.assertThat;
 import static org.fest.assertions.api.ANDROID.assertThat;
 import static org.fest.assertions.api.android.content.ContentValuesEntry.entry;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.*;
 
-import com.getbase.android.db.fluentsqlite.insert.Insert.DefaultValuesInsert;
-import com.getbase.android.db.fluentsqlite.query.QueryBuilder.Query;
+import com.getbase.android.db.fluentsqlite.Insert.DefaultValuesInsert;
+import com.getbase.android.db.fluentsqlite.QueryBuilder.Query;
 
 import org.fest.assertions.Assertions;
 import org.junit.Before;
@@ -23,6 +23,7 @@ import org.robolectric.annotation.Config;
 
 import android.content.ContentValues;
 import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteStatement;
 
 @RunWith(RobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
@@ -31,9 +32,14 @@ public class InsertTest {
   @Mock
   private SQLiteDatabase mDb;
 
+  @Mock
+  private SQLiteStatement mStatement;
+
   @Before
   public void setUp() throws Exception {
     MockitoAnnotations.initMocks(this);
+
+    when(mDb.compileStatement(anyString())).thenReturn(mStatement);
   }
 
   @Test
@@ -62,18 +68,24 @@ public class InsertTest {
     Query query = select().allColumns().from("B");
     insert().into("A").resultOf(query).perform(mDb);
 
-    verify(mDb).execSQL(eq("INSERT INTO A " + query.toRawQuery().mRawQuery));
+    verify(mDb).compileStatement(eq("INSERT INTO A " + query.toRawQuery().mRawQuery));
+    verify(mStatement).executeInsert();
   }
 
-  @Test(expected = IllegalArgumentException.class)
-  public void shouldNotAllowUsingQueryWithBoundArgsForInsertInSelectForm() throws Exception {
+  @Test
+  public void shouldAllowUsingQueryWithBoundArgsForInsertInSelectForm() throws Exception {
     insert()
         .into("A")
         .resultOf(select()
             .allColumns()
             .from("B")
             .where("col=?", 0)
-        );
+        )
+        .perform(mDb);
+
+    verify(mDb).compileStatement(eq("INSERT INTO A SELECT * FROM B WHERE (col=?)"));
+    verify(mStatement).bindString(eq(1), eq("0"));
+    verify(mStatement).executeInsert();
   }
 
   @Test
@@ -81,7 +93,8 @@ public class InsertTest {
     Query query = select().allColumns().from("B");
     insert().into("A").columns("a", "b", "c").resultOf(query).perform(mDb);
 
-    verify(mDb).execSQL(eq("INSERT INTO A (a, b, c) " + query.toRawQuery().mRawQuery));
+    verify(mDb).compileStatement(eq("INSERT INTO A (a, b, c) " + query.toRawQuery().mRawQuery));
+    verify(mStatement).executeInsert();
   }
 
   @Test
@@ -89,7 +102,8 @@ public class InsertTest {
     Query query = select().allColumns().from("B");
     insert().into("A").columns("a", "b").columns("c").resultOf(query).perform(mDb);
 
-    verify(mDb).execSQL(eq("INSERT INTO A (a, b, c) " + query.toRawQuery().mRawQuery));
+    verify(mDb).compileStatement(eq("INSERT INTO A (a, b, c) " + query.toRawQuery().mRawQuery));
+    verify(mStatement).executeInsert();
   }
 
   @Test

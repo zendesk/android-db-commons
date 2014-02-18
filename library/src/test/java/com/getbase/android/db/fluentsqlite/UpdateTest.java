@@ -1,7 +1,9 @@
-package com.getbase.android.db.fluentsqlite.update;
+package com.getbase.android.db.fluentsqlite;
 
+import static com.getbase.android.db.fluentsqlite.Expressions.arg;
 import static com.getbase.android.db.fluentsqlite.Expressions.column;
-import static com.getbase.android.db.fluentsqlite.update.Update.update;
+import static com.getbase.android.db.fluentsqlite.QueryBuilder.select;
+import static com.getbase.android.db.fluentsqlite.Update.update;
 import static org.fest.assertions.Assertions.assertThat;
 import static org.fest.assertions.api.ANDROID.assertThat;
 import static org.fest.assertions.api.android.content.ContentValuesEntry.entry;
@@ -9,8 +11,6 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.*;
-
-import com.getbase.android.db.fluentsqlite.Expressions;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -307,5 +307,103 @@ public class UpdateTest {
         any(String[].class)
     );
     assertThat(contentValuesArgument.getValue()).contains(entry("col1", "val1"), entry("col3", "val3"), entry("col2", null));
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void shouldRejectColumnExpressionWithUnboundArgsPlaceholders() throws Exception {
+    update().table("A").setColumn("id", arg());
+  }
+
+  @Test
+  public void shouldUseBoundArgsFromColumnExpressions() throws Exception {
+    update()
+        .table("test")
+        .setColumn("col_a", column("col_b").in(select().column("id").from("B").where("status=?", "new")))
+        .perform(mDb);
+
+    verify(mDb).compileStatement(eq("UPDATE test SET col_a=(col_b IN (SELECT id FROM B WHERE (status=?)))"));
+    verify(mStatement).bindString(eq(1), eq("new"));
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void shouldRejectSelectionWithExpressionWithTooManyArgsPlaceholders() throws Exception {
+    update().table("A").value("col1", "val1").where(column("col2").eq().arg());
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void shouldRejectSelectionWithExpressionWithTooFewArgsPlaceholders() throws Exception {
+    update().table("A").value("col1", "val1").where(column("col2").eq().arg(), 1, 2);
+  }
+
+  @Test
+  public void shouldBuildSelectionFromExpressionWithArgsPlaceholders() throws Exception {
+    update()
+        .table("A")
+        .value("col1", "val1")
+        .where(column("col2").eq().arg(), "val2")
+        .perform(mDb);
+
+    verify(mDb).update(
+        anyString(),
+        any(ContentValues.class),
+        eq("(col2 == ?)"),
+        eq(new String[] { "val2" })
+    );
+  }
+
+  @Test
+  public void shouldBuildSelectionFromExpressionWithBoundArgs() throws Exception {
+    update()
+        .table("A")
+        .value("col1", "val1")
+        .where(column("col2").in(select().column("id").from("B").where("status=?", "new")))
+        .perform(mDb);
+
+    verify(mDb).update(
+        anyString(),
+        any(ContentValues.class),
+        anyString(),
+        eq(new String[] { "new" })
+    );
+  }
+
+  @Test
+  public void shouldNotUseBoundArgsFromColumnExpressionsOverriddenByContentValues() throws Exception {
+    update()
+        .table("test")
+        .setColumn("col_a", column("col_b").in(select().column("id").from("B").where("status=?", "new")))
+        .value("col_a", 666)
+        .perform(mDb);
+
+    verify(mDb).update(
+        anyString(),
+        any(ContentValues.class),
+        anyString(),
+        eq(new String[0])
+    );
+  }
+
+  @Test
+  public void shouldOverrideBoundArgsFromColumnExpressionsIfTheExpressionForTheSameColumnIsSpecifiedTwice() throws Exception {
+    update()
+        .table("test")
+        .setColumn("col_a", column("col_b").in(select().column("id").from("B").where("status=?", "new")))
+        .setColumn("col_a", column("col_b").in(select().column("id").from("B").where("status=?", "old")))
+        .perform(mDb);
+
+    verify(mStatement).bindString(eq(1), eq("old"));
+  }
+
+  @Test
+  public void shouldOverrideBoundArgsFromColumnExpressionsWithSimpleColumnExpression() throws Exception {
+    update()
+        .table("test")
+        .setColumn("col_a", column("col_b").in(select().column("id").from("B").where("status=?", "new")))
+        .setColumn("col_a", "666")
+        .perform(mDb);
+
+    verify(mStatement).executeUpdateDelete();
+    verify(mStatement).close();
+    verifyNoMoreInteractions(mStatement);
   }
 }

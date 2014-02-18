@@ -1,27 +1,72 @@
 package com.getbase.android.db.fluentsqlite;
 
-import com.getbase.android.db.fluentsqlite.query.QueryBuilder.Query;
-import com.getbase.android.db.fluentsqlite.query.RawQuery;
+import com.getbase.android.db.fluentsqlite.QueryBuilder.Query;
 import com.google.common.base.Function;
 import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.AbstractIterator;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 
 public final class Expressions {
+
+  public static final Function<Query, Iterable<String>> GET_TABLES = new Function<Query, Iterable<String>>() {
+    @Override
+    public Iterable<String> apply(Query subquery) {
+      return subquery.getTables();
+    }
+  };
+
   private Expressions() {
+  }
+
+  private static void addExpressionArgs(List<Object> args, Expression expression, Object... boundArgs) {
+    Preconditions.checkArgument(
+        expression.getArgsCount() == boundArgs.length + expression.getBoundArgs().size(),
+        "Invalid number of arguments: expression has %s arg placeholders and %s bound args, so I need %s additional args specified, but there was %s args",
+        expression.getArgsCount(),
+        expression.getBoundArgs().size(),
+        (expression.getArgsCount() - expression.getBoundArgs().size()),
+        boundArgs.length
+    );
+
+    int boundArgsIndex = 0;
+    for (int i = 0; i < expression.getArgsCount(); i++) {
+      final Object arg;
+
+      if (expression.getBoundArgs().containsKey(i)) {
+        arg = expression.getBoundArgs().get(i);
+      } else {
+        arg = boundArgs[boundArgsIndex++];
+      }
+
+      args.add(arg);
+    }
   }
 
   public interface UnaryOperator {
     ExpressionCore not();
   }
 
-  public interface Expression {
-    String toRawSql();
+  public static abstract class Expression {
+    Expression() {
+    }
+
+    abstract String toRawSql();
+    abstract int getArgsCount();
+    abstract Map<Integer, Object> getBoundArgs();
+    abstract Set<String> getTables();
+    abstract Object[] getMergedArgs(Object... boundArgs);
   }
 
   public interface ExpressionCore {
@@ -101,7 +146,7 @@ public final class Expressions {
   public interface ExpressionBuilder extends UnaryOperator, ExpressionCore, CaseExpressions {
   }
 
-  public interface ExpressionCombiner extends BinaryOperator, Expression {
+  public static abstract class ExpressionCombiner extends Expression implements BinaryOperator {
   }
 
   // mirror all method from ExpressionBuilder interface
@@ -185,8 +230,11 @@ public final class Expressions {
     return new Builder().cases(e);
   }
 
-  private static class Builder implements ExpressionBuilder, ExpressionCombiner, CaseExpressionBuilder, CaseValue {
+  private static class Builder extends ExpressionCombiner implements ExpressionBuilder, CaseExpressionBuilder, CaseValue {
     private StringBuilder mBuilder = new StringBuilder();
+    private Map<Integer, Object> mArgs = Maps.newHashMap();
+    private List<Query> mSubqueries = Lists.newArrayList();
+    private int mArgsCount;
 
     private static final Joiner ARGS_JOINER = Joiner.on(", ");
     private static final Joiner CONCAT_JOINER = Joiner.on(" || ");
@@ -198,6 +246,13 @@ public final class Expressions {
     };
 
     private void expr(Expression... e) {
+      for (Expression expression : e) {
+        for (Entry<Integer, Object> boundArg : expression.getBoundArgs().entrySet()) {
+          mArgs.put(mArgsCount + boundArg.getKey(), boundArg.getValue());
+        }
+        mArgsCount += expression.getArgsCount();
+      }
+
       mBuilder
           .append("(")
           .append(ARGS_JOINER.join(getSQLs(e)))
@@ -298,7 +353,10 @@ public final class Expressions {
     @Override
     public ExpressionCombiner in(Query subquery) {
       RawQuery rawQuery = subquery.toRawQuery();
-      Preconditions.checkArgument(rawQuery.mRawQueryArgs.isEmpty(), "Queries with bound args in expressions are not supported yet");
+      for (String rawQueryArg : rawQuery.mRawQueryArgs) {
+        mArgs.put(mArgsCount++, rawQueryArg);
+      }
+      mSubqueries.add(subquery);
 
       binaryOperator("IN");
 
@@ -347,6 +405,31 @@ public final class Expressions {
     }
 
     @Override
+    public int getArgsCount() {
+      return mArgsCount;
+    }
+
+    @Override
+    public Map<Integer, Object> getBoundArgs() {
+      return mArgs;
+    }
+
+    @Override
+    public Set<String> getTables() {
+      return FluentIterable
+          .from(mSubqueries)
+          .transformAndConcat(GET_TABLES)
+          .toSet();
+    }
+
+    @Override
+    public Object[] getMergedArgs(Object... boundArgs) {
+      ArrayList<Object> args = Lists.newArrayList();
+      addExpressionArgs(args, this, boundArgs);
+      return args.toArray();
+    }
+
+    @Override
     public ExpressionCombiner column(String col) {
       mBuilder.append(col);
       return this;
@@ -363,6 +446,7 @@ public final class Expressions {
     @Override
     public ExpressionCombiner arg() {
       mBuilder.append("?");
+      ++mArgsCount;
       return this;
     }
 
