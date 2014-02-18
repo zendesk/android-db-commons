@@ -1,5 +1,6 @@
 package com.getbase.android.db.cursors;
 
+import static org.fest.assertions.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 
 import com.google.common.base.Function;
@@ -12,8 +13,6 @@ import org.robolectric.annotation.Config;
 
 import android.database.Cursor;
 import android.database.MatrixCursor;
-
-import static org.fest.assertions.Assertions.assertThat;
 
 @RunWith(RobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
