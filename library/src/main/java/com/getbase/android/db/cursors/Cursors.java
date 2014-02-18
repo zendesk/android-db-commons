@@ -30,11 +30,11 @@ public final class Cursors {
   }
 
   /**
-   * Closes non-null {@code cursor} or does nothing in case {@code cursor}
-   * is null.
+   * Closes non-null and opened {@code cursor} or does nothing in case {@code cursor}
+   * is null or it's already closed.
    */
   public static void closeQuietly(Cursor cursor) {
-    if (cursor != null) {
+    if (cursor != null && !cursor.isClosed()) {
       cursor.close();
     }
   }

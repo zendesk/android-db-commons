@@ -1,5 +1,8 @@
 package com.getbase.android.db.cursors;
 
+import static org.fest.assertions.Assertions.assertThat;
+import static org.mockito.Mockito.*;
+
 import com.google.common.base.Function;
 import com.google.common.collect.FluentIterable;
 
@@ -10,8 +13,6 @@ import org.robolectric.annotation.Config;
 
 import android.database.Cursor;
 import android.database.MatrixCursor;
-
-import static org.fest.assertions.Assertions.assertThat;
 
 @RunWith(RobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
@@ -39,5 +40,13 @@ public class CursorsTest {
   @Test
   public void shouldSurviveNullPassedToCloseQuietly() throws Exception {
     Cursors.closeQuietly(null);
+  }
+
+  @Test
+  public void shouldNotTryToCloseAlreadyClosedCursor() throws Exception {
+    Cursor cursor = mock(Cursor.class);
+    when(cursor.isClosed()).thenReturn(true);
+    Cursors.closeQuietly(cursor);
+    verify(cursor, never()).close();
   }
 }
