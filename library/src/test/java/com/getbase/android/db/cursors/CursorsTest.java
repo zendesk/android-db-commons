@@ -1,5 +1,7 @@
 package com.getbase.android.db.cursors;
 
+import static org.mockito.Mockito.*;
+
 import com.google.common.base.Function;
 import com.google.common.collect.FluentIterable;
 
@@ -39,5 +41,13 @@ public class CursorsTest {
   @Test
   public void shouldSurviveNullPassedToCloseQuietly() throws Exception {
     Cursors.closeQuietly(null);
+  }
+
+  @Test
+  public void shouldNotTryToCloseAlreadyClosedCursor() throws Exception {
+    Cursor cursor = mock(Cursor.class);
+    when(cursor.isClosed()).thenReturn(true);
+    Cursors.closeQuietly(cursor);
+    verify(cursor, never()).close();
   }
 }
