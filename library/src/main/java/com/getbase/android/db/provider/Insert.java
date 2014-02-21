@@ -1,6 +1,7 @@
 package com.getbase.android.db.provider;
 
 import android.content.ContentProviderOperation;
+import android.content.ContentProviderOperation.Builder;
 import android.content.ContentValues;
 import android.net.Uri;
 import android.os.RemoteException;
@@ -30,8 +31,11 @@ public class Insert extends ProviderAction<Uri> implements ConvertibleToOperatio
 
   @Override
   public ContentProviderOperation toContentProviderOperation() {
-    return ContentProviderOperation.newInsert(getUri())
-        .withValues(contentValues)
-        .build();
+    return toContentProviderOperationBuilder().build();
+  }
+
+  @Override
+  public Builder toContentProviderOperationBuilder() {
+    return ContentProviderOperation.newInsert(getUri()).withValues(contentValues);
   }
 }

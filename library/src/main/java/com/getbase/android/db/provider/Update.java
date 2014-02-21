@@ -4,6 +4,7 @@ import com.google.common.base.Joiner;
 import com.google.common.collect.Collections2;
 
 import android.content.ContentProviderOperation;
+import android.content.ContentProviderOperation.Builder;
 import android.content.ContentValues;
 import android.net.Uri;
 import android.os.RemoteException;
@@ -46,9 +47,13 @@ public class Update extends ProviderAction<Integer> implements ConvertibleToOper
 
   @Override
   public ContentProviderOperation toContentProviderOperation() {
+    return toContentProviderOperationBuilder().build();
+  }
+
+  @Override
+  public Builder toContentProviderOperationBuilder() {
     return ContentProviderOperation.newUpdate(getUri())
         .withSelection(selection.getSelection(), selection.getSelectionArgs())
-        .withValues(values)
-        .build();
+        .withValues(values);
   }
 }

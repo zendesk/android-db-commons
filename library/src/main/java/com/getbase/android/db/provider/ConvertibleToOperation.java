@@ -4,5 +4,6 @@ import android.content.ContentProviderOperation;
 
 public interface ConvertibleToOperation {
 
+  ContentProviderOperation.Builder toContentProviderOperationBuilder();
   ContentProviderOperation toContentProviderOperation();
 }
