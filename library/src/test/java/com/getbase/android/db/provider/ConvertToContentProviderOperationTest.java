@@ -163,6 +163,41 @@ public class ConvertToContentProviderOperationTest {
     assertThat(Batcher.begin().operations()).isEmpty();
   }
 
+  @Test
+  public void shouldMapToProperInsertEvenIfTheyHaveIdenticalState() throws Exception {
+    final Insert first = ProviderAction.insert(createFakeUri("only"));
+    final Insert second = ProviderAction.insert(createFakeUri("only"));
+
+    final ArrayList<ContentProviderOperation> operations = Batcher.begin()
+        .append(first)
+        .append(second)
+        .appendWithBackRef(ProviderAction.insert(createFakeUri("only"))).forPrevious(first, "column")
+        .operations();
+
+    assertThat(operations).hasSize(3);
+    final ShadowContentProviderOperation shadowOperation = Robolectric.shadowOf(Iterables.getLast(operations));
+    final ContentValues backRefs = shadowOperation.getValuesBackReferences();
+    assertThat(backRefs.get("column")).isEqualTo(0);
+  }
+
+  @Test(expected = IllegalStateException.class)
+  public void shouldThrowAnExceptionIfRequestingForPreviousWhenItsDuplicated() throws Exception {
+    final Insert first = ProviderAction.insert(createFakeUri("only"));
+    Batcher.begin()
+        .append(first)
+        .append(first)
+        .appendWithBackRef(ProviderAction.insert(createFakeUri("only"))).forPrevious(first, "column")
+        .operations();
+  }
+
+  @Test(expected = IllegalStateException.class)
+  public void shouldThrowAnExceptionInCaseReferencedInsertDoesNotExistInBatcher() throws Exception {
+    final Insert first = ProviderAction.insert(createFakeUri("only"));
+    Batcher.begin()
+        .appendWithBackRef(ProviderAction.insert(createFakeUri("only"))).forPrevious(first, "column")
+        .operations();
+  }
+
   private static Uri createFakeUri(String suffix) {
     return Uri.parse("content://com.fakedomain.base")
         .buildUpon()

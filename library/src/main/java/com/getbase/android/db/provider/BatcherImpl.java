@@ -1,8 +1,8 @@
 package com.getbase.android.db.provider;
 
 import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 
 import android.content.ContentProviderOperation;
@@ -12,7 +12,6 @@ import android.content.ContentValues;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 
 class BatcherImpl extends Batcher {
 
@@ -52,9 +51,18 @@ class BatcherImpl extends Batcher {
     return new BackRefBuilder(convertibleToOperation);
   }
 
+  private int assertThatThereIsOnlyOneParentPosition(Collection<Integer> integers) {
+    if (integers.isEmpty()) {
+      throw new IllegalStateException("Could not find proper Insert for back references.");
+    } else if (integers.size() > 1) {
+      throw new IllegalStateException("Referenced for Insert in back references that is present twice.");
+    }
+    return Iterables.getOnlyElement(integers);
+  }
+
   @Override
   public ArrayList<ContentProviderOperation> operations() {
-    final Map<ConvertibleToOperation, Integer> parentsPositions = Maps.newHashMap();
+    final Multimap<ConvertibleToOperation, Integer> parentsPositions = HashMultimap.create();
     ArrayList<ContentProviderOperation> providerOperations = Lists.newArrayListWithCapacity(operations.size());
     for (ConvertibleToOperation convertible : operations) {
       final Builder builder = convertible.toContentProviderOperationBuilder();
@@ -62,7 +70,8 @@ class BatcherImpl extends Batcher {
       if (!backRefs.isEmpty()) {
         ContentValues values = new ContentValues();
         for (BackRef backRef : backRefs) {
-          values.put(backRef.column, parentsPositions.get(backRef.parent));
+          final Collection<Integer> positions = parentsPositions.get(backRef.parent);
+          values.put(backRef.column, assertThatThereIsOnlyOneParentPosition(positions));
         }
         builder.withValueBackReferences(values);
       }
