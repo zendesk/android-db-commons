@@ -73,7 +73,6 @@ public class ConvertToContentProviderOperationTest {
         .appendWithBackRef(ProviderAction.insert(Uri.EMPTY))
         .forPrevious(firstInsert, BaseColumns._ID)
         .forPrevious(secondInsert, "contact_id")
-        .batch()
         .operations();
 
     assertThat(operations).hasSize(3);
@@ -146,8 +145,7 @@ public class ConvertToContentProviderOperationTest {
         .appendWithBackRef(ProviderAction
             .update(createFakeUri("third"))
             .value("test", 1L)
-        ).forPrevious(firstInsert, "column")
-        .batch();
+        ).forPrevious(firstInsert, "column");
 
     final ArrayList<ContentProviderOperation> operations = Batcher.begin()
         .append(firstPart)
