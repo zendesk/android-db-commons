@@ -21,9 +21,9 @@ public abstract class Batcher {
 
   public abstract Batcher append(Batcher Batcher);
 
-  public abstract BatcherImpl.BackRefBuilder append(ConvertibleToOperation... convertibles);
+  public abstract BackRefBuilder append(ConvertibleToOperation... convertibles);
 
-  public abstract BatcherImpl.BackRefBuilder append(Iterable<ConvertibleToOperation> convertibles);
+  public abstract BackRefBuilder append(Iterable<ConvertibleToOperation> convertibles);
 
   public abstract ArrayList<ContentProviderOperation> operations();
 

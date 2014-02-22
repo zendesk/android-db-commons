@@ -29,13 +29,13 @@ class BatcherImpl extends Batcher {
   @Override
   public BackRefBuilder append(ConvertibleToOperation... convertibles) {
     Collections.addAll(operations, convertibles);
-    return new BackRefBuilder(convertibles);
+    return new BackRefBuilder(this, convertibles);
   }
 
   @Override
   public BackRefBuilder append(Iterable<ConvertibleToOperation> convertibles) {
     operations.addAll(Lists.newArrayList(convertibles));
-    return new BackRefBuilder(convertibles);
+    return new BackRefBuilder(this, convertibles);
   }
 
   private int assertThatThereIsOnlyOneParentPosition(Collection<Integer> integers) {
@@ -78,24 +78,7 @@ class BatcherImpl extends Batcher {
     return operations;
   }
 
-  public class BackRefBuilder extends BatcherWrapper {
-
-    private final Iterable<ConvertibleToOperation> convertibles;
-
-    public BackRefBuilder(Iterable<ConvertibleToOperation> convertibles) {
-      super(BatcherImpl.this);
-      this.convertibles = convertibles;
-    }
-
-    public BackRefBuilder(ConvertibleToOperation... convertible) {
-      this(Lists.newArrayList(convertible));
-    }
-
-    public BackRefBuilder withValueBackReference(Insert previousInsert, String columnName) {
-      for (ConvertibleToOperation convertible : convertibles) {
-        backRefs.put(convertible, new BackRef(previousInsert, columnName));
-      }
-      return this;
-    }
+  public void putBackRef(ConvertibleToOperation convertible, BackRef backRef) {
+    backRefs.put(convertible, backRef);
   }
 }

@@ -21,12 +21,12 @@ class BatcherWrapper extends Batcher {
   }
 
   @Override
-  public BatcherImpl.BackRefBuilder append(ConvertibleToOperation... convertibles) {
+  public BackRefBuilder append(ConvertibleToOperation... convertibles) {
     return realBatcher.append(convertibles);
   }
 
   @Override
-  public BatcherImpl.BackRefBuilder append(Iterable<ConvertibleToOperation> convertibles) {
+  public BackRefBuilder append(Iterable<ConvertibleToOperation> convertibles) {
     return realBatcher.append(convertibles);
   }
 
