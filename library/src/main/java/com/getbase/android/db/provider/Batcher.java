@@ -56,10 +56,10 @@ public abstract class Batcher {
 
   static class BackRef {
 
-    final ConvertibleToOperation parent;
+    final Insert parent;
     final String column;
 
-    BackRef(ConvertibleToOperation parent, String column) {
+    BackRef(Insert parent, String column) {
       this.parent = parent;
       this.column = column;
     }

@@ -91,8 +91,8 @@ class BatcherImpl extends Batcher {
       this.convertible = convertible;
     }
 
-    public BackRefBuilder forPrevious(ConvertibleToOperation operation, String columnName) {
-      backRefs.put(convertible, new BackRef(operation, columnName));
+    public BackRefBuilder forPrevious(Insert previousInsert, String columnName) {
+      backRefs.put(convertible, new BackRef(previousInsert, columnName));
       return this;
     }
   }
