@@ -11,6 +11,7 @@ import android.content.ContentValues;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 class BatcherImpl extends Batcher {
@@ -18,37 +19,23 @@ class BatcherImpl extends Batcher {
   private final List<ConvertibleToOperation> operations = Lists.newArrayList();
   private final Multimap<ConvertibleToOperation, BackRef> backRefs = HashMultimap.create();
 
-  BatcherImpl() {
-  }
-
   @Override
   public Batcher append(Batcher batcher) {
     backRefs.putAll(batcher.getBackRefsMultimap());
-    return append(batcher.getConvertibles());
+    append(batcher.getConvertibles());
+    return this;
   }
 
   @Override
-  public Batcher append(ConvertibleToOperation... convertibles) {
+  public BackRefBuilder append(ConvertibleToOperation... convertibles) {
+    Collections.addAll(operations, convertibles);
+    return new BackRefBuilder(convertibles);
+  }
+
+  @Override
+  public BackRefBuilder append(Iterable<ConvertibleToOperation> convertibles) {
     operations.addAll(Lists.newArrayList(convertibles));
-    return this;
-  }
-
-  @Override
-  public Batcher append(Iterable<ConvertibleToOperation> convertibles) {
-    operations.addAll(Lists.newArrayList(convertibles));
-    return this;
-  }
-
-  @Override
-  public Batcher append(ConvertibleToOperation convertible) {
-    operations.add(convertible);
-    return this;
-  }
-
-  @Override
-  public BackRefBuilder appendWithBackRef(ConvertibleToOperation convertibleToOperation) {
-    operations.add(convertibleToOperation);
-    return new BackRefBuilder(convertibleToOperation);
+    return new BackRefBuilder(convertibles);
   }
 
   private int assertThatThereIsOnlyOneParentPosition(Collection<Integer> integers) {
@@ -93,15 +80,21 @@ class BatcherImpl extends Batcher {
 
   public class BackRefBuilder extends BatcherWrapper {
 
-    private final ConvertibleToOperation convertible;
+    private final Iterable<ConvertibleToOperation> convertibles;
 
-    public BackRefBuilder(ConvertibleToOperation convertible) {
+    public BackRefBuilder(Iterable<ConvertibleToOperation> convertibles) {
       super(BatcherImpl.this);
-      this.convertible = convertible;
+      this.convertibles = convertibles;
     }
 
-    public BackRefBuilder forPrevious(Insert previousInsert, String columnName) {
-      backRefs.put(convertible, new BackRef(previousInsert, columnName));
+    public BackRefBuilder(ConvertibleToOperation... convertible) {
+      this(Lists.newArrayList(convertible));
+    }
+
+    public BackRefBuilder withValueBackReference(Insert previousInsert, String columnName) {
+      for (ConvertibleToOperation convertible : convertibles) {
+        backRefs.put(convertible, new BackRef(previousInsert, columnName));
+      }
       return this;
     }
   }

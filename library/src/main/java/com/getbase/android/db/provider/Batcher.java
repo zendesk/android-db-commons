@@ -1,6 +1,5 @@
 package com.getbase.android.db.provider;
 
-import com.getbase.android.db.provider.BatcherImpl.BackRefBuilder;
 import com.google.common.collect.Multimap;
 
 import android.content.ContentProvider;
@@ -22,13 +21,9 @@ public abstract class Batcher {
 
   public abstract Batcher append(Batcher Batcher);
 
-  public abstract Batcher append(ConvertibleToOperation... convertibles);
+  public abstract BatcherImpl.BackRefBuilder append(ConvertibleToOperation... convertibles);
 
-  public abstract Batcher append(Iterable<ConvertibleToOperation> convertibles);
-
-  public abstract Batcher append(ConvertibleToOperation convertible);
-
-  public abstract BackRefBuilder appendWithBackRef(ConvertibleToOperation convertibleToOperation);
+  public abstract BatcherImpl.BackRefBuilder append(Iterable<ConvertibleToOperation> convertibles);
 
   public abstract ArrayList<ContentProviderOperation> operations();
 

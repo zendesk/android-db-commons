@@ -70,9 +70,9 @@ public class ConvertToContentProviderOperationTest {
     final ArrayList<ContentProviderOperation> operations = Batcher.begin()
         .append(firstInsert)
         .append(secondInsert)
-        .appendWithBackRef(ProviderAction.insert(Uri.EMPTY))
-        .forPrevious(firstInsert, BaseColumns._ID)
-        .forPrevious(secondInsert, "contact_id")
+        .append(ProviderAction.insert(Uri.EMPTY))
+        .withValueBackReference(firstInsert, BaseColumns._ID)
+        .withValueBackReference(secondInsert, "contact_id")
         .operations();
 
     assertThat(operations).hasSize(3);
@@ -142,10 +142,10 @@ public class ConvertToContentProviderOperationTest {
         .append(ProviderAction.insert(createFakeUri("second")));
 
     final Batcher secondPart = Batcher.begin()
-        .appendWithBackRef(ProviderAction
+        .append(ProviderAction
             .update(createFakeUri("third"))
             .value("test", 1L)
-        ).forPrevious(firstInsert, "column");
+        ).withValueBackReference(firstInsert, "column");
 
     final ArrayList<ContentProviderOperation> operations = Batcher.begin()
         .append(firstPart)
@@ -171,7 +171,7 @@ public class ConvertToContentProviderOperationTest {
     final ArrayList<ContentProviderOperation> operations = Batcher.begin()
         .append(first)
         .append(second)
-        .appendWithBackRef(ProviderAction.insert(createFakeUri("only"))).forPrevious(first, "column")
+        .append(ProviderAction.insert(createFakeUri("only"))).withValueBackReference(first, "column")
         .operations();
 
     assertThat(operations).hasSize(3);
@@ -186,7 +186,7 @@ public class ConvertToContentProviderOperationTest {
     Batcher.begin()
         .append(first)
         .append(first)
-        .appendWithBackRef(ProviderAction.insert(createFakeUri("only"))).forPrevious(first, "column")
+        .append(ProviderAction.insert(createFakeUri("only"))).withValueBackReference(first, "column")
         .operations();
   }
 
@@ -194,7 +194,7 @@ public class ConvertToContentProviderOperationTest {
   public void shouldThrowAnExceptionInCaseReferencedInsertDoesNotExistInBatcher() throws Exception {
     final Insert first = ProviderAction.insert(createFakeUri("only"));
     Batcher.begin()
-        .appendWithBackRef(ProviderAction.insert(createFakeUri("only"))).forPrevious(first, "column")
+        .append(ProviderAction.insert(createFakeUri("only"))).withValueBackReference(first, "column")
         .operations();
   }
 
