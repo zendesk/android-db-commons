@@ -16,6 +16,8 @@ import android.net.Uri;
 import android.provider.BaseColumns;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 @RunWith(RobolectricTestRunner.class)
 public class ConvertToContentProviderOperationTest {
@@ -196,6 +198,45 @@ public class ConvertToContentProviderOperationTest {
     Batcher.begin()
         .append(ProviderAction.insert(createFakeUri("only"))).withValueBackReference(first, "column")
         .operations();
+  }
+
+  @Test
+  public void shouldResolveValueBackReferencesForAllConvertiblesWithinIterable() throws Exception {
+    final Insert first = ProviderAction.insert(createFakeUri("fake"));
+    final Insert second = ProviderAction.insert(createFakeUri("second"));
+
+    final int copies = 5;
+    final List<ConvertibleToOperation> firstDependants =
+        Collections.<ConvertibleToOperation>nCopies(copies, ProviderAction.insert(createFakeUri("another")));
+    final List<ConvertibleToOperation> secondDependants =
+        Collections.<ConvertibleToOperation>nCopies(copies, ProviderAction.insert(createFakeUri("yetAnother")));
+
+    final ArrayList<ContentProviderOperation> operations = Batcher.begin()
+        .append(first)
+        .append(second)
+        .append(firstDependants)
+        .withValueBackReference(first, "parent_id")
+        .withValueBackReference(second, "another_parent_id")
+        .append(secondDependants)
+        .withValueBackReference(second, "parent_id")
+        .withValueBackReference(first, "another_parent_id")
+        .operations();
+
+    assertThat(operations).hasSize(copies * 2 + 2);
+
+    for (ContentProviderOperation contentProviderOperation : operations.subList(2, 2 + copies)) {
+      final ShadowContentProviderOperation shadowOperation = Robolectric.shadowOf(contentProviderOperation);
+      final ContentValues refs = shadowOperation.getValuesBackReferences();
+      assertThat(refs.get("parent_id")).isEqualTo(0);
+      assertThat(refs.get("another_parent_id")).isEqualTo(1);
+    }
+
+    for (ContentProviderOperation contentProviderOperation : operations.subList(2 + copies, operations.size())) {
+      final ShadowContentProviderOperation shadowOperation = Robolectric.shadowOf(contentProviderOperation);
+      final ContentValues refs = shadowOperation.getValuesBackReferences();
+      assertThat(refs.get("parent_id")).isEqualTo(1);
+      assertThat(refs.get("another_parent_id")).isEqualTo(0);
+    }
   }
 
   private static Uri createFakeUri(String suffix) {
