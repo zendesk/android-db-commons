@@ -1,10 +1,15 @@
 package com.getbase.android.db.provider;
 
 import android.content.ContentProvider;
+import android.content.ContentProviderOperation;
+import android.content.ContentProviderResult;
 import android.content.ContentValues;
+import android.content.OperationApplicationException;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.RemoteException;
+
+import java.util.ArrayList;
 
 public class ContentProviderCrudHandler implements CrudHandler {
 
@@ -32,5 +37,10 @@ public class ContentProviderCrudHandler implements CrudHandler {
   @Override
   public Uri insert(Uri url, ContentValues initialValues) throws RemoteException {
     return contentProvider.insert(url, initialValues);
+  }
+
+  @Override
+  public ContentProviderResult[] applyBatch(String authority, ArrayList<ContentProviderOperation> operations) throws RemoteException, OperationApplicationException {
+    return contentProvider.applyBatch(operations);
   }
 }
