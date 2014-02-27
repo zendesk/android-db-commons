@@ -142,7 +142,9 @@ public class Update implements UpdateTableSelector {
 
   public Update where(String selection, Object... selectionArgs) {
     mSelections.add("(" + selection + ")");
-    Collections.addAll(mSelectionArgs, selectionArgs);
+    if (selectionArgs != null) {
+      Collections.addAll(mSelectionArgs, selectionArgs);
+    }
 
     return this;
   }

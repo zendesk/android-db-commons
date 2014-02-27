@@ -406,4 +406,25 @@ public class UpdateTest {
     verify(mStatement).close();
     verifyNoMoreInteractions(mStatement);
   }
+
+
+  @Test
+  public void shouldAllowUsingNullArgumentsForSelection() throws Exception {
+    update()
+        .table("table_a")
+        .where("col_a IS NULL", (Object[]) null)
+        .perform(mDb);
+
+    verify(mDb).update(eq("table_a"), any(ContentValues.class), eq("(col_a IS NULL)"), eq(new String[0]));
+  }
+
+  @Test
+  public void shouldAllowUsingNullArgumentsForSelectionWithExpression() throws Exception {
+    update()
+        .table("table_a")
+        .where(column("col_a").is().nul(), (Object[]) null)
+        .perform(mDb);
+
+    verify(mDb).update(eq("table_a"), any(ContentValues.class), eq("(col_a IS NULL)"), eq(new String[0]));
+  }
 }
