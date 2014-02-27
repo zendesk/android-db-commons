@@ -1009,4 +1009,22 @@ public class QueryTest {
 
     verify(mDb).rawQuery(eq("SELECT * FROM table_a ORDER BY col_a IN (SELECT id FROM table_b WHERE (status=?))"), eq(new String[] { "new" }));
   }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void shouldRejectNullColumnListInJoinUsingClause() throws Exception {
+    select()
+        .from("table_a")
+        .join("table_b")
+        .using((String[]) null)
+        .perform(mDb);
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void shouldRejectEmptyColumnListInJoinUsingClause() throws Exception {
+    select()
+        .from("table_a")
+        .join("table_b")
+        .using(new String[0])
+        .perform(mDb);
+  }
 }

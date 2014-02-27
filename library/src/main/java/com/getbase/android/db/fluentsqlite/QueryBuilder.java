@@ -590,6 +590,8 @@ public final class QueryBuilder {
 
       @Override
       public Query using(String... columns) {
+        Preconditions.checkArgument(columns != null, "Column list in USING clause cannot be null");
+        Preconditions.checkArgument(columns.length > 0, "Column list in USING clause cannot be empty");
         mCurrentQueryPart.mPendingJoin.mUsingColumns = columns;
         mCurrentQueryPart.addPendingJoin();
         return QueryImpl.this;
