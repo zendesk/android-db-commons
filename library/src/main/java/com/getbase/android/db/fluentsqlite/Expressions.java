@@ -30,27 +30,35 @@ public final class Expressions {
   private Expressions() {
   }
 
-  private static void addExpressionArgs(List<Object> args, Expression expression, Object... boundArgs) {
-    Preconditions.checkArgument(
-        expression.getArgsCount() == boundArgs.length + expression.getBoundArgs().size(),
-        "Invalid number of arguments: expression has %s arg placeholders and %s bound args, so I need %s additional args specified, but there was %s args",
-        expression.getArgsCount(),
-        expression.getBoundArgs().size(),
-        (expression.getArgsCount() - expression.getBoundArgs().size()),
-        boundArgs.length
-    );
+  static void addExpressionArgs(List<Object> args, Expression expression, Object... boundArgs) {
+    if (boundArgs == null) {
+      Preconditions.checkArgument(
+          expression.getArgsCount() == expression.getBoundArgs().size(),
+          "Expression contains args placeholders, but bound args list is null"
+      );
+      args.addAll(expression.getBoundArgs().values());
+    } else {
+      Preconditions.checkArgument(
+          expression.getArgsCount() == boundArgs.length + expression.getBoundArgs().size(),
+          "Invalid number of arguments: expression has %s arg placeholders and %s bound args, so I need %s additional args specified, but there was %s args",
+          expression.getArgsCount(),
+          expression.getBoundArgs().size(),
+          (expression.getArgsCount() - expression.getBoundArgs().size()),
+          boundArgs.length
+      );
 
-    int boundArgsIndex = 0;
-    for (int i = 0; i < expression.getArgsCount(); i++) {
-      final Object arg;
+      int boundArgsIndex = 0;
+      for (int i = 0; i < expression.getArgsCount(); i++) {
+        final Object arg;
 
-      if (expression.getBoundArgs().containsKey(i)) {
-        arg = expression.getBoundArgs().get(i);
-      } else {
-        arg = boundArgs[boundArgsIndex++];
+        if (expression.getBoundArgs().containsKey(i)) {
+          arg = expression.getBoundArgs().get(i);
+        } else {
+          arg = boundArgs[boundArgsIndex++];
+        }
+
+        args.add(arg);
       }
-
-      args.add(arg);
     }
   }
 
