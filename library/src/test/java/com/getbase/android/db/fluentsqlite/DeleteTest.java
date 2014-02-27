@@ -106,4 +106,24 @@ public class DeleteTest {
         eq(new String[] { "new" })
     );
   }
+
+  @Test
+  public void shouldAllowUsingNullArgumentsForSelection() throws Exception {
+    delete()
+        .from("table_a")
+        .where("col_a IS NULL", (Object[]) null)
+        .perform(mDb);
+
+    verify(mDb).delete(eq("table_a"), eq("(col_a IS NULL)"), eq(new String[0]));
+  }
+
+  @Test
+  public void shouldAllowUsingNullArgumentsForSelectionWithExpression() throws Exception {
+    delete()
+        .from("table_a")
+        .where(column("col_a").is().nul(), (Object[]) null)
+        .perform(mDb);
+
+    verify(mDb).delete(eq("table_a"), eq("(col_a IS NULL)"), eq(new String[0]));
+  }
 }
