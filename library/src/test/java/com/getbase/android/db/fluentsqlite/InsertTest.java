@@ -106,6 +106,12 @@ public class InsertTest {
     verify(mStatement).executeInsert();
   }
 
+  @Test(expected = IllegalArgumentException.class)
+  public void shouldRejectNullColumnsListInInsertInSelectForm() throws Exception {
+    Query query = select().allColumns().from("B");
+    insert().into("A").columns((String[]) null).resultOf(query).perform(mDb);
+  }
+
   @Test
   public void shouldBuildInsertWithSingleValue() throws Exception {
     Insert insert = insert().into("A").value("col1", "val1");
