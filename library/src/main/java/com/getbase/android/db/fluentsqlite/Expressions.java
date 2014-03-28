@@ -62,7 +62,12 @@ public final class Expressions {
     Expression() {
     }
 
-    abstract String toRawSql();
+    public String toRawSql() {
+      Preconditions.checkState(getBoundArgs().isEmpty(), "Cannot get raw sql for Expression with bound args.");
+      return getSql();
+    }
+
+    abstract String getSql();
     abstract int getArgsCount();
     abstract Map<Integer, Object> getBoundArgs();
     abstract Set<String> getTables();
@@ -241,7 +246,7 @@ public final class Expressions {
     private static final Function<Expression, String> GET_EXPR_SQL = new Function<Expression, String>() {
       @Override
       public String apply(Expression e) {
-        return e.toRawSql();
+        return e.getSql();
       }
     };
 
@@ -400,7 +405,7 @@ public final class Expressions {
     }
 
     @Override
-    public String toRawSql() {
+    public String getSql() {
       return mBuilder.toString().trim();
     }
 

@@ -41,4 +41,22 @@ public class ExpressionsTest {
 
     assertThat(expression.getBoundArgs()).isEqualTo(ImmutableMap.of(1, "Smith"));
   }
+
+  @Test(expected = IllegalStateException.class)
+  public void shouldNotAllowGettingRawSqlFromExpressionWithBoundArgs() throws Exception {
+    column("id")
+        .in(
+            select()
+                .column("id")
+                .from("table_a")
+                .where(column("name").eq().arg(), "Smith")
+        )
+        .toRawSql();
+  }
+
+  @Test
+  public void shouldGetRawSqlForExpression() throws Exception {
+    String rawSql = column("id").eq().literal(0).toRawSql();
+    assertThat(rawSql).isEqualTo("id == 0");
+  }
 }

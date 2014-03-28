@@ -99,7 +99,7 @@ public class ExpressionsBuilderTest {
           @Override
           public Object[] apply(Entry<Expression, String> input) {
             return new Object[] {
-                input.getKey().toRawSql(),
+                input.getKey().getSql(),
                 input.getValue()
             };
           }

@@ -385,7 +385,7 @@ public final class QueryBuilder {
     @Override
     public ColumnAliasBuilder expr(Expression expression) {
       mCurrentQueryPart.addPendingColumn();
-      mCurrentQueryPart.mColumnWithPotentialAlias = expression.toRawSql();
+      mCurrentQueryPart.mColumnWithPotentialAlias = expression.getSql();
       mCurrentQueryPart.mTablesUsedInExpressions.addAll(expression.getTables());
 
       if (expression.getArgsCount() > 0) {
@@ -520,7 +520,7 @@ public final class QueryBuilder {
         mCurrentQueryPart.mArgs.putAll(QueryPart.GROUP_BY, Arrays.asList(expression.getMergedArgs()));
       }
 
-      return groupBy(expression.toRawSql());
+      return groupBy(expression.getSql());
     }
 
     @Override
@@ -534,7 +534,7 @@ public final class QueryBuilder {
     @Override
     public Query having(Expression having, Object... havingArgs) {
       mCurrentQueryPart.mTablesUsedInExpressions.addAll(having.getTables());
-      return having(having.toRawSql(), having.getMergedArgs(havingArgs));
+      return having(having.getSql(), having.getMergedArgs(havingArgs));
     }
 
     @Override
@@ -605,7 +605,7 @@ public final class QueryBuilder {
       @Override
       public JoinOnConstraintBuilder on(Expression constraint, Object... constraintArgs) {
         mCurrentQueryPart.mTablesUsedInExpressions.addAll(constraint.getTables());
-        mCurrentQueryPart.mPendingJoin.mConstraints.add(constraint.toRawSql());
+        mCurrentQueryPart.mPendingJoin.mConstraints.add(constraint.getSql());
         Collections.addAll(mCurrentQueryPart.mPendingJoin.mConstraintsArgs, constraint.getMergedArgs(constraintArgs));
 
         return this;
@@ -674,7 +674,7 @@ public final class QueryBuilder {
     public OrderingTermBuilder orderBy(Expression expression) {
       mTablesUsedInExpressions.addAll(expression.getTables());
       Collections.addAll(mOrderByArgs, expression.getMergedArgs());
-      return orderBy(expression.toRawSql());
+      return orderBy(expression.getSql());
     }
 
     @Override
@@ -727,7 +727,7 @@ public final class QueryBuilder {
     public Query where(Expression selection, Object... selectionArgs) {
       if (selection != null) {
         mCurrentQueryPart.mTablesUsedInExpressions.addAll(selection.getTables());
-        where(selection.toRawSql(), selection.getMergedArgs(selectionArgs));
+        where(selection.getSql(), selection.getMergedArgs(selectionArgs));
       }
       return this;
     }
