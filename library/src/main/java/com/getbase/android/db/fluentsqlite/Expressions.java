@@ -62,6 +62,11 @@ public final class Expressions {
     Expression() {
     }
 
+    public String toRawSql() {
+      Preconditions.checkState(getBoundArgs().isEmpty(), "Cannot get raw sql for Expression with bound args.");
+      return getSql();
+    }
+
     abstract String getSql();
     abstract int getArgsCount();
     abstract Map<Integer, Object> getBoundArgs();
