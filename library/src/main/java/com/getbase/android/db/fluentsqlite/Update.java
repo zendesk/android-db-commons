@@ -133,7 +133,7 @@ public class Update implements UpdateTableSelector {
   }
 
   public Update setColumn(String column, Expression expression) {
-    setColumn(column, expression.toRawSql());
+    setColumn(column, expression.getSql());
 
     mCustomExpressionsArgs.putAll(column, Arrays.asList(expression.getMergedArgs()));
 
@@ -148,6 +148,6 @@ public class Update implements UpdateTableSelector {
   }
 
   public Update where(Expression expression, Object... selectionArgs) {
-    return where(expression.toRawSql(), expression.getMergedArgs(selectionArgs));
+    return where(expression.getSql(), expression.getMergedArgs(selectionArgs));
   }
 }
