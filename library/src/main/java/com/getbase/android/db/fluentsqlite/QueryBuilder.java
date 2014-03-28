@@ -526,7 +526,9 @@ public final class QueryBuilder {
     @Override
     public Query having(String having, Object... havingArgs) {
       mCurrentQueryPart.mHaving.add(having);
-      mCurrentQueryPart.mArgs.putAll(QueryPart.HAVING, Arrays.asList(havingArgs));
+      if (havingArgs != null) {
+        mCurrentQueryPart.mArgs.putAll(QueryPart.HAVING, Arrays.asList(havingArgs));
+      }
 
       return this;
     }
@@ -590,6 +592,8 @@ public final class QueryBuilder {
 
       @Override
       public Query using(String... columns) {
+        Preconditions.checkArgument(columns != null, "Column list in USING clause cannot be null");
+        Preconditions.checkArgument(columns.length > 0, "Column list in USING clause cannot be empty");
         mCurrentQueryPart.mPendingJoin.mUsingColumns = columns;
         mCurrentQueryPart.addPendingJoin();
         return QueryImpl.this;
@@ -598,7 +602,9 @@ public final class QueryBuilder {
       @Override
       public JoinOnConstraintBuilder on(String constraint, Object... constraintArgs) {
         mCurrentQueryPart.mPendingJoin.mConstraints.add(constraint);
-        Collections.addAll(mCurrentQueryPart.mPendingJoin.mConstraintsArgs, constraintArgs);
+        if (constraintArgs != null) {
+          Collections.addAll(mCurrentQueryPart.mPendingJoin.mConstraintsArgs, constraintArgs);
+        }
         return this;
       }
 
@@ -717,7 +723,9 @@ public final class QueryBuilder {
     public Query where(String selection, Object... selectionArgs) {
       if (!Strings.isNullOrEmpty(selection)) {
         mCurrentQueryPart.mSelection.add(selection);
-        mCurrentQueryPart.mArgs.putAll(QueryPart.SELECTION, Arrays.asList(selectionArgs));
+        if (selectionArgs != null) {
+          mCurrentQueryPart.mArgs.putAll(QueryPart.SELECTION, Arrays.asList(selectionArgs));
+        }
       }
 
       return this;

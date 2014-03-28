@@ -5,6 +5,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import com.getbase.android.db.fluentsqlite.QueryBuilder.Query;
 import com.getbase.android.db.provider.Utils;
 import com.google.common.base.Joiner;
+import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 
 import android.content.ContentValues;
@@ -93,6 +94,7 @@ public class Insert implements InsertTableSelector, InsertFormSelector, InsertVa
 
   @Override
   public InsertSubqueryForm columns(String... columns) {
+    Preconditions.checkArgument(columns != null, "Column list cannot be null");
     Collections.addAll(mQueryFormColumns, columns);
 
     return this;

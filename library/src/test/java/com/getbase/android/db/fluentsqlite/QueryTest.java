@@ -1009,4 +1009,86 @@ public class QueryTest {
 
     verify(mDb).rawQuery(eq("SELECT * FROM table_a ORDER BY col_a IN (SELECT id FROM table_b WHERE (status=?))"), eq(new String[] { "new" }));
   }
+
+  @Test
+  public void shouldAllowUsingNullArgumentsForSelection() throws Exception {
+    select()
+        .from("table_a")
+        .where("col_a IS NULL", (Object[]) null)
+        .perform(mDb);
+
+    verify(mDb).rawQuery(eq("SELECT * FROM table_a WHERE (col_a IS NULL)"), eq(new String[0]));
+  }
+
+  @Test
+  public void shouldAllowUsingNullArgumentsForSelectionWithExpression() throws Exception {
+    select()
+        .from("table_a")
+        .where(column("col_a").is().nul(), (Object[]) null)
+        .perform(mDb);
+
+    verify(mDb).rawQuery(eq("SELECT * FROM table_a WHERE (col_a IS NULL)"), eq(new String[0]));
+  }
+
+  @Test
+  public void shouldAllowUsingNullArgumentsForHaving() throws Exception {
+    select()
+        .from("table_a")
+        .groupBy("col_a")
+        .having("col_b IS NULL", (Object[]) null)
+        .perform(mDb);
+
+    verify(mDb).rawQuery(eq("SELECT * FROM table_a GROUP BY col_a HAVING (col_b IS NULL)"), eq(new String[0]));
+  }
+
+  @Test
+  public void shouldAllowUsingNullArgumentsForHavingWithExpression() throws Exception {
+    select()
+        .from("table_a")
+        .groupBy("col_a")
+        .having(column("col_b").is().nul(), (Object[]) null)
+        .perform(mDb);
+
+    verify(mDb).rawQuery(eq("SELECT * FROM table_a GROUP BY col_a HAVING (col_b IS NULL)"), eq(new String[0]));
+  }
+
+  @Test
+  public void shouldAllowUsingNullArgumentsForJoinConstraint() throws Exception {
+    select()
+        .from("table_a")
+        .join("table_b")
+        .on("col_b IS NULL", (Object[]) null)
+        .perform(mDb);
+
+    verify(mDb).rawQuery(eq("SELECT * FROM table_a JOIN table_b ON (col_b IS NULL)"), eq(new String[0]));
+  }
+
+  @Test
+  public void shouldAllowUsingNullArgumentsForJoinConstraintWithExpression() throws Exception {
+    select()
+        .from("table_a")
+        .join("table_b")
+        .on(column("col_b").is().nul(), (Object[]) null)
+        .perform(mDb);
+
+    verify(mDb).rawQuery(eq("SELECT * FROM table_a JOIN table_b ON (col_b IS NULL)"), eq(new String[0]));
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void shouldRejectNullColumnListInJoinUsingClause() throws Exception {
+    select()
+        .from("table_a")
+        .join("table_b")
+        .using((String[]) null)
+        .perform(mDb);
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void shouldRejectEmptyColumnListInJoinUsingClause() throws Exception {
+    select()
+        .from("table_a")
+        .join("table_b")
+        .using(new String[0])
+        .perform(mDb);
+  }
 }

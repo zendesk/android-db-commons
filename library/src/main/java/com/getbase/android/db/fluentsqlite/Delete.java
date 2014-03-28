@@ -41,7 +41,9 @@ public class Delete implements DeleteTableSelector {
 
   public Delete where(String selection, Object... selectionArgs) {
     mSelections.add("(" + selection + ")");
-    mSelectionArgs.addAll(Arrays.asList(selectionArgs));
+    if (selectionArgs != null) {
+      mSelectionArgs.addAll(Arrays.asList(selectionArgs));
+    }
 
     return this;
   }
