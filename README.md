@@ -86,7 +86,7 @@ private static final Function<Cursor,RealResult> TRANSFORM = new Function<Cursor
 CursorLoaderBuilder.forUri(uri)
   .projection(People.NAME)
   .where(People.AGE + ">?", 18)
-  .wrap(TRANSFORM)
+  .transform(TRANSFORM)
   .build(getActivity());
 ```
 Wanna transform your Cursor into a collection of something? Easy.
@@ -101,7 +101,7 @@ private static final Function<Cursor,String> ROW_TRANSFORM = new Function<Cursor
 CursorLoaderBuilder.forUri(uri)
   .projection(People.NAME)
   .where(People.AGE + ">?", 18)
-  .transform(ROW_TRANSFORM)
+  .transformRow(ROW_TRANSFORM)
   .build(getActivity());
 ```
 Your Loader will return List<String> as a result in this case. But we still can do better - instead of writing simple row transformations by hand we can use a factory method:
@@ -111,7 +111,7 @@ import static com.getbase.android.db.cursors.SingleRowTransforms.getColumn;
 CursorLoaderBuilder.forUri(uri)
   .projection(People.NAME)
   .where(People.AGE + ">?", 18)
-  .transform(getColumn(People.NAME).asString())
+  .transformRow(getColumn(People.NAME).asString())
   .build(getActivity());
 ```
 What if the Cursor has 100K rows? Transforming it into collection would take way too much time and would have huge memory footprint.
@@ -119,21 +119,21 @@ What if the Cursor has 100K rows? Transforming it into collection would take way
 CursorLoaderBuilder.forUri(uri)
   .projection(People.NAME)
   .where(People.AGE + ">?", 18)
-  .transform(getColumn(People.NAME).asString())
+  .transformRow(getColumn(People.NAME).asString())
   .lazy()
   .build(getActivity());
 ```
 The result of this loader is lazy list. We do not iterate through your 100K-rows Cursor. Every row's transformation is calculated at its access time.
 
-Sure, you can still wrap() your transformed() result.
+Sure, you can still transform() your transformedRows().
 ```java
 // Functions contants here
 CursorLoaderBuilder.forUri(uri)
   .projection(People.NAME)
   .where(People.AGE + ">?", 18)
-  .transform(CURSOR_ROW_TO_STRING)
-  .transform(STRING_TO_INTEGER)
-  .wrap(LIST_OF_INTEGER_TO_REAL_RESULT)
+  .transformRow(CURSOR_ROW_TO_STRING)
+  .transformRow(STRING_TO_INTEGER)
+  .transform(LIST_OF_INTEGER_TO_REAL_RESULT)
   .build(getActivity());
 ```
 WARNING: Please make sure you don't leak any Fragment/Activities/other resources when constructing your Loader. In Java, all anonymous nested classes are non-static which means that they are holding a reference to the parent class. As the  Function instances are cached in created Loader instance (which is being reused among multiple Activities/Fragments instances) using anonymous classes can lead to awful memory leaks or even crashes in runtime.
@@ -145,7 +145,7 @@ public Loader<List<String>> onCreateLoader(int id, Bundle args) {
   CursorLoaderBuilder.forUri(uri)
     .projection(People.NAME)
     .where(People.AGE + ">?", 18)
-    .transform(new Function<Cursor, String>() { // Leaking Fragment's instance here. DO NOT DO THAT!
+    .transformRow(new Function<Cursor, String>() { // Leaking Fragment's instance here. DO NOT DO THAT!
       @Override public String apply(Cursor cursor) {
         return cursor.getString(0);
       }
@@ -161,7 +161,7 @@ private static final LoaderHelper<List<String>> loaderHelper = new LoaderHelper<
   protected Loader<List<String>> onCreateLoader(Context context, Bundle args) {
     return CursorLoaderBuilder.forUri(Contract.People.CONTENT_URI)
         .projection(Contract.People.FIRST_NAME, Contract.People.SECOND_NAME)
-        .transform(new Function<Cursor, String>() {
+        .transformRow(new Function<Cursor, String>() {
           @Override
           public String apply(Cursor cursor) {
             return String.format("%s %s", cursor.getString(0), cursor.getString(1));
