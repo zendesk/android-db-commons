@@ -64,7 +64,7 @@ public class ComposedCursorLoaderTest {
   @Test
   public void shouldApplyTransformFunctionInDoInBackground() throws Exception {
     final Loader<List<String>> loader = CursorLoaderBuilder.forUri(TEST_URI)
-        .transform(genericToStringFunction)
+        .transformRow(genericToStringFunction)
         .build(Robolectric.application);
     loader.startLoading();
     final Loader.OnLoadCompleteListener<List<String>> listenerMock = mock(Loader.OnLoadCompleteListener.class);
@@ -76,7 +76,7 @@ public class ComposedCursorLoaderTest {
   @Test
   public void shouldNotCloseJustReturnedCursor() throws Exception {
     final Loader<List<String>> loader = CursorLoaderBuilder.forUri(TEST_URI)
-        .transform(genericToStringFunction)
+        .transformRow(genericToStringFunction)
         .build(Robolectric.application);
     loader.startLoading();
     Robolectric.getBackgroundScheduler().runOneTask();
@@ -86,7 +86,7 @@ public class ComposedCursorLoaderTest {
   @Test
   public void shouldCloseOldCursorIfNewOneAppears() throws Exception {
     final Loader<List<String>> loader = CursorLoaderBuilder.forUri(TEST_URI)
-        .transform(genericToStringFunction)
+        .transformRow(genericToStringFunction)
         .build(Robolectric.application);
     loader.startLoading();
     Robolectric.getBackgroundScheduler().runOneTask();
@@ -99,10 +99,10 @@ public class ComposedCursorLoaderTest {
   }
 
   @Test
-  public void shouldWrapCursorProperly() throws Exception {
+  public void shouldTransformCursorProperly() throws Exception {
     final Loader<MyCustomWrapper> loader = CursorLoaderBuilder.forUri(TEST_URI)
-        .transform(genericToStringFunction)
-        .wrap(new Function<List<String>, MyCustomWrapper>() {
+        .transformRow(genericToStringFunction)
+        .transform(new Function<List<String>, MyCustomWrapper>() {
           @Override
           public MyCustomWrapper apply(List<String> strings) {
             return new MyCustomWrapper(strings);
@@ -120,8 +120,8 @@ public class ComposedCursorLoaderTest {
   @Test
   public void shouldNotCloseOldCursorInCaseItsSameAsNewOne() throws Exception {
     final Loader<MyCustomWrapper> loader = CursorLoaderBuilder.forUri(TEST_URI)
-        .transform(genericToStringFunction)
-        .wrap(new Function<List<String>, MyCustomWrapper>() {
+        .transformRow(genericToStringFunction)
+        .transform(new Function<List<String>, MyCustomWrapper>() {
           @Override
           public MyCustomWrapper apply(List<String> strings) {
             return new MyCustomWrapper(strings);
@@ -138,8 +138,8 @@ public class ComposedCursorLoaderTest {
   @Test
   public void shouldCloseOldCursorDeliveredEarlierTwice() throws Exception {
     final Loader<MyCustomWrapper> loader = CursorLoaderBuilder.forUri(TEST_URI)
-        .transform(genericToStringFunction)
-        .wrap(new Function<List<String>, MyCustomWrapper>() {
+        .transformRow(genericToStringFunction)
+        .transform(new Function<List<String>, MyCustomWrapper>() {
           @Override
           public MyCustomWrapper apply(List<String> strings) {
             return new MyCustomWrapper(strings);
@@ -159,8 +159,8 @@ public class ComposedCursorLoaderTest {
   @Test
   public void shouldNotDeliverResultIfLoaderHasBeenResetAlready() throws Exception {
     final Loader<MyCustomWrapper> loader = CursorLoaderBuilder.forUri(TEST_URI)
-        .transform(genericToStringFunction)
-        .wrap(new Function<List<String>, MyCustomWrapper>() {
+        .transformRow(genericToStringFunction)
+        .transform(new Function<List<String>, MyCustomWrapper>() {
           @Override
           public MyCustomWrapper apply(List<String> strings) {
             return new MyCustomWrapper(strings);

@@ -40,7 +40,7 @@ public class WrapperTransformationListFragment extends ListFragment implements L
       return CursorLoaderBuilder.forUri(Contract.People.CONTENT_URI)
           .projection(Contract.People.FIRST_NAME, Contract.People.SECOND_NAME)
           .orderBy(Contract.People.FIRST_NAME)
-          .transform(new Function<Cursor, Person>() {
+          .transformRow(new Function<Cursor, Person>() {
             @Override
             public Person apply(Cursor cursor) {
               final String firstName = cursor.getString(cursor.getColumnIndexOrThrow(Contract.PeopleColumns.FIRST_NAME));
