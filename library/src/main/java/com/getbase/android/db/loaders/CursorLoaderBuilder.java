@@ -38,12 +38,12 @@ public class CursorLoaderBuilder {
     return this;
   }
 
-  public <Out> TransformedLoaderBuilder<Out> transform(Function<Cursor, Out> function) {
-    return new TransformedLoaderBuilder<Out>(query.getQueryData(), function);
+  public <Out> TransformedRowLoaderBuilder<Out> transformRow(Function<Cursor, Out> rowTransformer) {
+    return new TransformedRowLoaderBuilder<Out>(query.getQueryData(), rowTransformer);
   }
 
-  public <Out> WrappedLoaderBuilder<Out> wrap(Function<Cursor, Out> wrapper) {
-    return new WrappedLoaderBuilder<Out>(query.getQueryData(), wrapper);
+  public <Out> TransformedLoaderBuilder<Out> transform(Function<Cursor, Out> transformer) {
+    return new TransformedLoaderBuilder<Out>(query.getQueryData(), transformer);
   }
 
   public Loader<Cursor> build(Context context) {

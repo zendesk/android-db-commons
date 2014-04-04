@@ -38,7 +38,7 @@ public class SimpleTransformedStringsListFragment extends ListFragment implement
     protected Loader<List<String>> onCreateLoader(Context context, Bundle args) {
       return CursorLoaderBuilder.forUri(Contract.People.CONTENT_URI)
           .projection(Contract.People.FIRST_NAME, Contract.People.SECOND_NAME)
-          .transform(new Function<Cursor, String>() {
+          .transformRow(new Function<Cursor, String>() {
             @Override
             public String apply(Cursor cursor) {
               return String.format("%s %s", cursor.getString(0), cursor.getString(1));
