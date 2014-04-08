@@ -7,13 +7,13 @@ public class BackRefBuilder extends BatcherWrapper {
   private BatcherImpl batcher;
   private final Iterable<ConvertibleToOperation> convertibles;
 
-  public BackRefBuilder(BatcherImpl batcher, Iterable<ConvertibleToOperation> convertibles) {
+  BackRefBuilder(BatcherImpl batcher, Iterable<ConvertibleToOperation> convertibles) {
     super(batcher);
     this.batcher = batcher;
     this.convertibles = convertibles;
   }
 
-  public BackRefBuilder(BatcherImpl batcher, ConvertibleToOperation... convertible) {
+  BackRefBuilder(BatcherImpl batcher, ConvertibleToOperation... convertible) {
     this(batcher, Lists.newArrayList(convertible));
   }
 
