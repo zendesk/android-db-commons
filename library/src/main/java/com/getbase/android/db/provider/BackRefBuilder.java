@@ -4,7 +4,7 @@ import com.google.common.collect.Lists;
 
 public class BackRefBuilder extends BatcherWrapper {
 
-  private BatcherImpl batcher;
+  private final BatcherImpl batcher;
   private final Iterable<ConvertibleToOperation> convertibles;
 
   BackRefBuilder(BatcherImpl batcher, Iterable<ConvertibleToOperation> convertibles) {
