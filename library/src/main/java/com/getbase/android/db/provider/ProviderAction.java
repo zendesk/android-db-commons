@@ -1,5 +1,7 @@
 package com.getbase.android.db.provider;
 
+import com.google.common.base.Objects;
+
 import android.content.ContentProvider;
 import android.content.ContentProviderClient;
 import android.content.ContentResolver;
@@ -60,4 +62,26 @@ public abstract class ProviderAction<T> {
   }
 
   protected abstract T perform(CrudHandler crudHandler) throws RemoteException;
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+
+    ProviderAction that = (ProviderAction) o;
+
+    return Objects.equal(mUri, that.mUri);
+  }
+
+  @Override
+  public int hashCode() {
+    return mUri != null ? mUri.hashCode() : 0;
+  }
+
+  @Override
+  public String toString() {
+    return "ProviderAction{" +
+        "mUri=" + mUri +
+        '}';
+  }
 }
