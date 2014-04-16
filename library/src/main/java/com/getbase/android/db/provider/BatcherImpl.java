@@ -1,9 +1,7 @@
 package com.getbase.android.db.provider;
 
-import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Multimap;
 
 import android.content.ContentProviderOperation;
 import android.content.ContentProviderOperation.Builder;
@@ -17,7 +15,7 @@ import java.util.List;
 class BatcherImpl extends Batcher {
 
   private final List<ConvertibleToOperation> operations = Lists.newArrayList();
-  private final Multimap<ConvertibleToOperation, BackRef> backRefs = HashMultimap.create();
+  private final HashIdentityMultimap<ConvertibleToOperation, BackRef> backRefs = HashIdentityMultimap.create();
 
   @Override
   public Batcher append(Batcher batcher) {
@@ -49,7 +47,7 @@ class BatcherImpl extends Batcher {
 
   @Override
   public ArrayList<ContentProviderOperation> operations() {
-    final Multimap<ConvertibleToOperation, Integer> parentsPositions = HashMultimap.create();
+    final HashIdentityMultimap<ConvertibleToOperation, Integer> parentsPositions = HashIdentityMultimap.create();
     ArrayList<ContentProviderOperation> providerOperations = Lists.newArrayListWithCapacity(operations.size());
     for (ConvertibleToOperation convertible : operations) {
       final Builder builder = convertible.toContentProviderOperationBuilder();
@@ -69,7 +67,7 @@ class BatcherImpl extends Batcher {
   }
 
   @Override
-  protected Multimap<ConvertibleToOperation, BackRef> getBackRefsMultimap() {
+  protected HashIdentityMultimap<ConvertibleToOperation, BackRef> getBackRefsMultimap() {
     return backRefs;
   }
 
