@@ -29,7 +29,7 @@ public abstract class AbstractLoader<T> extends AsyncTaskLoader<T> {
       super.deliverResult(result);
     }
 
-    if (oldResult != result) {
+    if (oldResult != result && oldResult != null) {
       releaseResources(oldResult);
     }
   }
