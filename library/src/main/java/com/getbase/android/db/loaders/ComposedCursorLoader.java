@@ -39,8 +39,6 @@ public class ComposedCursorLoader<T> extends AbstractLoader<T> {
   String[] mSelectionArgs;
   String mSortOrder;
 
-  T mResult;
-
   private final Function<Cursor, T> mCursorTransformation;
   private IdentityLinkedMap<T, Cursor> cursorsForResults = new IdentityLinkedMap<T, Cursor>();
 
