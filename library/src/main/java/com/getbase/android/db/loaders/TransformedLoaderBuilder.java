@@ -18,7 +18,7 @@ public class TransformedLoaderBuilder<To> {
     this.wrapperFunction = wrapperFunction;
   }
 
-  public <NewTo> TransformedLoaderBuilder<NewTo> wrap(Function<To, NewTo> wrapper) {
+  public <NewTo> TransformedLoaderBuilder<NewTo> transform(Function<To, NewTo> wrapper) {
     return new TransformedLoaderBuilder<NewTo>(queryData, Functions.compose(wrapper, wrapperFunction));
   }
 

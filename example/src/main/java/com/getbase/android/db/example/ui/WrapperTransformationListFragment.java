@@ -49,7 +49,7 @@ public class WrapperTransformationListFragment extends ListFragment implements L
             }
           })
           .lazy()
-          .wrap(new Function<List<Person>, SectionedPeopleList>() {
+          .transform(new Function<List<Person>, SectionedPeopleList>() {
             @Override
             public SectionedPeopleList apply(List<Person> people) {
               return new SectionedPeopleList(people);
