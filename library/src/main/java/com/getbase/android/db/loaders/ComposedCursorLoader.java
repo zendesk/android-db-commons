@@ -31,7 +31,8 @@ import java.util.Arrays;
 import javax.annotation.Nullable;
 
 public class ComposedCursorLoader<T> extends AbstractLoader<T> {
-  final ForceLoadContentObserver mObserver;
+
+  private final DisableableContentObserver mObserver;
 
   Uri mUri;
   String[] mProjection;
@@ -39,10 +40,14 @@ public class ComposedCursorLoader<T> extends AbstractLoader<T> {
   String[] mSelectionArgs;
   String mSortOrder;
 
-  T mResult;
-
   private final Function<Cursor, T> mCursorTransformation;
   private IdentityLinkedMap<T, Cursor> cursorsForResults = new IdentityLinkedMap<T, Cursor>();
+
+  @Override
+  protected void onStartLoading() {
+    mObserver.setEnabled(true);
+    super.onStartLoading();
+  }
 
   /* Runs on a worker thread */
   @Override
@@ -51,7 +56,11 @@ public class ComposedCursorLoader<T> extends AbstractLoader<T> {
     final T result = mCursorTransformation.apply(cursor);
     Preconditions.checkNotNull(result, "Function passed to this loader should never return null.");
 
-    releaseCursor(cursorsForResults.put(result, cursor));
+    if (cursorsForResults.get(result) != null) {
+      releaseCursor(cursor);
+    } else {
+      cursorsForResults.put(result, cursor);
+    }
 
     return result;
   }
@@ -62,20 +71,35 @@ public class ComposedCursorLoader<T> extends AbstractLoader<T> {
     if (cursor != null) {
       // Ensure the cursor window is filled
       cursor.getCount();
-      cursor.registerContentObserver(mObserver);
     }
     return cursor;
   }
 
+  @Override
+  protected void onNewDataDelivered(T data) {
+    cursorsForResults.get(data).registerContentObserver(mObserver);
+  }
+
   public ComposedCursorLoader(Context context, QueryData queryData, Function<Cursor, T> cursorTransformation) {
     super(context);
-    mObserver = new ForceLoadContentObserver();
+    mObserver = new DisableableContentObserver(new ForceLoadContentObserver());
     mUri = queryData.getUri();
     mProjection = queryData.getProjection();
     mSelection = queryData.getSelection();
     mSelectionArgs = queryData.getSelectionArgs();
     mSortOrder = queryData.getOrderBy();
     mCursorTransformation = cursorTransformation;
+  }
+
+  @Override
+  protected void onAbandon() {
+    mObserver.setEnabled(false);
+  }
+
+  @Override
+  protected void onReset() {
+    mObserver.setEnabled(false);
+    super.onReset();
   }
 
   @Override

@@ -27,9 +27,12 @@ public abstract class AbstractLoader<T> extends AsyncTaskLoader<T> {
 
     if (isStarted()) {
       super.deliverResult(result);
+      if (oldResult != result) {
+        onNewDataDelivered(result);
+      }
     }
 
-    if (oldResult != result) {
+    if (oldResult != result && oldResult != null) {
       releaseResources(oldResult);
     }
   }
@@ -72,5 +75,18 @@ public abstract class AbstractLoader<T> extends AsyncTaskLoader<T> {
    * This will always be called from the process's main thread.
    */
   protected void releaseResources(T result) {
+  }
+
+  /**
+   * Subclasses may implement this to perform some action when new data is
+   * delivered for the first time. For example you might want to register
+   * some observers which would trigger reloading of the data. You do not
+   * want to do this in onStartLoading, because the user would never get any
+   * data if the loading time was longer than interval between forceLoad
+   * triggers from observer.
+   *
+   * This will always be called from the process's main thread.
+   */
+  protected void onNewDataDelivered(T data) {
   }
 }
