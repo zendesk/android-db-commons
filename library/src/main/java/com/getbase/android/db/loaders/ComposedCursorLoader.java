@@ -64,9 +64,13 @@ public class ComposedCursorLoader<T> extends AbstractLoader<T> {
     if (cursor != null) {
       // Ensure the cursor window is filled
       cursor.getCount();
-      cursor.registerContentObserver(mObserver);
     }
     return cursor;
+  }
+
+  @Override
+  protected void onNewDataDelivered(T data) {
+    cursorsForResults.get(data).registerContentObserver(mObserver);
   }
 
   public ComposedCursorLoader(Context context, QueryData queryData, Function<Cursor, T> cursorTransformation) {
