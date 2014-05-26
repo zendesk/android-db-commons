@@ -21,8 +21,10 @@ import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 
 import android.content.Context;
+import android.database.ContentObserver;
 import android.database.Cursor;
 import android.net.Uri;
+import android.os.Handler;
 
 import java.io.FileDescriptor;
 import java.io.PrintWriter;
@@ -31,7 +33,29 @@ import java.util.Arrays;
 import javax.annotation.Nullable;
 
 public class ComposedCursorLoader<T> extends AbstractLoader<T> {
-  final ForceLoadContentObserver mObserver;
+
+  private class DisableableContentObserver extends ContentObserver {
+    private final ContentObserver mWrappedObserver;
+    private boolean mIsEnabled = true;
+
+    public DisableableContentObserver(ContentObserver wrappedObserver) {
+      super(new Handler());
+      mWrappedObserver = wrappedObserver;
+    }
+
+    @Override
+    public void onChange(boolean selfChange) {
+      if (mIsEnabled) {
+        mWrappedObserver.onChange(selfChange);
+      }
+    }
+
+    public void setEnabled(boolean isEnabled) {
+      mIsEnabled = isEnabled;
+    }
+  }
+
+  private final DisableableContentObserver mObserver;
 
   Uri mUri;
   String[] mProjection;
@@ -41,6 +65,12 @@ public class ComposedCursorLoader<T> extends AbstractLoader<T> {
 
   private final Function<Cursor, T> mCursorTransformation;
   private IdentityLinkedMap<T, Cursor> cursorsForResults = new IdentityLinkedMap<T, Cursor>();
+
+  @Override
+  protected void onStartLoading() {
+    mObserver.setEnabled(true);
+    super.onStartLoading();
+  }
 
   /* Runs on a worker thread */
   @Override
@@ -75,13 +105,24 @@ public class ComposedCursorLoader<T> extends AbstractLoader<T> {
 
   public ComposedCursorLoader(Context context, QueryData queryData, Function<Cursor, T> cursorTransformation) {
     super(context);
-    mObserver = new ForceLoadContentObserver();
+    mObserver = new DisableableContentObserver(new ForceLoadContentObserver());
     mUri = queryData.getUri();
     mProjection = queryData.getProjection();
     mSelection = queryData.getSelection();
     mSelectionArgs = queryData.getSelectionArgs();
     mSortOrder = queryData.getOrderBy();
     mCursorTransformation = cursorTransformation;
+  }
+
+  @Override
+  protected void onAbandon() {
+    mObserver.setEnabled(false);
+  }
+
+  @Override
+  protected void onReset() {
+    mObserver.setEnabled(false);
+    super.onReset();
   }
 
   @Override
