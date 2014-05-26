@@ -21,10 +21,8 @@ import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 
 import android.content.Context;
-import android.database.ContentObserver;
 import android.database.Cursor;
 import android.net.Uri;
-import android.os.Handler;
 
 import java.io.FileDescriptor;
 import java.io.PrintWriter;
@@ -33,27 +31,6 @@ import java.util.Arrays;
 import javax.annotation.Nullable;
 
 public class ComposedCursorLoader<T> extends AbstractLoader<T> {
-
-  private class DisableableContentObserver extends ContentObserver {
-    private final ContentObserver mWrappedObserver;
-    private boolean mIsEnabled = true;
-
-    public DisableableContentObserver(ContentObserver wrappedObserver) {
-      super(new Handler());
-      mWrappedObserver = wrappedObserver;
-    }
-
-    @Override
-    public void onChange(boolean selfChange) {
-      if (mIsEnabled) {
-        mWrappedObserver.onChange(selfChange);
-      }
-    }
-
-    public void setEnabled(boolean isEnabled) {
-      mIsEnabled = isEnabled;
-    }
-  }
 
   private final DisableableContentObserver mObserver;
 
