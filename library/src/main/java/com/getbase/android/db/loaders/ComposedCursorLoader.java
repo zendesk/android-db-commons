@@ -49,7 +49,11 @@ public class ComposedCursorLoader<T> extends AbstractLoader<T> {
     final T result = mCursorTransformation.apply(cursor);
     Preconditions.checkNotNull(result, "Function passed to this loader should never return null.");
 
-    releaseCursor(cursorsForResults.put(result, cursor));
+    if (cursorsForResults.get(result) != null) {
+      releaseCursor(cursor);
+    } else {
+      cursorsForResults.put(result, cursor);
+    }
 
     return result;
   }
