@@ -1,15 +1,18 @@
 package com.getbase.android.db.loaders;
 
-import com.getbase.android.db.common.QueryData;
 import com.getbase.android.db.provider.ProviderAction;
 import com.getbase.android.db.provider.Query;
 import com.google.common.base.Function;
+import com.google.common.base.Functions;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Lists;
 
 import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
-import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
+
+import java.util.List;
 
 public class CursorLoaderBuilder {
 
@@ -18,6 +21,7 @@ public class CursorLoaderBuilder {
   }
 
   private final Query query;
+  private final List<Uri> notificationUris = Lists.newArrayList();
 
   private CursorLoaderBuilder(Uri uri) {
     this.query = ProviderAction.query(uri);
@@ -38,22 +42,25 @@ public class CursorLoaderBuilder {
     return this;
   }
 
+  public CursorLoaderBuilder addNotificationUri(Uri uri) {
+    notificationUris.add(uri);
+    return this;
+  }
+
   public <Out> TransformedRowLoaderBuilder<Out> transformRow(Function<Cursor, Out> rowTransformer) {
-    return new TransformedRowLoaderBuilder<Out>(query.getQueryData(), rowTransformer);
+    return new TransformedRowLoaderBuilder<Out>(query.getQueryData(), ImmutableList.copyOf(notificationUris), rowTransformer);
   }
 
   public <Out> TransformedLoaderBuilder<Out> transform(Function<Cursor, Out> transformer) {
-    return new TransformedLoaderBuilder<Out>(query.getQueryData(), transformer);
+    return new TransformedLoaderBuilder<Out>(query.getQueryData(), ImmutableList.copyOf(notificationUris), transformer);
   }
 
   public Loader<Cursor> build(Context context) {
-    final QueryData queryData = query.getQueryData();
-    final CursorLoader loader = new CursorLoader(context);
-    loader.setUri(queryData.getUri());
-    loader.setProjection(queryData.getProjection());
-    loader.setSelection(queryData.getSelection());
-    loader.setSelectionArgs(queryData.getSelectionArgs());
-    loader.setSortOrder(queryData.getOrderBy());
-    return loader;
+    return new ComposedCursorLoader<Cursor>(
+        context,
+        query.getQueryData(),
+        ImmutableList.copyOf(notificationUris),
+        Functions.<Cursor>identity()
+    );
   }
 }

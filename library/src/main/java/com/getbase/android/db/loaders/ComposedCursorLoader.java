@@ -19,7 +19,9 @@ package com.getbase.android.db.loaders;
 import com.getbase.android.db.common.QueryData;
 import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableList;
 
+import android.content.ContentResolver;
 import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
@@ -33,6 +35,8 @@ import javax.annotation.Nullable;
 public class ComposedCursorLoader<T> extends AbstractLoader<T> {
 
   private final DisableableContentObserver mObserver;
+  private final ImmutableList<Uri> mNotificationUris;
+  private boolean mAdditionalUrisRegistered;
 
   Uri mUri;
   String[] mProjection;
@@ -78,9 +82,17 @@ public class ComposedCursorLoader<T> extends AbstractLoader<T> {
   @Override
   protected void onNewDataDelivered(T data) {
     cursorsForResults.get(data).registerContentObserver(mObserver);
+    if (!mAdditionalUrisRegistered) {
+      ContentResolver resolver = getContext().getContentResolver();
+      for (Uri notificationUri : mNotificationUris) {
+        resolver.registerContentObserver(notificationUri, true, mObserver);
+      }
+
+      mAdditionalUrisRegistered = true;
+    }
   }
 
-  public ComposedCursorLoader(Context context, QueryData queryData, Function<Cursor, T> cursorTransformation) {
+  public ComposedCursorLoader(Context context, QueryData queryData, ImmutableList<Uri> notificationUris, Function<Cursor, T> cursorTransformation) {
     super(context);
     mObserver = new DisableableContentObserver(new ForceLoadContentObserver());
     mUri = queryData.getUri();
@@ -89,22 +101,32 @@ public class ComposedCursorLoader<T> extends AbstractLoader<T> {
     mSelectionArgs = queryData.getSelectionArgs();
     mSortOrder = queryData.getOrderBy();
     mCursorTransformation = cursorTransformation;
+    mNotificationUris = notificationUris;
   }
 
   @Override
   protected void onAbandon() {
     mObserver.setEnabled(false);
+    unregisterAdditionalUris();
   }
 
   @Override
   protected void onReset() {
     mObserver.setEnabled(false);
+    unregisterAdditionalUris();
     super.onReset();
   }
 
   @Override
   protected void releaseResources(T result) {
     releaseCursor(cursorsForResults.remove(result));
+  }
+
+  private void unregisterAdditionalUris() {
+    if (mAdditionalUrisRegistered) {
+      getContext().getContentResolver().unregisterContentObserver(mObserver);
+      mAdditionalUrisRegistered = false;
+    }
   }
 
   private void releaseCursor(@Nullable Cursor cursor) {
