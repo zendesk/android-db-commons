@@ -39,8 +39,8 @@ public class TransformedRowLoaderBuilder<T> {
     );
   }
 
-  public TransformedLoaderBuilder<T> addNotificationUri(Uri uri) {
-    return new TransformedLoaderBuilder<T>(queryData, ImmutableList.<Uri>builder().addAll(notificationUris).add(uri).build(), cursorTransformation);
+  public TransformedRowLoaderBuilder<T> addNotificationUri(Uri uri) {
+    return new TransformedRowLoaderBuilder<T>(queryData, ImmutableList.<Uri>builder().addAll(notificationUris).add(uri).build(), cursorTransformation);
   }
 
   public Loader<List<T>> build(Context context) {
