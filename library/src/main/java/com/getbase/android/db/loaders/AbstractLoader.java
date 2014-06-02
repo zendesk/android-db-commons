@@ -26,10 +26,10 @@ public abstract class AbstractLoader<T> extends AsyncTaskLoader<T> {
     mResult = result;
 
     if (isStarted()) {
-      super.deliverResult(result);
       if (oldResult != result) {
         onNewDataDelivered(result);
       }
+      super.deliverResult(result);
     }
 
     if (oldResult != result && oldResult != null) {
