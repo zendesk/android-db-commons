@@ -107,6 +107,9 @@ public final class Expressions {
     ExpressionCombiner length(Expression e);
     ExpressionCombiner concat(Expression... e);
     ExpressionCombiner join(String on, Expression... e);
+
+    // generic expression
+    ExpressionCombiner expr(String expression);
   }
 
   public interface CaseExpressions {
@@ -229,6 +232,10 @@ public final class Expressions {
 
   public static ExpressionCombiner concat(Expression... e) {
     return new Builder().concat(e);
+  }
+
+  public static ExpressionCombiner expr(String expression) {
+    return new Builder().expr(expression);
   }
 
   public static ExpressionCombiner join(String on, Expression... e) {
@@ -583,6 +590,11 @@ public final class Expressions {
     private ExpressionCombiner function(String func, Expression... e) {
       mBuilder.append(func);
       expr(e);
+      return this;
+    }
+
+    public ExpressionCombiner expr(String expr) {
+      mBuilder.append(expr);
       return this;
     }
 

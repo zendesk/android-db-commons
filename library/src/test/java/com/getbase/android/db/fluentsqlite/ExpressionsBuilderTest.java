@@ -6,6 +6,7 @@ import static com.getbase.android.db.fluentsqlite.Expressions.coalesce;
 import static com.getbase.android.db.fluentsqlite.Expressions.column;
 import static com.getbase.android.db.fluentsqlite.Expressions.concat;
 import static com.getbase.android.db.fluentsqlite.Expressions.count;
+import static com.getbase.android.db.fluentsqlite.Expressions.expr;
 import static com.getbase.android.db.fluentsqlite.Expressions.ifNull;
 import static com.getbase.android.db.fluentsqlite.Expressions.join;
 import static com.getbase.android.db.fluentsqlite.Expressions.length;
@@ -89,6 +90,7 @@ public class ExpressionsBuilderTest {
       .put(cases().when(column("col_a").eq().column("col_b")).then(literal(1)).otherwise(literal(0)), "CASE WHEN (col_a == col_b) THEN (1) ELSE (0) END")
       .put(cases().when(column("col_a").eq().column("col_b")).then(literal(1)).when(column("col_a").eq().column("col_c")).then(literal(2)).end(), "CASE WHEN (col_a == col_b) THEN (1) WHEN (col_a == col_c) THEN (2) END")
       .put(cases(column("col_a")).when(column("col_b")).then(literal(1)).end(), "CASE (col_a) WHEN (col_b) THEN (1) END")
+      .put(column("timestamp").lt().expr("strftime('%s', 'now')"), "timestamp < strftime('%s', 'now')")
       .build();
 
   @Parameters
