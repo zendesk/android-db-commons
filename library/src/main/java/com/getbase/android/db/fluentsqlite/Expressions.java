@@ -593,6 +593,7 @@ public final class Expressions {
       return this;
     }
 
+    @Override
     public ExpressionCombiner expr(String expr) {
       mBuilder.append(expr);
       return this;
