@@ -12,6 +12,7 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.support.v4.content.Loader;
 
+import java.util.Collection;
 import java.util.List;
 
 public class CursorLoaderBuilder {
@@ -34,6 +35,11 @@ public class CursorLoaderBuilder {
 
   public CursorLoaderBuilder where(String selection, Object... selectionArgs) {
     query.where(selection, selectionArgs);
+    return this;
+  }
+
+  public <T> CursorLoaderBuilder whereIn(String column, Collection<T> collection) {
+    query.whereIn(column, collection);
     return this;
   }
 
