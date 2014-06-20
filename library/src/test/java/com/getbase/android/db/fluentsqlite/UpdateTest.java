@@ -2,7 +2,7 @@ package com.getbase.android.db.fluentsqlite;
 
 import static com.getbase.android.db.fluentsqlite.Expressions.arg;
 import static com.getbase.android.db.fluentsqlite.Expressions.column;
-import static com.getbase.android.db.fluentsqlite.QueryBuilder.select;
+import static com.getbase.android.db.fluentsqlite.Query.select;
 import static com.getbase.android.db.fluentsqlite.Update.update;
 import static org.fest.assertions.Assertions.assertThat;
 import static org.fest.assertions.api.ANDROID.assertThat;
@@ -318,7 +318,7 @@ public class UpdateTest {
   public void shouldUseBoundArgsFromColumnExpressions() throws Exception {
     update()
         .table("test")
-        .setColumn("col_a", column("col_b").in(select().column("id").from("B").where("status=?", "new")))
+        .setColumn("col_a", column("col_b").in(select().column("id").from("B").where("status=?", "new").build()))
         .perform(mDb);
 
     verify(mDb).compileStatement(eq("UPDATE test SET col_a=(col_b IN (SELECT id FROM B WHERE (status=?)))"));
@@ -356,7 +356,7 @@ public class UpdateTest {
     update()
         .table("A")
         .value("col1", "val1")
-        .where(column("col2").in(select().column("id").from("B").where("status=?", "new")))
+        .where(column("col2").in(select().column("id").from("B").where("status=?", "new").build()))
         .perform(mDb);
 
     verify(mDb).update(
@@ -371,7 +371,7 @@ public class UpdateTest {
   public void shouldNotUseBoundArgsFromColumnExpressionsOverriddenByContentValues() throws Exception {
     update()
         .table("test")
-        .setColumn("col_a", column("col_b").in(select().column("id").from("B").where("status=?", "new")))
+        .setColumn("col_a", column("col_b").in(select().column("id").from("B").where("status=?", "new").build()))
         .value("col_a", 666)
         .perform(mDb);
 
@@ -387,8 +387,8 @@ public class UpdateTest {
   public void shouldOverrideBoundArgsFromColumnExpressionsIfTheExpressionForTheSameColumnIsSpecifiedTwice() throws Exception {
     update()
         .table("test")
-        .setColumn("col_a", column("col_b").in(select().column("id").from("B").where("status=?", "new")))
-        .setColumn("col_a", column("col_b").in(select().column("id").from("B").where("status=?", "old")))
+        .setColumn("col_a", column("col_b").in(select().column("id").from("B").where("status=?", "new").build()))
+        .setColumn("col_a", column("col_b").in(select().column("id").from("B").where("status=?", "old").build()))
         .perform(mDb);
 
     verify(mStatement).bindString(eq(1), eq("old"));
@@ -398,7 +398,7 @@ public class UpdateTest {
   public void shouldOverrideBoundArgsFromColumnExpressionsWithSimpleColumnExpression() throws Exception {
     update()
         .table("test")
-        .setColumn("col_a", column("col_b").in(select().column("id").from("B").where("status=?", "new")))
+        .setColumn("col_a", column("col_b").in(select().column("id").from("B").where("status=?", "new").build()))
         .setColumn("col_a", "666")
         .perform(mDb);
 

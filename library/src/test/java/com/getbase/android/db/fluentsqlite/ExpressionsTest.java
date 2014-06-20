@@ -5,7 +5,7 @@ import static com.getbase.android.db.fluentsqlite.Expressions.arg;
 import static com.getbase.android.db.fluentsqlite.Expressions.coalesce;
 import static com.getbase.android.db.fluentsqlite.Expressions.column;
 import static com.getbase.android.db.fluentsqlite.Expressions.literal;
-import static com.getbase.android.db.fluentsqlite.QueryBuilder.select;
+import static com.getbase.android.db.fluentsqlite.Query.select;
 import static org.fest.assertions.Assertions.assertThat;
 
 import com.getbase.android.db.fluentsqlite.Expressions.Expression;
@@ -43,6 +43,7 @@ public class ExpressionsTest {
                 .column("id")
                 .from("table_a")
                 .where(column("name").eq().arg(), "Smith")
+                .build()
         )
         .and().column("priority").eq().arg();
 
@@ -57,6 +58,7 @@ public class ExpressionsTest {
                 .column("id")
                 .from("table_a")
                 .where(column("name").eq().arg(), "Smith")
+                .build()
         )
         .toRawSql();
   }

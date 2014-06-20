@@ -1,6 +1,5 @@
 package com.getbase.android.db.fluentsqlite;
 
-import com.getbase.android.db.fluentsqlite.QueryBuilder.Query;
 import com.google.common.base.Function;
 import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
