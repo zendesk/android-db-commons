@@ -6,7 +6,6 @@ import static com.getbase.android.db.fluentsqlite.Expressions.coalesce;
 import static com.getbase.android.db.fluentsqlite.Expressions.column;
 import static com.getbase.android.db.fluentsqlite.Expressions.concat;
 import static com.getbase.android.db.fluentsqlite.Expressions.count;
-import static com.getbase.android.db.fluentsqlite.Expressions.expr;
 import static com.getbase.android.db.fluentsqlite.Expressions.ifNull;
 import static com.getbase.android.db.fluentsqlite.Expressions.join;
 import static com.getbase.android.db.fluentsqlite.Expressions.length;
@@ -17,7 +16,7 @@ import static com.getbase.android.db.fluentsqlite.Expressions.not;
 import static com.getbase.android.db.fluentsqlite.Expressions.nul;
 import static com.getbase.android.db.fluentsqlite.Expressions.nullIf;
 import static com.getbase.android.db.fluentsqlite.Expressions.sum;
-import static com.getbase.android.db.fluentsqlite.QueryBuilder.select;
+import static com.getbase.android.db.fluentsqlite.Query.select;
 import static org.fest.assertions.Assertions.assertThat;
 
 import com.getbase.android.db.fluentsqlite.Expressions.Expression;

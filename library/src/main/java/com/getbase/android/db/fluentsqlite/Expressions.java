@@ -1,6 +1,6 @@
 package com.getbase.android.db.fluentsqlite;
 
-import com.getbase.android.db.fluentsqlite.QueryBuilder.Query;
+import com.getbase.android.db.fluentsqlite.Query.QueryBuilder;
 import com.google.common.base.Function;
 import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
@@ -20,9 +20,9 @@ import java.util.Set;
 
 public final class Expressions {
 
-  public static final Function<Query, Iterable<String>> GET_TABLES = new Function<Query, Iterable<String>>() {
+  public static final Function<QueryBuilder, Iterable<String>> GET_TABLES = new Function<QueryBuilder, Iterable<String>>() {
     @Override
-    public Iterable<String> apply(Query subquery) {
+    public Iterable<String> apply(QueryBuilder subquery) {
       return subquery.getTables();
     }
   };
@@ -150,7 +150,7 @@ public final class Expressions {
     ExpressionBuilder is();
     ExpressionCombiner is(Expression e);
 
-    ExpressionCombiner in(Query subquery);
+    ExpressionCombiner in(QueryBuilder subquery);
     ExpressionCombiner in(Expression... e);
 
     ExpressionBuilder or();
@@ -253,7 +253,7 @@ public final class Expressions {
   private static class Builder extends ExpressionCombiner implements ExpressionBuilder, CaseExpressionBuilder, CaseValue {
     private StringBuilder mBuilder = new StringBuilder();
     private Map<Integer, Object> mArgs = Maps.newHashMap();
-    private List<Query> mSubqueries = Lists.newArrayList();
+    private List<QueryBuilder> mSubqueries = Lists.newArrayList();
     private int mArgsCount;
 
     private static final Joiner ARGS_JOINER = Joiner.on(", ");
@@ -371,7 +371,7 @@ public final class Expressions {
     }
 
     @Override
-    public ExpressionCombiner in(Query subquery) {
+    public ExpressionCombiner in(QueryBuilder subquery) {
       RawQuery rawQuery = subquery.toRawQuery();
       for (String rawQueryArg : rawQuery.mRawQueryArgs) {
         mArgs.put(mArgsCount++, rawQueryArg);

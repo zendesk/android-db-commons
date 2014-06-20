@@ -3,7 +3,7 @@ package com.getbase.android.db.fluentsqlite;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
-import com.getbase.android.db.fluentsqlite.QueryBuilder.Query;
+import com.getbase.android.db.fluentsqlite.Query.QueryBuilder;
 
 import android.database.sqlite.SQLiteDatabase;
 
@@ -50,10 +50,10 @@ public final class ViewActions {
     }
 
     @Override
-    public ViewAction as(Query query) {
-      checkNotNull(query);
+    public ViewAction as(QueryBuilder queryBuilder) {
+      checkNotNull(queryBuilder);
 
-      mQuery = query.toRawQuery();
+      mQuery = queryBuilder.toRawQuery();
 
       checkArgument(mQuery.mRawQueryArgs.isEmpty(), "Cannot use query with bound args for View creation");
 
@@ -76,6 +76,6 @@ public final class ViewActions {
   }
 
   public interface ViewSelectStatementChooser {
-    ViewAction as(Query query);
+    ViewAction as(QueryBuilder queryBuilder);
   }
 }

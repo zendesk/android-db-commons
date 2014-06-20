@@ -2,7 +2,7 @@ package com.getbase.android.db.fluentsqlite;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-import com.getbase.android.db.fluentsqlite.QueryBuilder.Query;
+import com.getbase.android.db.fluentsqlite.Query.QueryBuilder;
 import com.getbase.android.db.provider.Utils;
 import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
@@ -101,10 +101,10 @@ public class Insert implements InsertTableSelector, InsertFormSelector, InsertVa
   }
 
   @Override
-  public InsertWithSelect resultOf(Query query) {
-    checkNotNull(query);
+  public InsertWithSelect resultOf(QueryBuilder queryBuilder) {
+    checkNotNull(queryBuilder);
 
-    return new InsertWithSelect(mTable, query.toRawQuery(), mQueryFormColumns);
+    return new InsertWithSelect(mTable, queryBuilder.toRawQuery(), mQueryFormColumns);
   }
 
   @Override

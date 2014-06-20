@@ -1,7 +1,7 @@
 package com.getbase.android.db.fluentsqlite;
 
 import static com.getbase.android.db.fluentsqlite.Insert.insert;
-import static com.getbase.android.db.fluentsqlite.QueryBuilder.select;
+import static com.getbase.android.db.fluentsqlite.Query.select;
 import static org.fest.assertions.Assertions.assertThat;
 import static org.fest.assertions.api.ANDROID.assertThat;
 import static org.fest.assertions.api.android.content.ContentValuesEntry.entry;
@@ -9,7 +9,7 @@ import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.*;
 
 import com.getbase.android.db.fluentsqlite.Insert.DefaultValuesInsert;
-import com.getbase.android.db.fluentsqlite.QueryBuilder.Query;
+import com.getbase.android.db.fluentsqlite.Query.QueryBuilder;
 
 import org.fest.assertions.Assertions;
 import org.junit.Before;
@@ -65,10 +65,10 @@ public class InsertTest {
 
   @Test
   public void shouldBuildTheInsertInSelectFormWithoutSpecifiedColumns() throws Exception {
-    Query query = select().allColumns().from("B");
-    insert().into("A").resultOf(query).perform(mDb);
+    QueryBuilder queryBuilder = select().allColumns().from("B");
+    insert().into("A").resultOf(queryBuilder).perform(mDb);
 
-    verify(mDb).compileStatement(eq("INSERT INTO A " + query.toRawQuery().mRawQuery));
+    verify(mDb).compileStatement(eq("INSERT INTO A " + queryBuilder.toRawQuery().mRawQuery));
     verify(mStatement).executeInsert();
   }
 
@@ -90,26 +90,26 @@ public class InsertTest {
 
   @Test
   public void shouldBuildTheInsertInSelectFormWithSpecifiedColumns() throws Exception {
-    Query query = select().allColumns().from("B");
-    insert().into("A").columns("a", "b", "c").resultOf(query).perform(mDb);
+    QueryBuilder queryBuilder = select().allColumns().from("B");
+    insert().into("A").columns("a", "b", "c").resultOf(queryBuilder).perform(mDb);
 
-    verify(mDb).compileStatement(eq("INSERT INTO A (a, b, c) " + query.toRawQuery().mRawQuery));
+    verify(mDb).compileStatement(eq("INSERT INTO A (a, b, c) " + queryBuilder.toRawQuery().mRawQuery));
     verify(mStatement).executeInsert();
   }
 
   @Test
   public void shouldConcatenateSpecifiedColumnsForInsertInSelectForm() throws Exception {
-    Query query = select().allColumns().from("B");
-    insert().into("A").columns("a", "b").columns("c").resultOf(query).perform(mDb);
+    QueryBuilder queryBuilder = select().allColumns().from("B");
+    insert().into("A").columns("a", "b").columns("c").resultOf(queryBuilder).perform(mDb);
 
-    verify(mDb).compileStatement(eq("INSERT INTO A (a, b, c) " + query.toRawQuery().mRawQuery));
+    verify(mDb).compileStatement(eq("INSERT INTO A (a, b, c) " + queryBuilder.toRawQuery().mRawQuery));
     verify(mStatement).executeInsert();
   }
 
   @Test(expected = IllegalArgumentException.class)
   public void shouldRejectNullColumnsListInInsertInSelectForm() throws Exception {
-    Query query = select().allColumns().from("B");
-    insert().into("A").columns((String[]) null).resultOf(query).perform(mDb);
+    QueryBuilder queryBuilder = select().allColumns().from("B");
+    insert().into("A").columns((String[]) null).resultOf(queryBuilder).perform(mDb);
   }
 
   @Test

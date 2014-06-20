@@ -2,7 +2,7 @@ package com.getbase.android.db.fluentsqlite;
 
 import static com.getbase.android.db.fluentsqlite.Delete.delete;
 import static com.getbase.android.db.fluentsqlite.Expressions.column;
-import static com.getbase.android.db.fluentsqlite.QueryBuilder.select;
+import static com.getbase.android.db.fluentsqlite.Query.select;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
