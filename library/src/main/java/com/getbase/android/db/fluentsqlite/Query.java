@@ -96,21 +96,21 @@ public final class Query {
 
       CompoundQueryPart(CompoundQueryPart other) {
         mIsDistinct = other.mIsDistinct;
-        mProjection = Lists.newCopyOnWriteArrayList(other.mProjection);
+        mProjection.addAll(other.mProjection);
         mColumnWithPotentialAlias = other.mColumnWithPotentialAlias;
-        mColumnsWithPotentialTable = Lists.newCopyOnWriteArrayList(other.mColumnsWithPotentialTable);
+        mColumnsWithPotentialTable.addAll(other.mColumnsWithPotentialTable);
         mColumnsListsTableWithPotentialAlias = other.mColumnsListsTableWithPotentialAlias;
 
-        mGroupByExpressions = Lists.newCopyOnWriteArrayList(other.mGroupByExpressions);
-        mHaving = Lists.newCopyOnWriteArrayList(other.mHaving);
+        mGroupByExpressions.addAll(other.mGroupByExpressions);
+        mHaving.addAll(other.mHaving);
 
-        mSelection = Lists.newCopyOnWriteArrayList(other.mSelection);
+        mSelection.addAll(other.mSelection);
 
-        mArgs = LinkedListMultimap.create(other.mArgs);
+        mArgs.putAll(other.mArgs);
 
         mPendingTable = other.mPendingTable;
 
-        mTables = Maps.newLinkedHashMap(other.mTables);
+        mTables.putAll(other.mTables);
 
         mPendingJoinType = other.mPendingJoinType;
         mPendingJoin = other.mPendingJoin != null ? new JoinSpec(other.mPendingJoin) : null;
@@ -120,7 +120,7 @@ public final class Query {
           mJoins.add(new JoinSpec(join));
         }
 
-        mTablesUsedInExpressions = Sets.newCopyOnWriteArraySet(other.mTablesUsedInExpressions);
+        mTablesUsedInExpressions.addAll(other.mTablesUsedInExpressions);
       }
 
       private void addPendingColumn() {
@@ -665,8 +665,8 @@ public final class Query {
         mJoinSource = other.mJoinSource;
         mAlias = other.mAlias;
         mUsingColumns = other.mUsingColumns != null ? Arrays.copyOf(other.mUsingColumns, other.mUsingColumns.length) : null;
-        mConstraints = Lists.newCopyOnWriteArrayList(other.mConstraints);
-        mConstraintsArgs = Lists.newCopyOnWriteArrayList(other.mConstraintsArgs);
+        mConstraints.addAll(other.mConstraints);
+        mConstraintsArgs.addAll(other.mConstraintsArgs);
       }
     }
 
