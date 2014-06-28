@@ -1,7 +1,5 @@
 package com.getbase.android.db.provider;
 
-import com.google.common.collect.Multimap;
-
 import android.content.ContentProvider;
 import android.content.ContentProviderClient;
 import android.content.ContentProviderOperation;
@@ -60,6 +58,6 @@ public abstract class Batcher {
     }
   }
 
-  protected abstract Multimap<ConvertibleToOperation, BackRef> getBackRefsMultimap();
+  protected abstract HashIdentityMultimap<ConvertibleToOperation, BackRef> getBackRefsMultimap();
   protected abstract List<ConvertibleToOperation> getConvertibles();
 }

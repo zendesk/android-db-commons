@@ -1,7 +1,5 @@
 package com.getbase.android.db.provider;
 
-import com.google.common.collect.Multimap;
-
 import android.content.ContentProviderOperation;
 
 import java.util.ArrayList;
@@ -36,7 +34,7 @@ class BatcherWrapper extends Batcher {
   }
 
   @Override
-  protected Multimap<ConvertibleToOperation, BackRef> getBackRefsMultimap() {
+  protected HashIdentityMultimap<ConvertibleToOperation, BackRef> getBackRefsMultimap() {
     return realBatcher.getBackRefsMultimap();
   }
 
