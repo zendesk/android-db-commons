@@ -1182,4 +1182,22 @@ public class QueryTest {
     verify(mDb).rawQuery(eq("SELECT a, b, c, d FROM table_a"), eq(new String[0]));
   }
 
+  @SuppressWarnings("ConstantConditions")
+  @Test
+  public void shouldGracefullyHandleNullsInVariousPlaces() throws Exception {
+    String[] projection = null;
+    String selection = null;
+    String selectionArgs = null;
+    String sortOrder = null;
+
+    select()
+        .columns(projection)
+        .from("table_a")
+        .where(selection, selectionArgs)
+        .orderBy(sortOrder)
+        .build()
+        .perform(mDb);
+
+    verify(mDb).rawQuery(eq("SELECT * FROM table_a"), eq(new String[0]));
+  }
 }
