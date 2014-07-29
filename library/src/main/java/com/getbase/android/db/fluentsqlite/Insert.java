@@ -14,16 +14,61 @@ import android.database.sqlite.SQLiteStatement;
 import java.util.Collections;
 import java.util.List;
 
-public class Insert implements InsertTableSelector, InsertFormSelector, InsertValuesBuilder {
-  String mTable;
-  ContentValues mValues = new ContentValues();
-  List<String> mQueryFormColumns = Lists.newArrayList();
+public class Insert implements InsertValuesBuilder {
+  final String mTable;
+  final ContentValues mValues;
 
-  private Insert() {
+  private Insert(String table, ContentValues values) {
+    mTable = table;
+    mValues = values;
   }
 
   public static InsertTableSelector insert() {
-    return new Insert();
+    return new InsertBuilder();
+  }
+
+  static class InsertBuilder implements InsertTableSelector, InsertFormSelector {
+    String mTable;
+    List<String> mQueryFormColumns = Lists.newArrayList();
+
+    @Override
+    public InsertFormSelector into(String table) {
+      mTable = checkNotNull(table);
+      return this;
+    }
+
+    @Override
+    public DefaultValuesInsert defaultValues(String nullColumnHack) {
+      return new DefaultValuesInsert(mTable, checkNotNull(nullColumnHack));
+    }
+
+    @Override
+    public InsertSubqueryForm columns(String... columns) {
+      Preconditions.checkArgument(columns != null, "Column list cannot be null");
+      Collections.addAll(mQueryFormColumns, columns);
+
+      return this;
+    }
+
+    @Override
+    public InsertWithSelect resultOf(Query query) {
+      checkNotNull(query);
+
+      return new InsertWithSelect(mTable, query.toRawQuery(), mQueryFormColumns);
+    }
+
+    @Override
+    public Insert values(ContentValues values) {
+      return new Insert(mTable, new ContentValues(values));
+    }
+
+    @Override
+    public Insert value(String column, Object value) {
+      ContentValues values = new ContentValues();
+      Utils.addToContentValues(column, value, values);
+
+      return new Insert(mTable, values);
+    }
   }
 
   public long perform(SQLiteDatabase db) {
@@ -78,32 +123,6 @@ public class Insert implements InsertTableSelector, InsertFormSelector, InsertVa
     public void perform(SQLiteDatabase db) {
       db.insert(mTable, mNullColumnHack, null);
     }
-  }
-
-  @Override
-  public InsertFormSelector into(String table) {
-    mTable = checkNotNull(table);
-    return this;
-  }
-
-  @Override
-  public DefaultValuesInsert defaultValues(String nullColumnHack) {
-    return new DefaultValuesInsert(mTable, checkNotNull(nullColumnHack));
-  }
-
-  @Override
-  public InsertSubqueryForm columns(String... columns) {
-    Preconditions.checkArgument(columns != null, "Column list cannot be null");
-    Collections.addAll(mQueryFormColumns, columns);
-
-    return this;
-  }
-
-  @Override
-  public InsertWithSelect resultOf(Query query) {
-    checkNotNull(query);
-
-    return new InsertWithSelect(mTable, query.toRawQuery(), mQueryFormColumns);
   }
 
   @Override
