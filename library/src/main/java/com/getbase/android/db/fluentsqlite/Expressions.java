@@ -152,6 +152,9 @@ public final class Expressions {
     ExpressionCombiner in(Query subquery);
     ExpressionCombiner in(Expression... e);
 
+    ExpressionCombiner notIn(Query subquery);
+    ExpressionCombiner notIn(Expression... e);
+
     ExpressionBuilder or();
     ExpressionCombiner or(Expression e);
     ExpressionBuilder and();
@@ -392,6 +395,18 @@ public final class Expressions {
       binaryOperator("IN");
       expr(e);
       return this;
+    }
+
+    @Override
+    public ExpressionCombiner notIn(Query subquery) {
+      mBuilder.append(" NOT");
+      return in(subquery);
+    }
+
+    @Override
+    public ExpressionCombiner notIn(Expression... e) {
+      mBuilder.append(" NOT");
+      return in(e);
     }
 
     @Override
