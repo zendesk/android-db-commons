@@ -1171,4 +1171,15 @@ public class QueryTest {
         .build()
         .perform(mDb);
   }
+
+  @Test
+  public void shouldPreserveOrderOfSpecifiedColumns() throws Exception {
+    select()
+        .column("a").columns("b", "c").column("d").from("table_a")
+        .build()
+        .perform(mDb);
+
+    verify(mDb).rawQuery(eq("SELECT a, b, c, d FROM table_a"), eq(new String[0]));
+  }
+
 }

@@ -410,6 +410,7 @@ public final class Query {
 
     @Override
     public ColumnAliasBuilder expr(Expression expression) {
+      mCurrentQueryPart.addPendingColumns();
       mCurrentQueryPart.addPendingColumn();
       mCurrentQueryPart.mColumnWithPotentialAlias = expression.getSql();
       mCurrentQueryPart.mTablesUsedInExpressions.addAll(expression.getTables());
@@ -431,6 +432,7 @@ public final class Query {
 
     @Override
     public ColumnListTableSelector columns(String... columns) {
+      mCurrentQueryPart.addPendingColumn();
       mCurrentQueryPart.addPendingColumns();
       if (columns != null) {
         Collections.addAll(mCurrentQueryPart.mColumnsWithPotentialTable, columns);
@@ -440,6 +442,7 @@ public final class Query {
 
     @Override
     public ColumnsTableSelector allColumns() {
+      mCurrentQueryPart.addPendingColumn();
       mCurrentQueryPart.addPendingColumns();
       mCurrentQueryPart.mColumnsWithPotentialTable.add("*");
       return mColumnsTableSelectorHelper;
