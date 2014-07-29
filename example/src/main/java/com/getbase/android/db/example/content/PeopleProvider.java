@@ -1,7 +1,7 @@
 package com.getbase.android.db.example.content;
 
 import com.getbase.android.db.fluentsqlite.Insert;
-import com.getbase.android.db.fluentsqlite.QueryBuilder;
+import com.getbase.android.db.fluentsqlite.Query;
 
 import android.content.ContentProvider;
 import android.content.ContentResolver;
@@ -32,11 +32,12 @@ public class PeopleProvider extends ContentProvider {
   public Cursor query(Uri uri, String[] projection, String selection, String[] selectionArgs, String orderBy) {
     switch (sUriMatcher.match(uri)) {
     case PEOPLE_DIR:
-      final Cursor result = QueryBuilder.select()
+      final Cursor result = Query.select()
           .columns(projection)
           .from(Database.Tables.PEOPLE)
           .where(selection, (Object[]) selectionArgs)
           .orderBy(orderBy)
+          .build()
           .perform(mDatabase.getReadableDatabase());
 
       result.setNotificationUri(getContentResolver(), Contract.People.CONTENT_URI);

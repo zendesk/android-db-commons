@@ -1,7 +1,7 @@
 package com.getbase.android.db.fluentsqlite;
 
 import static com.getbase.android.db.fluentsqlite.Expressions.column;
-import static com.getbase.android.db.fluentsqlite.QueryBuilder.select;
+import static com.getbase.android.db.fluentsqlite.Query.select;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -31,7 +31,7 @@ public class ViewActionsTest {
     ViewActions
         .create()
         .view("view_a")
-        .as(select().from("table_a"))
+        .as(select().from("table_a").build())
         .perform(db);
 
     Mockito.verify(db).execSQL("CREATE VIEW view_a AS SELECT * FROM table_a");
@@ -46,6 +46,7 @@ public class ViewActionsTest {
             select()
                 .from("table_a")
                 .where(column("col_a").eq().arg(), "test")
+                .build()
         );
   }
 
