@@ -407,7 +407,6 @@ public class UpdateTest {
     verifyNoMoreInteractions(mStatement);
   }
 
-
   @Test
   public void shouldAllowUsingNullArgumentsForSelection() throws Exception {
     update()
@@ -426,5 +425,21 @@ public class UpdateTest {
         .perform(mDb);
 
     verify(mDb).update(eq("table_a"), any(ContentValues.class), eq("(col_a IS NULL)"), eq(new String[0]));
+  }
+
+  @Test
+  public void shouldAllowUsingNullSelectionWithNullArguments() throws Exception {
+    update()
+        .table("table_a")
+        .where((String) null)
+        .perform(mDb);
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void shouldNotAllowUsingNullSelectionWithArguments() throws Exception {
+    update()
+        .table("table_a")
+        .where((String) null, "I shall fail")
+        .perform(mDb);
   }
 }

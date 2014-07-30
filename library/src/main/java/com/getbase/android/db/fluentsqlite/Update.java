@@ -8,6 +8,7 @@ import com.getbase.android.db.provider.Utils;
 import com.google.common.base.Function;
 import com.google.common.base.Functions;
 import com.google.common.base.Joiner;
+import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.FluentIterable;
@@ -150,9 +151,13 @@ public class Update implements UpdateTableSelector {
   }
 
   public Update where(String selection, Object... selectionArgs) {
-    mSelections.add("(" + selection + ")");
-    if (selectionArgs != null) {
-      Collections.addAll(mSelectionArgs, selectionArgs);
+    if (selection != null) {
+      mSelections.add("(" + selection + ")");
+      if (selectionArgs != null) {
+        Collections.addAll(mSelectionArgs, selectionArgs);
+      }
+    } else {
+      Preconditions.checkArgument(selectionArgs == null || selectionArgs.length == 0, "Cannot use not null arguments with null selection");
     }
 
     return this;
