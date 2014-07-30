@@ -1,5 +1,6 @@
 package com.getbase.android.db.fluentsqlite;
 
+import static android.os.Build.VERSION_CODES.HONEYCOMB;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import com.getbase.android.db.fluentsqlite.Expressions.Expression;
@@ -14,6 +15,7 @@ import com.google.common.collect.LinkedListMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
+import android.annotation.TargetApi;
 import android.content.ContentValues;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteStatement;
@@ -45,62 +47,67 @@ public class Update implements UpdateTableSelector {
     if (mCustomExpressions.isEmpty()) {
       return db.update(mTable, mValues, mSelection, FluentIterable.from(mSelectionArgs).transform(Functions.toStringFunction()).toArray(String.class));
     } else {
-      List<Object> args = Lists.newArrayList();
+      return performUpdateWithCustomExpressions(db, mSelection);
+    }
+  }
 
-      StringBuilder builder = new StringBuilder();
-      builder
-          .append("UPDATE ")
-          .append(mTable)
-          .append(" SET ")
-          .append(Joiner.on(", ").join(Collections2.transform(mCustomExpressions.entrySet(), new Function<Entry<String, String>, String>() {
-            @Override
-            public String apply(Entry<String, String> entry) {
-              return entry.getKey() + "=" + entry.getValue();
-            }
-          })));
+  @SuppressWarnings("NewApi")
+  private int performUpdateWithCustomExpressions(SQLiteDatabase db, String selection) {
+    List<Object> args = Lists.newArrayList();
 
-      if (mValues.size() != 0) {
-        builder.append(", ");
-      }
-
-      Set<Entry<String, Object>> values = mValues.valueSet();
-      builder.append(Joiner.on(", ").join(Collections2.transform(values, new Function<Entry<String, Object>, Object>() {
-        @Override
-        public Object apply(Entry<String, Object> value) {
-          return value.getKey() + "=?";
-        }
-      })));
-
-      args.addAll(Collections2.transform(values, new Function<Entry<String, Object>, Object>() {
-        @Override
-        public Object apply(Entry<String, Object> value) {
-          return value.getValue();
-        }
-      }));
-      args.addAll(mSelectionArgs);
-
-      if (!Strings.isNullOrEmpty(mSelection)) {
-        builder
-            .append(" WHERE ")
-            .append(mSelection);
-      }
-
-      SQLiteStatement statement = db.compileStatement(builder.toString());
-      try {
-        int argIndex = 1;
-        for (String customColumn : mCustomExpressions.keySet()) {
-          for (java.lang.Object arg : mCustomExpressionsArgs.get(customColumn)) {
-            Utils.bindContentValueArg(statement, argIndex++, arg);
+    StringBuilder builder = new StringBuilder();
+    builder
+        .append("UPDATE ")
+        .append(mTable)
+        .append(" SET ")
+        .append(Joiner.on(", ").join(Collections2.transform(mCustomExpressions.entrySet(), new Function<Entry<String, String>, String>() {
+          @Override
+          public String apply(Entry<String, String> entry) {
+            return entry.getKey() + "=" + entry.getValue();
           }
-        }
-        for (Object arg : args) {
+        })));
+
+    if (mValues.size() != 0) {
+      builder.append(", ");
+    }
+
+    Set<Entry<String, Object>> values = mValues.valueSet();
+    builder.append(Joiner.on(", ").join(Collections2.transform(values, new Function<Entry<String, Object>, Object>() {
+      @Override
+      public Object apply(Entry<String, Object> value) {
+        return value.getKey() + "=?";
+      }
+    })));
+
+    args.addAll(Collections2.transform(values, new Function<Entry<String, Object>, Object>() {
+      @Override
+      public Object apply(Entry<String, Object> value) {
+        return value.getValue();
+      }
+    }));
+    args.addAll(mSelectionArgs);
+
+    if (!Strings.isNullOrEmpty(selection)) {
+      builder
+          .append(" WHERE ")
+          .append(selection);
+    }
+
+    SQLiteStatement statement = db.compileStatement(builder.toString());
+    try {
+      int argIndex = 1;
+      for (String customColumn : mCustomExpressions.keySet()) {
+        for (Object arg : mCustomExpressionsArgs.get(customColumn)) {
           Utils.bindContentValueArg(statement, argIndex++, arg);
         }
-
-        return statement.executeUpdateDelete();
-      } finally {
-        statement.close();
       }
+      for (Object arg : args) {
+        Utils.bindContentValueArg(statement, argIndex++, arg);
+      }
+
+      return statement.executeUpdateDelete();
+    } finally {
+      statement.close();
     }
   }
 
@@ -125,6 +132,7 @@ public class Update implements UpdateTableSelector {
     return this;
   }
 
+  @TargetApi(HONEYCOMB)
   public Update setColumn(String column, String expression) {
     mValues.remove(column);
     mCustomExpressionsArgs.removeAll(column);
@@ -132,6 +140,7 @@ public class Update implements UpdateTableSelector {
     return this;
   }
 
+  @TargetApi(HONEYCOMB)
   public Update setColumn(String column, Expression expression) {
     setColumn(column, expression.getSql());
 
