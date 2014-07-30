@@ -5,6 +5,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import com.getbase.android.db.fluentsqlite.Expressions.Expression;
 import com.google.common.base.Functions;
 import com.google.common.base.Joiner;
+import com.google.common.base.Preconditions;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.Lists;
 
@@ -40,9 +41,13 @@ public class Delete implements DeleteTableSelector {
   }
 
   public Delete where(String selection, Object... selectionArgs) {
-    mSelections.add("(" + selection + ")");
-    if (selectionArgs != null) {
-      mSelectionArgs.addAll(Arrays.asList(selectionArgs));
+    if (selection != null) {
+      mSelections.add("(" + selection + ")");
+      if (selectionArgs != null) {
+        mSelectionArgs.addAll(Arrays.asList(selectionArgs));
+      }
+    } else {
+      Preconditions.checkArgument(selectionArgs == null || selectionArgs.length == 0, "Cannot use not null arguments with null selection");
     }
 
     return this;

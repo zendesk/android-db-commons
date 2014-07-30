@@ -126,4 +126,20 @@ public class DeleteTest {
 
     verify(mDb).delete(eq("table_a"), eq("(col_a IS NULL)"), eq(new String[0]));
   }
+
+  @Test
+  public void shouldAllowUsingNullSelectionWithNullArguments() throws Exception {
+    delete()
+        .from("table_a")
+        .where((String) null)
+        .perform(mDb);
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void shouldNotAllowUsingNullSelectionWithArguments() throws Exception {
+    delete()
+        .from("table_a")
+        .where((String) null, "I shall fail")
+        .perform(mDb);
+  }
 }
