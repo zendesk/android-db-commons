@@ -4,8 +4,10 @@ import com.google.common.base.Function;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.LinkedHashMultimap;
 
+import android.content.ContentResolver;
 import android.database.Cursor;
 import android.database.CursorWrapper;
+import android.net.Uri;
 
 import java.util.NoSuchElementException;
 
@@ -122,5 +124,15 @@ public class FluentCursor extends CursorWrapper {
     } finally {
       close();
     }
+  }
+
+  /**
+   * Sets the notification {@code Uri} on wrapped {@code Cursor}.
+   *
+   * @return this {@code FluentCursor}
+   */
+  public FluentCursor withNotificationUri(ContentResolver resolver, Uri uri) {
+    setNotificationUri(resolver, uri);
+    return this;
   }
 }
