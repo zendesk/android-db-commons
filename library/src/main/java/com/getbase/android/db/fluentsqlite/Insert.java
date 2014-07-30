@@ -2,6 +2,7 @@ package com.getbase.android.db.fluentsqlite;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import com.getbase.android.db.fluentsqlite.Query.QueryBuilder;
 import com.getbase.android.db.provider.Utils;
 import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
@@ -55,6 +56,12 @@ public class Insert implements InsertValuesBuilder {
       checkNotNull(query);
 
       return new InsertWithSelect(mTable, query.toRawQuery(), mQueryFormColumns);
+    }
+
+    @Override
+    public InsertWithSelect resultOf(QueryBuilder queryBuilder) {
+      checkNotNull(queryBuilder);
+      return resultOf(queryBuilder.build());
     }
 
     @Override

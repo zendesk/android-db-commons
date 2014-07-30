@@ -1,5 +1,6 @@
 package com.getbase.android.db.fluentsqlite;
 
+import com.getbase.android.db.fluentsqlite.Query.QueryBuilder;
 import com.google.common.base.Function;
 import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
@@ -150,9 +151,11 @@ public final class Expressions {
     ExpressionCombiner is(Expression e);
 
     ExpressionCombiner in(Query subquery);
+    ExpressionCombiner in(QueryBuilder subqueryBuilder);
     ExpressionCombiner in(Expression... e);
 
     ExpressionCombiner notIn(Query subquery);
+    ExpressionCombiner notIn(QueryBuilder subqueryBuilder);
     ExpressionCombiner notIn(Expression... e);
 
     ExpressionBuilder or();
@@ -391,6 +394,11 @@ public final class Expressions {
     }
 
     @Override
+    public ExpressionCombiner in(QueryBuilder subqueryBuilder) {
+      return in(subqueryBuilder.build());
+    }
+
+    @Override
     public ExpressionCombiner in(Expression... e) {
       binaryOperator("IN");
       expr(e);
@@ -401,6 +409,11 @@ public final class Expressions {
     public ExpressionCombiner notIn(Query subquery) {
       mBuilder.append(" NOT");
       return in(subquery);
+    }
+
+    @Override
+    public ExpressionCombiner notIn(QueryBuilder subqueryBuilder) {
+      return notIn(subqueryBuilder.build());
     }
 
     @Override

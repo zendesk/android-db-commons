@@ -607,6 +607,11 @@ public final class Query {
       return mJoinHelper;
     }
 
+    @Override
+    public JoinAliasBuilder join(QueryBuilder subqueryBuilder) {
+      return join(subqueryBuilder.build());
+    }
+
     private static abstract class JoinHelper extends QueryBuilderProxy implements JoinAliasBuilder {
       private JoinHelper(QueryBuilder delegate) {
         super(delegate);
@@ -798,6 +803,11 @@ public final class Query {
       return mTableAliasBuilder;
     }
 
+    @Override
+    public TableAliasBuilder from(QueryBuilder subqueryBuilder) {
+      return from(subqueryBuilder.build());
+    }
+
     private static class TableOrSubquery {
       final String mTable;
       final Query mSubquery;
@@ -925,6 +935,11 @@ public final class Query {
     }
 
     @Override
+    public JoinAliasBuilder join(QueryBuilder subqueryBuilder) {
+      return mDelegate.join(subqueryBuilder);
+    }
+
+    @Override
     public LimitOffsetBuilder limit(String expression) {
       return mDelegate.limit(expression);
     }
@@ -970,6 +985,11 @@ public final class Query {
     }
 
     @Override
+    public TableAliasBuilder from(QueryBuilder subqueryBuilder) {
+      return mDelegate.from(subqueryBuilder);
+    }
+
+    @Override
     public Query build() {
       return mDelegate.build();
     }
@@ -1003,6 +1023,7 @@ public final class Query {
   public interface TableSelector {
     TableAliasBuilder from(String table);
     TableAliasBuilder from(Query subquery);
+    TableAliasBuilder from(QueryBuilder subqueryBuilder);
   }
 
   public interface DistinctSelector {
@@ -1058,6 +1079,7 @@ public final class Query {
   public interface JoinBuilder {
     JoinAliasBuilder join(String table);
     JoinAliasBuilder join(Query subquery);
+    JoinAliasBuilder join(QueryBuilder subqueryBuilder);
   }
 
   public interface JoinAliasBuilder extends JoinConstraintBuilder {

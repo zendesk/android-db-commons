@@ -3,6 +3,8 @@ package com.getbase.android.db.fluentsqlite;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import com.getbase.android.db.fluentsqlite.Query.QueryBuilder;
+
 import android.database.sqlite.SQLiteDatabase;
 
 public final class ViewActions {
@@ -59,6 +61,12 @@ public final class ViewActions {
     }
 
     @Override
+    public ViewAction as(QueryBuilder queryBuilder) {
+      checkNotNull(queryBuilder);
+      return as(queryBuilder.build());
+    }
+
+    @Override
     public ViewSelectStatementChooser view(String view) {
       mView = checkNotNull(view);
       return this;
@@ -74,6 +82,7 @@ public final class ViewActions {
   }
 
   public interface ViewSelectStatementChooser {
-    ViewAction as(Query queryBuilder);
+    ViewAction as(Query query);
+    ViewAction as(QueryBuilder queryBuilder);
   }
 }
