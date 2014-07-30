@@ -181,6 +181,21 @@ LoaderHelper.LoaderDataCallbacks' interface is very similar to the one provided 
 
 Wrap function is applyied in Loader's doInBackground() so you don't have to worry about ANRs in case you want to do something more complex in there.
 
+Fluent SQLite API
+-----------------
+Concatenating SQL strings is not fun. It's very easy to make a syntax error - miss the space, comma or closing bracket - and cause the runtime error. The other problem arises when you want to modify existing query, for example to apply some filters. To ameliorate this issues, we have created fluent API for basic SQLite operations:
+
+```java
+select()
+    .columns(People.NAME, People.AGE)
+    .from(Tables.PEOPLE)
+    .where(column(People.NAME).eq().arg(), "Ian")
+    .where(column(People.AGE).gt().arg(), 18)
+    .perform(db);
+```
+
+Note that `perform()` returns `FluentCursor`, which allows you to easily transform query results into POJOs.
+
 Building
 --------
 This is standard maven project. To build it just execute:
