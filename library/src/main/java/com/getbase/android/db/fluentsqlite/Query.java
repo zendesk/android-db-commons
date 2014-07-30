@@ -378,7 +378,8 @@ public final class Query {
       return new RawQuery(builder.toString(), args);
     }
 
-    FluentCursor perform(SQLiteDatabase db) {
+    @Override
+    public FluentCursor perform(SQLiteDatabase db) {
       RawQuery rawQuery = toRawQuery();
       return new FluentCursor(db.rawQuery(rawQuery.mRawQuery, rawQuery.mRawQueryArgs.toArray(new String[rawQuery.mRawQueryArgs.size()])));
     }
@@ -817,6 +818,7 @@ public final class Query {
     Query build();
     RawQuery toRawQuery();
     Set<String> getTables();
+    FluentCursor perform(SQLiteDatabase db);
   }
 
   private static class QueryBuilderProxy implements QueryBuilder {
@@ -980,6 +982,11 @@ public final class Query {
     @Override
     public Set<String> getTables() {
       return mDelegate.getTables();
+    }
+
+    @Override
+    public FluentCursor perform(SQLiteDatabase db) {
+      return mDelegate.perform(db);
     }
 
     @Override
