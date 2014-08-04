@@ -28,13 +28,7 @@ public abstract class Batcher {
   public abstract ArrayList<ContentProviderOperation> operations();
 
   public ContentProviderResult[] applyBatch(ContentProvider provider) {
-    try {
-      return applyBatch(null, new ContentProviderCrudHandler(provider));
-    } catch (RemoteException neverThrown) {
-      throw new RuntimeException(neverThrown);
-    } catch (OperationApplicationException neverThrown) {
-      throw new RuntimeException(neverThrown);
-    }
+    return applyBatchOrThrow(null, new ContentProviderCrudHandler(provider));
   }
 
   public ContentProviderResult[] applyBatch(ContentProviderClient providerClient) throws RemoteException, OperationApplicationException {
@@ -47,6 +41,24 @@ public abstract class Batcher {
 
   private ContentProviderResult[] applyBatch(String authority, CrudHandler crudHandler) throws RemoteException, OperationApplicationException {
     return crudHandler.applyBatch(authority, operations());
+  }
+
+  public ContentProviderResult[] applyBatchOrThrow(String authority, ContentResolver resolver) {
+    return applyBatchOrThrow(authority, new ContentResolverCrudHandler(resolver));
+  }
+
+  public ContentProviderResult[] applyBatchOrThrow(ContentProviderClient client) {
+    return applyBatchOrThrow(null, new ContentProviderClientCrudHandler(client));
+  }
+
+  private ContentProviderResult[] applyBatchOrThrow(String authority, CrudHandler crudHandler) {
+    try {
+      return applyBatch(authority, crudHandler);
+    } catch (RemoteException e) {
+      throw new RuntimeException("An Exception was returned from applyBatch", e);
+    } catch (OperationApplicationException e) {
+      throw new RuntimeException("An Exception was returned from applyBatch", e);
+    }
   }
 
   static class BackRef {
