@@ -1,6 +1,10 @@
 package com.getbase.android.db.provider;
 
 import static org.fest.assertions.Assertions.assertThat;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import com.google.common.collect.Iterables;
 
@@ -11,9 +15,13 @@ import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowContentProviderOperation;
 
+import android.content.ContentProviderClient;
 import android.content.ContentProviderOperation;
+import android.content.ContentResolver;
 import android.content.ContentValues;
+import android.content.OperationApplicationException;
 import android.net.Uri;
+import android.os.RemoteException;
 import android.provider.BaseColumns;
 
 import java.util.ArrayList;
@@ -196,6 +204,54 @@ public class BatcherTest {
       assertThat(refs.get("parent_id")).isEqualTo(1);
       assertThat(refs.get("another_parent_id")).isEqualTo(0);
     }
+  }
+
+  @Test(expected = RuntimeException.class)
+  public void shouldThrowRuntimeExceptionIfRemoteExceptionOccurInResolver() throws Exception {
+    throwAnExceptionInsideResolversApplyBatch(OperationApplicationException.class);
+  }
+
+  @Test(expected = RuntimeException.class)
+  public void shouldThrowRuntimeExceptionIfOperationApplicationExceptionOccurInResolver() throws Exception {
+    throwAnExceptionInsideResolversApplyBatch(OperationApplicationException.class);
+  }
+
+  @Test(expected = SecurityException.class)
+  public void ifExceptionThrownFromApplyBatchIsNotCheckedThenJustThrowItinResolver() throws Exception {
+    throwAnExceptionInsideResolversApplyBatch(SecurityException.class);
+  }
+
+  @Test(expected = RuntimeException.class)
+  public void shouldThrowRuntimeExceptionIfRemoteExceptionOccurInProviderClient() throws Exception {
+    throwAnExceptionInsideClientsApplyBatch(OperationApplicationException.class);
+  }
+
+  @Test(expected = RuntimeException.class)
+  public void shouldThrowRuntimeExceptionIfOperationApplicationExceptionOccurInProviderClient() throws Exception {
+    throwAnExceptionInsideClientsApplyBatch(OperationApplicationException.class);
+  }
+
+  @Test(expected = SecurityException.class)
+  public void ifExceptionThrownFromApplyBatchIsNotCheckedThenJustThrowItInProviderClient() throws Exception {
+    throwAnExceptionInsideClientsApplyBatch(SecurityException.class);
+  }
+
+  @SuppressWarnings("unchecked")
+  private void throwAnExceptionInsideResolversApplyBatch(Class<? extends Exception> applyBatchException) throws RemoteException, OperationApplicationException {
+    final ContentResolver resolver = mock(ContentResolver.class);
+    when(resolver.applyBatch(anyString(), any(ArrayList.class))).thenThrow(applyBatchException);
+    Batcher.begin()
+        .append(ProviderAction.insert(createFakeUri("fake")))
+        .applyBatchOrThrow("com.fakedomain.base", resolver);
+  }
+
+  @SuppressWarnings("unchecked")
+  private void throwAnExceptionInsideClientsApplyBatch(Class<? extends Exception> applyBatchException) throws RemoteException, OperationApplicationException {
+    final ContentProviderClient client = mock(ContentProviderClient.class);
+    when(client.applyBatch(any(ArrayList.class))).thenThrow(applyBatchException);
+    Batcher.begin()
+        .append(ProviderAction.insert(createFakeUri("fake")))
+        .applyBatchOrThrow(client);
   }
 
   private static Uri createFakeUri(String suffix) {
