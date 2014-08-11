@@ -157,6 +157,18 @@ public class FluentCursorTest {
     assertThat(transformed.values()).containsOnly(18L);
   }
 
+  @Test(expected = IllegalArgumentException.class)
+  public void shouldFailIfCursorTransformedToMapContainsDuplicateKey() throws Exception {
+    final MatrixCursor cursor = new MatrixCursor(new String[] { OTHER_COLUMN, TEST_COLUMN });
+    cursor.addRow(new Object[] { 10, 18L });
+    cursor.addRow(new Object[] { 10, 18L });
+
+    final FluentCursor fluentCursor = new FluentCursor(cursor);
+    fluentCursor.toMap(
+        SingleRowTransforms.getColumn(OTHER_COLUMN).asInteger(),
+        SingleRowTransforms.getColumn(TEST_COLUMN).asLong());
+  }
+
   @Test
   public void shouldTransformToMapWithTheSameIterationOrderAsCursorRows() throws Exception {
     final MatrixCursor cursor = buildMatrixCursor(3);
