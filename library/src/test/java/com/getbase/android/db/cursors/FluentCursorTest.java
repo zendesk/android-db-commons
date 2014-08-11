@@ -23,6 +23,7 @@ import org.robolectric.annotation.Config;
 import android.database.Cursor;
 import android.database.MatrixCursor;
 
+import java.util.Map;
 import java.util.NoSuchElementException;
 
 @RunWith(RobolectricTestRunner.class)
@@ -136,6 +137,51 @@ public class FluentCursorTest {
 
     try {
       fluentCursor.toMultimap(KABOOM, KABOOM);
+    } catch (Throwable t) {
+      // ignore
+    }
+
+    assertThat(fluentCursor.isClosed()).isTrue();
+  }
+
+  @Test
+  public void shouldSuccessfullyTransformToMap() throws Exception {
+    final MatrixCursor cursor = buildMatrixCursor(10);
+    final FluentCursor fluentCursor = new FluentCursor(cursor);
+    final Map<Integer, Long> transformed = fluentCursor.toMap(
+        SingleRowTransforms.getColumn(OTHER_COLUMN).asInteger(),
+        SingleRowTransforms.getColumn(TEST_COLUMN).asLong());
+
+    assertThat(transformed.size()).isEqualTo(cursor.getCount());
+    assertThat(transformed.keySet()).containsOnly(ContiguousSet.create(Range.closed(0, 9), DiscreteDomain.integers()).toArray());
+    assertThat(transformed.values()).containsOnly(18L);
+  }
+
+  @Test
+  public void shouldTransformToMapWithTheSameIterationOrderAsCursorRows() throws Exception {
+    final MatrixCursor cursor = buildMatrixCursor(3);
+    final FluentCursor fluentCursor = new FluentCursor(cursor);
+    final Map<Integer, Long> transformed = fluentCursor.toMap(
+        SingleRowTransforms.getColumn(OTHER_COLUMN).asInteger(),
+        SingleRowTransforms.getColumn(TEST_COLUMN).asLong());
+
+    assertThat(Lists.newArrayList(transformed.keySet())).containsExactly(0, 1, 2);
+  }
+
+  @Test
+  public void shouldCloseCursorAfterItIsTransformedToMap() throws Exception {
+    final MatrixCursor cursor = new MatrixCursor(new String[] { TEST_COLUMN });
+    final FluentCursor fluentCursor = new FluentCursor(cursor);
+    fluentCursor.toMap(Functions.constant(null), Functions.constant(null));
+    assertThat(fluentCursor.isClosed()).isTrue();
+  }
+
+  @Test
+  public void shouldAlwaysCloseCursorAfterCallingToMap() throws Exception {
+    final FluentCursor fluentCursor = new FluentCursor(buildMatrixCursor(10));
+
+    try {
+      fluentCursor.toMap(KABOOM, KABOOM);
     } catch (Throwable t) {
       // ignore
     }

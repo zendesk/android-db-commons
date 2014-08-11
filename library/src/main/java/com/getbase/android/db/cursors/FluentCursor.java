@@ -9,6 +9,7 @@ import android.database.Cursor;
 import android.database.CursorWrapper;
 import android.net.Uri;
 
+import java.util.LinkedHashMap;
 import java.util.NoSuchElementException;
 
 /**
@@ -55,6 +56,34 @@ public class FluentCursor extends CursorWrapper {
   public <TKey, TValue> LinkedHashMultimap<TKey, TValue> toMultimap(Function<? super Cursor, TKey> keyTransform, Function<? super Cursor, TValue> valueTransform) {
     try {
       LinkedHashMultimap<TKey, TValue> result = LinkedHashMultimap.create(getCount(), 1);
+
+      for (moveToFirst(); !isAfterLast(); moveToNext()) {
+        result.put(keyTransform.apply(this), valueTransform.apply(this));
+      }
+
+      return result;
+    } finally {
+      close();
+    }
+  }
+
+  /**
+   * Transforms Cursor to LinkedHashMap<TKey, TValue> by applying given
+   * functions. The iteration order for the returned map is the same as
+   * the iteration order over rows of Cursor.
+   * WARNING: This method closes cursor. Do not use this from onLoadFinished()
+   *
+   * @param keyTransform Function to apply on every single row of this cursor
+   * to get the key of the entry representing this row.
+   * @param valueTransform Function to apply on every single row of this cursor
+   * to get the value of the entry representing this row.
+   * @param <TKey> Type of keys in the returned map
+   * @param <TValue> Type of values in the returned map
+   * @return Transformed map
+   */
+  public <TKey, TValue> LinkedHashMap<TKey, TValue> toMap(Function<? super Cursor, TKey> keyTransform, Function<? super Cursor, TValue> valueTransform) {
+    try {
+      LinkedHashMap<TKey, TValue> result = new LinkedHashMap<TKey, TValue>(getCount(), 1);
 
       for (moveToFirst(); !isAfterLast(); moveToNext()) {
         result.put(keyTransform.apply(this), valueTransform.apply(this));
