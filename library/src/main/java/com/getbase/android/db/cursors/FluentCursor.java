@@ -1,6 +1,7 @@
 package com.getbase.android.db.cursors;
 
 import com.google.common.base.Function;
+import com.google.common.base.Preconditions;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.LinkedHashMultimap;
 
@@ -9,6 +10,7 @@ import android.database.Cursor;
 import android.database.CursorWrapper;
 import android.net.Uri;
 
+import java.util.LinkedHashMap;
 import java.util.NoSuchElementException;
 
 /**
@@ -39,7 +41,7 @@ public class FluentCursor extends CursorWrapper {
   }
 
   /**
-   * Transforms Cursor to LinkedHashMap<TKey, TValue> by applying given
+   * Transforms Cursor to LinkedHashMultimap<TKey, TValue> by applying given
    * functions. The iteration order for the returned map is the same as
    * the iteration order over rows of Cursor.
    * WARNING: This method closes cursor. Do not use this from onLoadFinished()
@@ -58,6 +60,40 @@ public class FluentCursor extends CursorWrapper {
 
       for (moveToFirst(); !isAfterLast(); moveToNext()) {
         result.put(keyTransform.apply(this), valueTransform.apply(this));
+      }
+
+      return result;
+    } finally {
+      close();
+    }
+  }
+
+  /**
+   * Transforms Cursor to LinkedHashMap<TKey, TValue> by applying given
+   * functions. The iteration order for the returned map is the same as
+   * the iteration order over rows of Cursor.
+   * WARNING: This method closes cursor. Do not use this from onLoadFinished()
+   *
+   * @param keyTransform Function to apply on every single row of this cursor
+   * to get the key of the entry representing this row.
+   * @param valueTransform Function to apply on every single row of this cursor
+   * to get the value of the entry representing this row.
+   * @param <TKey> Type of keys in the returned map
+   * @param <TValue> Type of values in the returned map
+   * @return Transformed map
+   * @throws IllegalArgumentException if Cursor contains duplicate keys
+   */
+  public <TKey, TValue> LinkedHashMap<TKey, TValue> toMap(Function<? super Cursor, TKey> keyTransform, Function<? super Cursor, TValue> valueTransform) {
+    try {
+      LinkedHashMap<TKey, TValue> result = new LinkedHashMap<TKey, TValue>(getCount(), 1);
+
+      for (moveToFirst(); !isAfterLast(); moveToNext()) {
+        final TKey key = keyTransform.apply(this);
+        final TValue value = valueTransform.apply(this);
+
+        final TValue previousValue = result.put(key, value);
+
+        Preconditions.checkArgument(previousValue == null, "Duplicate key %s found on position %s", key, getPosition());
       }
 
       return result;
