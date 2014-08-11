@@ -39,7 +39,7 @@ public class FluentCursor extends CursorWrapper {
   }
 
   /**
-   * Transforms Cursor to LinkedHashMap<TKey, TValue> by applying given
+   * Transforms Cursor to LinkedHashMultimap<TKey, TValue> by applying given
    * functions. The iteration order for the returned map is the same as
    * the iteration order over rows of Cursor.
    * WARNING: This method closes cursor. Do not use this from onLoadFinished()
