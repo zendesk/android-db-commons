@@ -139,12 +139,12 @@ public class Insert implements InsertValuesBuilder {
       mNullColumnHack = nullColumnHack;
     }
 
-    public void perform(SQLiteDatabase db) {
-      db.insert(mTable, mNullColumnHack, null);
+    public long perform(SQLiteDatabase db) {
+      return db.insert(mTable, mNullColumnHack, null);
     }
 
-    public void performOrThrow(SQLiteDatabase db) {
-      db.insertOrThrow(mTable, mNullColumnHack, null);
+    public long performOrThrow(SQLiteDatabase db) {
+      return db.insertOrThrow(mTable, mNullColumnHack, null);
     }
   }
 
