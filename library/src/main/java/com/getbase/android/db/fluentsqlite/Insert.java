@@ -82,6 +82,10 @@ public class Insert implements InsertValuesBuilder {
     return db.insert(mTable, null, mValues);
   }
 
+  public long performOrThrow(SQLiteDatabase db) {
+    return db.insertOrThrow(mTable, null, mValues);
+  }
+
   public static class InsertWithSelect {
     private final String mTable;
     private final RawQuery mQuery;
@@ -116,6 +120,14 @@ public class Insert implements InsertValuesBuilder {
         statement.close();
       }
     }
+
+    public long performOrThrow(SQLiteDatabase db) {
+      long result = perform(db);
+      if (result == -1) {
+        throw new RuntimeException("Insert failed");
+      }
+      return result;
+    }
   }
 
   public static class DefaultValuesInsert {
@@ -129,6 +141,10 @@ public class Insert implements InsertValuesBuilder {
 
     public void perform(SQLiteDatabase db) {
       db.insert(mTable, mNullColumnHack, null);
+    }
+
+    public void performOrThrow(SQLiteDatabase db) {
+      db.insertOrThrow(mTable, mNullColumnHack, null);
     }
   }
 

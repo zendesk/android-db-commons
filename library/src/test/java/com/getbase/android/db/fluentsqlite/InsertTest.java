@@ -210,4 +210,59 @@ public class InsertTest {
     verify(mDb).insert(eq("A"), isNull(String.class), contentValuesArgument.capture());
     assertThat(contentValuesArgument.getValue()).contains(entry("col_a", 42));
   }
+
+  @Test(expected = RuntimeException.class)
+  public void shouldCrashIfPerformOrThrowFailsForInsertWithResultOf() throws Exception {
+    when(mStatement.executeInsert()).thenReturn(-1L);
+    Query query = select()
+        .allColumns().from("B")
+        .build();
+    insert()
+        .into("A")
+        .columns("c")
+        .resultOf(query)
+        .performOrThrow(mDb);
+  }
+
+  @Test
+  public void shouldReturnInsertedIdIfEverythingGoesFine() throws Exception {
+    when(mStatement.executeInsert()).thenReturn(5L);
+    Query query = select().allColumns().from("B").build();
+    long result = insert()
+        .into("A")
+        .columns("c")
+        .resultOf(query)
+        .performOrThrow(mDb);
+    assertThat(result).isEqualTo(5L);
+  }
+
+  @Test
+  public void shouldUseInsertOrThrowWithinPerformOfThrowOfCommonInsert() throws Exception {
+    ContentValues contentValues = new ContentValues();
+    contentValues.put("col_a", 42);
+    insert()
+        .into("A")
+        .values(contentValues)
+        .performOrThrow(mDb);
+    verify(mDb).insertOrThrow(eq("A"), isNull(String.class), eq(contentValues));
+  }
+
+  @Test
+  public void shouldReturnSameResultAsInsertOrThrowForCommonInsert() throws Exception {
+    when(mDb.insertOrThrow(anyString(), anyString(), any(ContentValues.class))).thenReturn(10L);
+    long res = insert()
+        .into("A")
+        .value("col_a", 42)
+        .performOrThrow(mDb);
+    assertThat(res).isEqualTo(10L);
+  }
+
+  @Test
+  public void shouldUseInsertOrThrowWithinPerformOfThrowOfDefaultValuesInsert() throws Exception {
+    insert()
+        .into("A")
+        .defaultValues("nullable_col")
+        .performOrThrow(mDb);
+    verify(mDb).insertOrThrow(eq("A"), eq("nullable_col"), isNull(ContentValues.class));
+  }
 }
