@@ -824,7 +824,7 @@ public final class Query {
     }
   }
 
-  public interface QueryBuilder extends DistinctSelector, TableSelector, ColumnSelector, SelectionBuilder, NaturalJoinTypeBuilder, GroupByBuilder, HavingBuilder, OrderByBuilder, LimitBuilder, CompoundQueryBuilder {
+  public interface QueryBuilder extends DistinctSelector, TableSelector, ColumnSelector, SelectionBuilder, NaturalJoinTypeBuilder, GroupByBuilder, HavingBuilder, OrderByBuilder, LimitBuilder, CompoundOperator {
     Query build();
     RawQuery toRawQuery();
     Set<String> getTables();
@@ -1129,7 +1129,7 @@ public final class Query {
     QueryBuilder offset(int limit);
   }
 
-  public interface CompoundQueryBuilder {
+  public interface CompoundOperator {
     UnionTypeSelector union();
     NextQueryPartStart intersect();
     NextQueryPartStart except();
