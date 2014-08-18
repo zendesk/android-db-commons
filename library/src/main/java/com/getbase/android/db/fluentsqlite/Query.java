@@ -58,6 +58,168 @@ public final class Query {
     return new QueryBuilderImpl();
   }
 
+  public static CompoundQueryBuilder select(Query query) {
+    return new CompoundQueryBuilderImpl(query);
+  }
+
+  public static CompoundQueryBuilder select(QueryBuilder queryBuilder) {
+    return select(queryBuilder.build());
+  }
+
+  public interface CompoundQueryBuilder extends CompoundOrderByBuilder, CompoundLimitBuilder {
+    CompoundQueryBuilder union(Query query);
+    CompoundQueryBuilder union(QueryBuilder queryBuilder);
+
+    CompoundQueryBuilder unionAll(Query query);
+    CompoundQueryBuilder unionAll(QueryBuilder queryBuilder);
+
+    CompoundQueryBuilder intersect(Query query);
+    CompoundQueryBuilder intersect(QueryBuilder queryBuilder);
+
+    CompoundQueryBuilder except(Query query);
+    CompoundQueryBuilder except(QueryBuilder queryBuilder);
+
+    Query build();
+  }
+
+  public interface CompoundOrderByBuilder {
+    CompoundOrderingTermBuilder orderBy(String expression);
+    CompoundOrderingTermBuilder orderBy(Expression expression);
+  }
+
+  public interface CompoundOrderingTermBuilder extends CompoundOrderingDirectionSelector {
+    CompoundOrderingDirectionSelector collate(String collation);
+  }
+
+  public interface CompoundOrderingDirectionSelector extends CompoundQueryBuilder {
+    CompoundQueryBuilder asc();
+    CompoundQueryBuilder desc();
+  }
+
+  public interface CompoundLimitBuilder {
+    CompoundLimitOffsetBuilder limit(String expression);
+    CompoundLimitOffsetBuilder limit(int limit);
+  }
+
+  public interface CompoundLimitOffsetBuilder extends CompoundQueryBuilder {
+    CompoundQueryBuilder offset(String expression);
+    CompoundQueryBuilder offset(int limit);
+  }
+
+  private static class CompoundQueryBuilderImpl implements CompoundQueryBuilder, CompoundOrderingTermBuilder, CompoundLimitOffsetBuilder {
+    private QueryBuilderImpl mQueryBuilder;
+
+    private CompoundQueryBuilderImpl(Query query) {
+      mQueryBuilder = query.mQueryBuilder.copy();
+    }
+
+    @Override
+    public CompoundQueryBuilder offset(String expression) {
+      mQueryBuilder.offset(expression);
+      return this;
+    }
+
+    @Override
+    public CompoundQueryBuilder offset(int limit) {
+      mQueryBuilder.offset(limit);
+      return this;
+    }
+
+    @Override
+    public CompoundOrderingDirectionSelector collate(String collation) {
+      mQueryBuilder.collate(collation);
+      return this;
+    }
+
+    @Override
+    public CompoundQueryBuilder asc() {
+      mQueryBuilder.asc();
+      return this;
+    }
+
+    @Override
+    public CompoundQueryBuilder desc() {
+      mQueryBuilder.desc();
+      return this;
+    }
+
+    private CompoundQueryBuilder withCompoundQueryPart(Query queryPart, String operation) {
+      mQueryBuilder.mCompoundQueryParts.put(mQueryBuilder.mCurrentQueryPart, operation);
+      mQueryBuilder.mCurrentQueryPart = queryPart.mQueryBuilder.copy().mCurrentQueryPart;
+
+      return this;
+    }
+
+    @Override
+    public CompoundQueryBuilder union(Query query) {
+      return withCompoundQueryPart(query, "UNION");
+    }
+
+    @Override
+    public CompoundQueryBuilder union(QueryBuilder queryBuilder) {
+      return union(queryBuilder.build());
+    }
+
+    @Override
+    public CompoundQueryBuilder unionAll(Query query) {
+      return withCompoundQueryPart(query, "UNION ALL");
+    }
+
+    @Override
+    public CompoundQueryBuilder unionAll(QueryBuilder queryBuilder) {
+      return unionAll(queryBuilder.build());
+    }
+
+    @Override
+    public CompoundQueryBuilder intersect(Query query) {
+      return withCompoundQueryPart(query, "INTERSECT");
+    }
+
+    @Override
+    public CompoundQueryBuilder intersect(QueryBuilder queryBuilder) {
+      return intersect(queryBuilder.build());
+    }
+
+    @Override
+    public CompoundQueryBuilder except(Query query) {
+      return withCompoundQueryPart(query, "EXCEPT");
+    }
+
+    @Override
+    public CompoundQueryBuilder except(QueryBuilder queryBuilder) {
+      return except(queryBuilder.build());
+    }
+
+    @Override
+    public Query build() {
+      return new Query(mQueryBuilder.copy());
+    }
+
+    @Override
+    public CompoundLimitOffsetBuilder limit(String expression) {
+      mQueryBuilder.limit(expression);
+      return this;
+    }
+
+    @Override
+    public CompoundLimitOffsetBuilder limit(int limit) {
+      mQueryBuilder.limit(limit);
+      return this;
+    }
+
+    @Override
+    public CompoundOrderingTermBuilder orderBy(String expression) {
+      mQueryBuilder.orderBy(expression);
+      return this;
+    }
+
+    @Override
+    public CompoundOrderingTermBuilder orderBy(Expression expression) {
+      mQueryBuilder.orderBy(expression);
+      return this;
+    }
+  }
+
   private static class QueryBuilderImpl implements QueryBuilder, ColumnAliasBuilder, LimitOffsetBuilder, OrderingTermBuilder, ColumnListTableSelector, ColumnsListAliasBuilder {
 
     @Override
