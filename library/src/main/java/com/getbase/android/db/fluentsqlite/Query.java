@@ -66,6 +66,42 @@ public final class Query {
     return select(queryBuilder.build());
   }
 
+  public static Query union(Query... queries) {
+    Preconditions.checkNotNull(queries);
+    Preconditions.checkArgument(queries.length > 0);
+
+    CompoundQueryBuilder builder = select(queries[0]);
+    for (int i = 1; i < queries.length; i++) {
+      builder = builder.union(queries[i]);
+    }
+
+    return builder.build();
+  }
+
+  public static Query unionAll(Query... queries) {
+    Preconditions.checkNotNull(queries);
+    Preconditions.checkArgument(queries.length > 0);
+
+    CompoundQueryBuilder builder = select(queries[0]);
+    for (int i = 1; i < queries.length; i++) {
+      builder = builder.unionAll(queries[i]);
+    }
+
+    return builder.build();
+  }
+
+  public static Query intersect(Query... queries) {
+    Preconditions.checkNotNull(queries);
+    Preconditions.checkArgument(queries.length > 0);
+
+    CompoundQueryBuilder builder = select(queries[0]);
+    for (int i = 1; i < queries.length; i++) {
+      builder = builder.intersect(queries[i]);
+    }
+
+    return builder.build();
+  }
+
   public interface CompoundQueryBuilder extends CompoundOrderByBuilder, CompoundLimitBuilder {
     CompoundQueryBuilder union(Query query);
     CompoundQueryBuilder union(QueryBuilder queryBuilder);

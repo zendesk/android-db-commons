@@ -1,6 +1,9 @@
 package com.getbase.android.db.fluentsqlite;
 
+import static com.getbase.android.db.fluentsqlite.Query.intersect;
 import static com.getbase.android.db.fluentsqlite.Query.select;
+import static com.getbase.android.db.fluentsqlite.Query.union;
+import static com.getbase.android.db.fluentsqlite.Query.unionAll;
 import static org.fest.assertions.Assertions.assertThat;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.*;
@@ -90,5 +93,71 @@ public class CompoundQueryBuilderTest {
             .build();
 
     assertThat(query.getTables()).containsOnly("table_a", "table_b");
+  }
+
+  @Test(expected = NullPointerException.class)
+  public void shouldRejectNullQueryArrayFromUnionConvenienceMethod() throws Exception {
+    union((Query[]) null);
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void shouldRejectEmptyQueryArrayFromUnionConvenienceMethod() throws Exception {
+    union();
+  }
+
+  @Test
+  public void shouldBuildUnionQueryWithConvenienceMethod() throws Exception {
+    Query union = union(
+        select().allColumns().from("table_a").build(),
+        select().allColumns().from("table_b").build()
+    );
+
+    union.perform(mDb);
+
+    verify(mDb).rawQuery(eq("SELECT * FROM table_a UNION SELECT * FROM table_b"), eq(new String[0]));
+  }
+
+  @Test(expected = NullPointerException.class)
+  public void shouldRejectNullQueryArrayFromUnionAllConvenienceMethod() throws Exception {
+    unionAll((Query[]) null);
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void shouldRejectEmptyQueryArrayFromUnionAllConvenienceMethod() throws Exception {
+    unionAll();
+  }
+
+  @Test
+  public void shouldBuildUnionAllQueryWithConvenienceMethod() throws Exception {
+    Query unionAll = unionAll(
+        select().allColumns().from("table_a").build(),
+        select().allColumns().from("table_b").build()
+    );
+
+    unionAll.perform(mDb);
+
+    verify(mDb).rawQuery(eq("SELECT * FROM table_a UNION ALL SELECT * FROM table_b"), eq(new String[0]));
+  }
+
+  @Test(expected = NullPointerException.class)
+  public void shouldRejectNullQueryArrayFromIntersectConvenienceMethod() throws Exception {
+    intersect((Query[]) null);
+  }
+
+  @Test
+  public void shouldBuildIntersectQueryWithConvenienceMethod() throws Exception {
+    Query intersection = intersect(
+        select().allColumns().from("table_a").build(),
+        select().allColumns().from("table_b").build()
+    );
+
+    intersection.perform(mDb);
+
+    verify(mDb).rawQuery(eq("SELECT * FROM table_a INTERSECT SELECT * FROM table_b"), eq(new String[0]));
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void shouldRejectEmptyQueryArrayFromIntersectConvenienceMethod() throws Exception {
+    intersect();
   }
 }
