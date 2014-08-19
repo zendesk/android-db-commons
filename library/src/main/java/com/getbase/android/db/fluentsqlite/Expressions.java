@@ -199,6 +199,28 @@ public final class Expressions {
     return new Builder().literal(object);
   }
 
+  public static Expression[] literals(Object... objects) {
+    Preconditions.checkNotNull(objects);
+    Expression[] result = new Expression[objects.length];
+
+    for (int i = 0; i < objects.length; i++) {
+      result[i] = literal(objects[i]);
+    }
+
+    return result;
+  }
+
+  public static Expression[] literals(Number... numbers) {
+    Preconditions.checkNotNull(numbers);
+    Expression[] result = new Expression[numbers.length];
+
+    for (int i = 0; i < numbers.length; i++) {
+      result[i] = literal(numbers[i]);
+    }
+
+    return result;
+  }
+
   public static ExpressionCombiner sum(Expression e) {
     return new Builder().sum(e);
   }

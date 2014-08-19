@@ -5,6 +5,7 @@ import static com.getbase.android.db.fluentsqlite.Expressions.arg;
 import static com.getbase.android.db.fluentsqlite.Expressions.coalesce;
 import static com.getbase.android.db.fluentsqlite.Expressions.column;
 import static com.getbase.android.db.fluentsqlite.Expressions.literal;
+import static com.getbase.android.db.fluentsqlite.Expressions.literals;
 import static com.getbase.android.db.fluentsqlite.Query.select;
 import static org.fest.assertions.Assertions.assertThat;
 
@@ -67,5 +68,39 @@ public class ExpressionsTest {
   public void shouldGetRawSqlForExpression() throws Exception {
     String rawSql = column("id").eq().literal(0).toRawSql();
     assertThat(rawSql).isEqualTo("id == 0");
+  }
+
+  @Test(expected = NullPointerException.class)
+  public void shouldFailToConvertNullNumbersArrayIntoExpressions() throws Exception {
+    literals((Number[]) null);
+  }
+
+  @Test
+  public void shouldConvertNumbersArrayIntoExpressions() throws Exception {
+    String rawSql = column("id").in(literals(1, 2, 3)).toRawSql();
+    assertThat(rawSql).isEqualTo("id IN (1, 2, 3)");
+  }
+
+  @Test
+  public void shouldConvertEmptyNumbersArrayIntoExpressions() throws Exception {
+    String rawSql = column("id").in(literals(new Number[0])).toRawSql();
+    assertThat(rawSql).isEqualTo("id IN ()");
+  }
+
+  @Test(expected = NullPointerException.class)
+  public void shouldFailToConvertNullObjectsArrayIntoExpressions() throws Exception {
+    literals((Number[]) null);
+  }
+
+  @Test
+  public void shouldConvertObjectsArrayIntoExpressions() throws Exception {
+    String rawSql = column("id").in(literals("a", "b", "c")).toRawSql();
+    assertThat(rawSql).isEqualTo("id IN ('a', 'b', 'c')");
+  }
+
+  @Test
+  public void shouldConvertEmptyObjectsArrayIntoExpressions() throws Exception {
+    String rawSql = column("id").in(literals(new Object[0])).toRawSql();
+    assertThat(rawSql).isEqualTo("id IN ()");
   }
 }
