@@ -200,6 +200,7 @@ public final class Expressions {
   }
 
   public static Expression[] literals(Object... objects) {
+    Preconditions.checkNotNull(objects);
     Expression[] result = new Expression[objects.length];
 
     for (int i = 0; i < objects.length; i++) {
@@ -210,6 +211,7 @@ public final class Expressions {
   }
 
   public static Expression[] literals(Number... numbers) {
+    Preconditions.checkNotNull(numbers);
     Expression[] result = new Expression[numbers.length];
 
     for (int i = 0; i < numbers.length; i++) {
