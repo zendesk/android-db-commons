@@ -7,12 +7,12 @@
   <modelVersion>4.0.0</modelVersion>
   <artifactId>example</artifactId>
   <packaging>apk</packaging>
-  <name>android-db-utils sample app</name>
+  <name>android-db-commons sample app</name>
 
   <parent>
     <groupId>com.getbase.android.db</groupId>
     <artifactId>parent</artifactId>
-    <version>0.9.0</version>
+    <version>0.10.0-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
