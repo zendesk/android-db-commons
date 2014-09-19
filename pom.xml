@@ -10,7 +10,7 @@
 
   <groupId>com.getbase.android.db</groupId>
   <artifactId>parent</artifactId>
-  <version>0.10.0</version>
+  <version>0.11-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <name>android-db-commons (parent)</name>
@@ -22,7 +22,7 @@
     <url>https://github.com/futuresimple/android-db-commons.git</url>
     <connection>scm:git:git:@github.com:futuresimple/android-db-commons.git</connection>
     <developerConnection>scm:git:git@github.com:futuresimple/android-db-commons.git</developerConnection>
-    <tag>v0.10.0</tag>
+    <tag>HEAD</tag>
   </scm>
 
   <developers>
