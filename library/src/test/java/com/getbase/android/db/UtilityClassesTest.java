@@ -4,7 +4,6 @@ import static org.fest.assertions.Assertions.assertThat;
 
 import com.getbase.android.db.cursors.Cursors;
 import com.getbase.android.db.cursors.SingleRowTransforms;
-import com.getbase.android.db.fluentsqlite.Query;
 import com.getbase.android.db.fluentsqlite.SchemaActions;
 import com.getbase.android.db.provider.Utils;
 
