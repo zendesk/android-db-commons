@@ -8,7 +8,7 @@
   <parent>
     <groupId>com.getbase.android.db</groupId>
     <artifactId>parent</artifactId>
-    <version>0.11-SNAPSHOT</version>
+    <version>0.10.1</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
