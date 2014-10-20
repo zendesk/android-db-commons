@@ -415,10 +415,14 @@ public final class Query {
           builder.append(join.mJoinType);
           builder.append("JOIN ");
 
-          builder.append(join.mJoinSource.mTable != null
-                  ? join.mJoinSource.mTable
-                  : SURROUND_WITH_PARENS.apply(join.mJoinSource.mSubquery.toRawQuery().mRawQuery)
-          );
+          if (join.mJoinSource.mTable != null) {
+            builder.append(join.mJoinSource.mTable);
+          } else {
+            final RawQuery rawQuery = join.mJoinSource.mSubquery.toRawQuery();
+
+            builder.append(SURROUND_WITH_PARENS.apply(rawQuery.mRawQuery));
+            args.addAll(rawQuery.mRawQueryArgs);
+          }
 
           if (join.mAlias != null) {
             builder.append(" AS ");

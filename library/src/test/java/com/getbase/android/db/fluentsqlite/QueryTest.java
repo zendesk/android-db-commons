@@ -1200,4 +1200,17 @@ public class QueryTest {
 
     verify(mDb).rawQuery(eq("SELECT * FROM table_a"), eq(new String[0]));
   }
+
+  @Test
+  public void shouldNotLoseArgumentsInJoinedSubqueries() throws Exception {
+    select()
+        .allColumns().from("table_a")
+        .join(
+            select().column("col_a").from("table_b").where(column("col_b").eq().arg(), "1500")
+        )
+        .build()
+        .perform(mDb);
+
+    verify(mDb).rawQuery(eq("SELECT * FROM table_a JOIN (SELECT col_a FROM table_b WHERE (col_b == ?))"), eq(new String[] { "1500" }));
+  }
 }
