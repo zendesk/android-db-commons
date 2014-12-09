@@ -19,6 +19,7 @@ import static com.getbase.android.db.fluentsqlite.Expressions.sum;
 import static com.getbase.android.db.fluentsqlite.Query.select;
 import static org.fest.assertions.Assertions.assertThat;
 
+import com.getbase.android.db.fluentsqlite.Expressions.CollatingSequence;
 import com.getbase.android.db.fluentsqlite.Expressions.Expression;
 import com.google.common.base.Function;
 import com.google.common.collect.FluentIterable;
@@ -92,6 +93,7 @@ public class ExpressionsBuilderTest {
       .put(cases().when(column("col_a").eq().column("col_b")).then(literal(1)).when(column("col_a").eq().column("col_c")).then(literal(2)).end(), "CASE WHEN (col_a == col_b) THEN (1) WHEN (col_a == col_c) THEN (2) END")
       .put(cases(column("col_a")).when(column("col_b")).then(literal(1)).end(), "CASE (col_a) WHEN (col_b) THEN (1) END")
       .put(column("timestamp").lt().expr("strftime('%s', 'now')"), "timestamp < strftime('%s', 'now')")
+      .put(column("col_a").collate(CollatingSequence.LOCALIZED), "col_a COLLATE LOCALIZED")
       .build();
 
   @Parameters

@@ -66,6 +66,18 @@ public final class Expressions {
     ExpressionCore not();
   }
 
+  public interface UnaryPostfixOperator {
+    ExpressionCombiner collate(CollatingSequence collatingSequence);
+  }
+
+  public enum CollatingSequence {
+    BINARY,
+    NOCASE,
+    RTRIM,
+    UNICODE,
+    LOCALIZED
+  }
+
   public static abstract class Expression {
     Expression() {
     }
@@ -167,7 +179,7 @@ public final class Expressions {
   public interface ExpressionBuilder extends UnaryOperator, ExpressionCore, CaseExpressions {
   }
 
-  public static abstract class ExpressionCombiner extends Expression implements BinaryOperator {
+  public static abstract class ExpressionCombiner extends Expression implements BinaryOperator, UnaryPostfixOperator {
   }
 
   // mirror all method from ExpressionBuilder interface
@@ -691,6 +703,12 @@ public final class Expressions {
     public CaseExpressionBuilder then(Expression e) {
       mBuilder.append(" THEN ");
       expr(e);
+      return this;
+    }
+
+    @Override
+    public ExpressionCombiner collate(CollatingSequence collatingSequence) {
+      mBuilder.append(" COLLATE ").append(collatingSequence.name());
       return this;
     }
   }
