@@ -14,8 +14,24 @@ import android.database.sqlite.SQLiteStatement;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 public class Insert implements InsertValuesBuilder {
+
+  enum ConflictAlgorithm {
+    IGNORE("OR IGNORE"), REPLACE("OR REPLACE");
+
+    private final String mSuffix;
+
+    ConflictAlgorithm(String suffix) {
+      mSuffix = suffix;
+    }
+
+    String suffix() {
+      return mSuffix;
+    }
+  }
+
   final String mTable;
   final ContentValues mValues;
 
@@ -24,11 +40,13 @@ public class Insert implements InsertValuesBuilder {
     mValues = values;
   }
 
-  public static InsertTableSelector insert() {
+  public static InsertTableWithAlgorithmSelector insert() {
     return new InsertBuilder();
   }
 
-  static class InsertBuilder implements InsertTableSelector, InsertFormSelector {
+  static class InsertBuilder implements InsertTableWithAlgorithmSelector, InsertFormSelector {
+
+    ConflictAlgorithm mConflictAlgorithm;
     String mTable;
     List<String> mQueryFormColumns = Lists.newArrayList();
 
@@ -39,8 +57,27 @@ public class Insert implements InsertValuesBuilder {
     }
 
     @Override
+    public InsertTableSelector orIgnore() {
+      return withOnConflictAlgorithm(ConflictAlgorithm.IGNORE);
+    }
+
+    @Override
+    public InsertTableSelector orReplace() {
+      return withOnConflictAlgorithm(ConflictAlgorithm.REPLACE);
+    }
+
+    private InsertTableSelector withOnConflictAlgorithm(ConflictAlgorithm conflictAlgorithm) {
+      mConflictAlgorithm = conflictAlgorithm;
+      return this;
+    }
+
+    @Override
     public DefaultValuesInsert defaultValues(String nullColumnHack) {
-      return new DefaultValuesInsert(mTable, checkNotNull(nullColumnHack));
+      if (mConflictAlgorithm != null) {
+        return new DefaultValuesInsertWithOnConflict(mTable, nullColumnHack, mConflictAlgorithm);
+      } else {
+        return new DefaultValuesInsert(mTable, checkNotNull(nullColumnHack));
+      }
     }
 
     @Override
@@ -55,7 +92,7 @@ public class Insert implements InsertValuesBuilder {
     public InsertWithSelect resultOf(Query query) {
       checkNotNull(query);
 
-      return new InsertWithSelect(mTable, query.toRawQuery(), mQueryFormColumns);
+      return new InsertWithSelect(mTable, mConflictAlgorithm, query.toRawQuery(), mQueryFormColumns);
     }
 
     @Override
@@ -66,15 +103,22 @@ public class Insert implements InsertValuesBuilder {
 
     @Override
     public Insert values(ContentValues values) {
-      return new Insert(mTable, new ContentValues(values));
+      return valuesImpl(new ContentValues(values));
     }
 
     @Override
     public Insert value(String column, Object value) {
       ContentValues values = new ContentValues();
       Utils.addToContentValues(column, value, values);
+      return valuesImpl(values);
+    }
 
-      return new Insert(mTable, values);
+    private Insert valuesImpl(ContentValues values) {
+      if (mConflictAlgorithm != null) {
+        return new InsertWithOnConflict(mTable, mConflictAlgorithm, values);
+      } else {
+        return new Insert(mTable, values);
+      }
     }
   }
 
@@ -90,16 +134,25 @@ public class Insert implements InsertValuesBuilder {
     private final String mTable;
     private final RawQuery mQuery;
     private final List<String> mQueryFormColumns;
+    private final ConflictAlgorithm mConflictAlgorithm;
 
-    InsertWithSelect(String table, RawQuery query, List<String> queryFormColumns) {
+    InsertWithSelect(String table, ConflictAlgorithm conflictAlgorithm, RawQuery query, List<String> queryFormColumns) {
       mTable = table;
       mQuery = query;
+      mConflictAlgorithm = conflictAlgorithm;
       mQueryFormColumns = queryFormColumns;
     }
 
     public long perform(SQLiteDatabase db) {
       StringBuilder builder = new StringBuilder();
-      builder.append("INSERT INTO ").append(mTable).append(" ");
+      builder.append("INSERT");
+      if (mConflictAlgorithm != null) {
+        builder
+            .append(" ")
+            .append(mConflictAlgorithm.suffix());
+      }
+      builder.append(" INTO ");
+      builder.append(mTable).append(" ");
       if (!mQueryFormColumns.isEmpty()) {
         builder
             .append("(")
@@ -122,11 +175,78 @@ public class Insert implements InsertValuesBuilder {
     }
 
     public long performOrThrow(SQLiteDatabase db) {
-      long result = perform(db);
-      if (result == -1) {
-        throw new RuntimeException("Insert failed");
+      return performOrThrowFromResult(perform(db));
+    }
+  }
+
+  public static class InsertWithOnConflict extends Insert {
+
+    private final ConflictAlgorithm mConflictAlgorithm;
+
+    public InsertWithOnConflict(String table, ConflictAlgorithm conflictAlgorithm, ContentValues contentValues) {
+      super(table, contentValues);
+      mConflictAlgorithm = conflictAlgorithm;
+    }
+
+    public long perform(SQLiteDatabase db) {
+      StringBuilder builder = new StringBuilder();
+      Set<String> keys = mValues.keySet();
+      builder.append("INSERT ")
+          .append(mConflictAlgorithm.suffix())
+          .append(" INTO ")
+          .append(mTable)
+          .append(" (")
+          .append(Joiner.on(",").join(keys))
+          .append(") VALUES (")
+          .append(Joiner.on(",").join(new RepeatingIterable<String>("?", keys.size())))
+          .append(")");
+
+      SQLiteStatement statement = db.compileStatement(builder.toString());
+      try {
+        int index = 0;
+        for (String key : keys) {
+          Utils.bindContentValueArg(statement, index++, mValues.get(key));
+        }
+        return statement.executeInsert();
+      } finally {
+        statement.close();
       }
-      return result;
+    }
+
+    public long performOrThrow(SQLiteDatabase db) {
+      return performOrThrowFromResult(perform(db));
+    }
+  }
+
+  public static class DefaultValuesInsertWithOnConflict extends DefaultValuesInsert {
+
+    private final ConflictAlgorithm mConflictAlgorithm;
+
+    private DefaultValuesInsertWithOnConflict(String table, String nullColumnHack, ConflictAlgorithm conflictAlgorithm) {
+      super(table, nullColumnHack);
+      mConflictAlgorithm = conflictAlgorithm;
+    }
+
+    @Override
+    public long perform(SQLiteDatabase db) {
+      StringBuilder sb = new StringBuilder();
+      sb.append("INSERT ")
+          .append(mConflictAlgorithm.suffix())
+          .append(" INTO ")
+          .append(mTable)
+          .append(" (").append(mNullColumnHack).append(")")
+          .append(" VALUES (NULL)");
+      SQLiteStatement statement = db.compileStatement(sb.toString());
+      try {
+        return statement.executeInsert();
+      } finally {
+        statement.close();
+      }
+    }
+
+    @Override
+    public long performOrThrow(SQLiteDatabase db) {
+      return performOrThrowFromResult(perform(db));
     }
   }
 
@@ -158,5 +278,12 @@ public class Insert implements InsertValuesBuilder {
   public Insert value(String column, Object value) {
     Utils.addToContentValues(column, value, mValues);
     return this;
+  }
+
+  private static long performOrThrowFromResult(long result) {
+    if (result == -1) {
+      throw new RuntimeException("Insert failed");
+    }
+    return result;
   }
 }

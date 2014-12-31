@@ -8,6 +8,7 @@ import static org.fest.assertions.api.android.content.ContentValuesEntry.entry;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.*;
 
+import com.getbase.android.db.fluentsqlite.Insert.ConflictAlgorithm;
 import com.getbase.android.db.fluentsqlite.Insert.DefaultValuesInsert;
 
 import org.fest.assertions.Assertions;
@@ -264,5 +265,52 @@ public class InsertTest {
         .defaultValues("nullable_col")
         .performOrThrow(mDb);
     verify(mDb).insertOrThrow(eq("A"), eq("nullable_col"), isNull(ContentValues.class));
+  }
+
+  @Test
+  public void shouldPerformInsertWithOnConflictIgnore() throws Exception {
+    verifyOnConflictAlgorithm(insert().orIgnore(), ConflictAlgorithm.IGNORE);
+  }
+
+  @Test
+  public void shouldPerformInsertWithOnConflictReplace() throws Exception {
+    verifyOnConflictAlgorithm(insert().orReplace(), ConflictAlgorithm.REPLACE);
+  }
+
+  @Test
+  public void shouldPerformInsertWithOnConflictIgnoreWithDefaultValuesInsert() throws Exception {
+    insert().orIgnore()
+        .into("A")
+        .defaultValues("nullable")
+        .perform(mDb);
+
+    verify(mDb).compileStatement(eq("INSERT " + ConflictAlgorithm.IGNORE.suffix() + " INTO A (nullable) VALUES (NULL)"));
+    verify(mStatement).executeInsert();
+  }
+
+  @Test
+  public void shouldPerformInsertWithResultOfAndConflictAlgorithm() throws Exception {
+    Query query = select().allColumns().from("B").build();
+    insert().orReplace()
+        .into("A")
+        .columns("a", "b", "c")
+        .resultOf(query)
+        .perform(mDb);
+
+    verify(mDb).compileStatement(eq("INSERT OR REPLACE INTO A (a, b, c) " + query.toRawQuery().mRawQuery));
+    verify(mStatement).executeInsert();
+  }
+
+  private void verifyOnConflictAlgorithm(InsertTableSelector insert, ConflictAlgorithm conflictAlgorithm) {
+    insert
+        .into("A")
+        .value("col", "val")
+        .value("col2", 2L)
+        .perform(mDb);
+
+    verify(mDb).compileStatement(eq("INSERT " + conflictAlgorithm.suffix() + " INTO A (col,col2) VALUES (?,?)"));
+    verify(mStatement).bindString(eq(0), eq("val"));
+    verify(mStatement).bindLong(eq(1), eq(2L));
+    verify(mStatement).executeInsert();
   }
 }
