@@ -3,6 +3,7 @@ package com.getbase.android.db.provider;
 import com.google.common.base.Function;
 import com.google.common.base.Functions;
 import com.google.common.base.Joiner;
+import com.google.common.base.Objects;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.Lists;
@@ -46,5 +47,21 @@ class Selection {
       return null;
     }
     return Collections2.transform(selectionArgs, Functions.toStringFunction()).toArray(new String[selectionArgs.size()]);
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+
+    Selection other = (Selection) o;
+
+    return Objects.equal(selection, other.selection) &&
+        Objects.equal(selectionArgs, other.selectionArgs);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hashCode(selection, selectionArgs);
   }
 }

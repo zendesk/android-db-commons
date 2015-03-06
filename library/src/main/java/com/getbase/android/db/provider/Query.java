@@ -3,6 +3,7 @@ package com.getbase.android.db.provider;
 import com.getbase.android.db.common.QueryData;
 import com.getbase.android.db.cursors.FluentCursor;
 import com.google.common.base.Joiner;
+import com.google.common.base.Objects;
 import com.google.common.collect.Collections2;
 
 import android.database.Cursor;
@@ -59,5 +60,28 @@ public class Query extends ProviderAction<FluentCursor> {
         orderBy
     );
     return new FluentCursor(queryResult);
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+
+    Query query = (Query) o;
+
+    return Objects.equal(getUri(), query.getUri()) &&
+        Objects.equal(orderBy, query.orderBy) &&
+        Objects.equal(projection, query.projection) &&
+        Objects.equal(selection, query.selection);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hashCode(
+        getUri(),
+        projection,
+        selection,
+        orderBy
+    );
   }
 }
