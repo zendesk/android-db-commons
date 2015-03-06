@@ -6,8 +6,8 @@ import com.google.common.collect.FluentIterable;
 import com.google.common.collect.LinkedHashMultimap;
 
 import android.content.ContentResolver;
+import android.database.CrossProcessCursorWrapper;
 import android.database.Cursor;
-import android.database.CursorWrapper;
 import android.net.Uri;
 
 import java.util.LinkedHashMap;
@@ -18,7 +18,7 @@ import java.util.NoSuchElementException;
  * for transforming Cursor into other Java types. It also wraps null Cursors
  * into valid Cursor instance with no data and no columns.
  */
-public class FluentCursor extends CursorWrapper {
+public class FluentCursor extends CrossProcessCursorWrapper {
 
   public FluentCursor(Cursor cursor) {
     super(Cursors.returnSameOrEmptyIfNull(cursor));
