@@ -160,4 +160,20 @@ public class CompoundQueryBuilderTest {
   public void shouldRejectEmptyQueryArrayFromIntersectConvenienceMethod() throws Exception {
     intersect();
   }
+
+  @Test
+  public void shouldBuildNestedCompoundQueries() throws Exception {
+    Query intersection = intersect(
+        select().allColumns().from("table_a").build(),
+        union(
+            select().allColumns().from("table_b").build(),
+            select().allColumns().from("table_c").build()
+        ),
+        select().allColumns().from("table_d").build()
+    );
+
+    intersection.perform(mDb);
+
+    verify(mDb).rawQuery(eq("SELECT * FROM table_a INTERSECT SELECT * FROM (SELECT * FROM table_b UNION SELECT * FROM table_c) INTERSECT SELECT * FROM table_d"), eq(new String[0]));
+  }
 }
