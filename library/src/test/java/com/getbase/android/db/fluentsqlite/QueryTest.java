@@ -1213,4 +1213,15 @@ public class QueryTest {
 
     verify(mDb).rawQuery(eq("SELECT * FROM table_a JOIN (SELECT col_a FROM table_b WHERE (col_b == ?))"), eq(new String[] { "1500" }));
   }
+
+  @Test(expected = IllegalStateException.class)
+  public void shouldFailIfNoTablesOrLiteralsWereSpecified() throws Exception {
+    select().build().perform(mDb);
+  }
+
+  @Test
+  public void shouldAllowQueryingSimpleLiteral() throws Exception {
+    select().literal(1).build().perform(mDb);
+    verify(mDb).rawQuery(eq("SELECT 1"), eq(new String[0]));
+  }
 }
