@@ -519,6 +519,11 @@ public final class Query {
 
     private LinkedHashMap<Query, String> mCompoundQueryParts = Maps.newLinkedHashMap();
 
+    public boolean isCompound() {
+      int queryPartsCount = (mCurrentQueryPart.isEmpty() ? 0 : 1) + mCompoundQueryParts.size();
+      return queryPartsCount > 1;
+    }
+
     private QueryBuilderImpl() {
     }
 
@@ -582,8 +587,19 @@ public final class Query {
       Iterator<Entry<Query, String>> compoundPartsIterator = mCompoundQueryParts.entrySet().iterator();
       while (compoundPartsIterator.hasNext()) {
         Entry<Query, String> entry = compoundPartsIterator.next();
-        RawQuery partRawQuery = entry.getKey().toRawQuery();
+        Query query = entry.getKey();
+        RawQuery partRawQuery = query.toRawQuery();
+
+        if (query.mQueryBuilder.isCompound()) {
+          builder.append("SELECT * FROM (");
+        }
+
         builder.append(partRawQuery.mRawQuery);
+
+        if (query.mQueryBuilder.isCompound()) {
+          builder.append(")");
+        }
+
         if (compoundPartsIterator.hasNext() || currentPartIsNotEmpty) {
           builder.append(" ");
           builder.append(entry.getValue());
