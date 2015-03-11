@@ -19,6 +19,7 @@ import android.database.sqlite.SQLiteDatabase;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map.Entry;
@@ -45,6 +46,10 @@ public final class Query {
 
   public Set<String> getTables() {
     return mQueryBuilder.getTables();
+  }
+
+  private void getTables(ImmutableSet.Builder<String> builder) {
+    builder.addAll(mQueryBuilder.getTables());
   }
 
   private static final Function<String, String> SURROUND_WITH_PARENS = new Function<String, String>() {
@@ -180,9 +185,12 @@ public final class Query {
     }
 
     private CompoundQueryBuilder withCompoundQueryPart(Query queryPart, String operation) {
-      mQueryBuilder.mCompoundQueryParts.put(mQueryBuilder.mCurrentQueryPart, operation);
-      mQueryBuilder.mCurrentQueryPart = queryPart.mQueryBuilder.copy().mCurrentQueryPart;
+      if (!mQueryBuilder.mCurrentQueryPart.isEmpty()) {
+        mQueryBuilder.mCompoundQueryParts.put(new QueryBuilderImpl(mQueryBuilder.mCurrentQueryPart).build(), operation);
+      }
 
+      mQueryBuilder.mCompoundQueryParts.put(queryPart, operation);
+      mQueryBuilder.mCurrentQueryPart = new QueryBuilderImpl.CompoundQueryPart();
       return this;
     }
 
@@ -288,6 +296,22 @@ public final class Query {
       private List<JoinSpec> mJoins = Lists.newArrayList();
 
       private Set<String> mTablesUsedInExpressions = Sets.newHashSet();
+
+      private boolean isEmpty() {
+        return mProjection.isEmpty() &&
+            mColumnWithPotentialAlias == null &&
+            mColumnsWithPotentialTable.isEmpty() &&
+            mColumnsListsTableWithPotentialAlias == null &&
+            mGroupByExpressions.isEmpty() &&
+            mHaving.isEmpty() &&
+            mSelection.isEmpty() &&
+            mArgs.isEmpty() &&
+            mPendingTable == null &&
+            mTables.isEmpty() &&
+            Strings.isNullOrEmpty(mPendingJoinType) &&
+            mPendingJoin == null &&
+            mJoins.isEmpty();
+      }
 
       CompoundQueryPart() {
       }
@@ -493,7 +517,7 @@ public final class Query {
     private List<Object> mOrderByArgs = Lists.newArrayList();
     private Set<String> mTablesUsedInExpressions = Sets.newHashSet();
 
-    private LinkedHashMap<CompoundQueryPart, String> mCompoundQueryParts = Maps.newLinkedHashMap();
+    private LinkedHashMap<Query, String> mCompoundQueryParts = Maps.newLinkedHashMap();
 
     private QueryBuilderImpl() {
     }
@@ -514,6 +538,10 @@ public final class Query {
       mCompoundQueryParts = Maps.newLinkedHashMap(other.mCompoundQueryParts);
     }
 
+    private QueryBuilderImpl(CompoundQueryPart compoundQueryPart) {
+      mCurrentQueryPart = new CompoundQueryPart(compoundQueryPart);
+    }
+
     QueryBuilderImpl copy() {
       return new QueryBuilderImpl(this);
     }
@@ -523,7 +551,7 @@ public final class Query {
       Builder<String> builder = ImmutableSet.builder();
 
       mCurrentQueryPart.getTables(builder);
-      for (CompoundQueryPart part : mCompoundQueryParts.keySet()) {
+      for (Query part : mCompoundQueryParts.keySet()) {
         part.getTables(builder);
       }
       builder.addAll(mTablesUsedInExpressions);
@@ -543,23 +571,32 @@ public final class Query {
 
     @Override
     public RawQuery toRawQuery() {
+      boolean currentPartIsNotEmpty = !mCurrentQueryPart.isEmpty();
+      Preconditions.checkState(currentPartIsNotEmpty || mCompoundQueryParts.size() > 1);
+
       buildPendingOrderByClause();
 
       List<String> args = Lists.newArrayList();
       StringBuilder builder = new StringBuilder();
 
-      for (Entry<CompoundQueryPart, String> entry : mCompoundQueryParts.entrySet()) {
+      Iterator<Entry<Query, String>> compoundPartsIterator = mCompoundQueryParts.entrySet().iterator();
+      while (compoundPartsIterator.hasNext()) {
+        Entry<Query, String> entry = compoundPartsIterator.next();
         RawQuery partRawQuery = entry.getKey().toRawQuery();
         builder.append(partRawQuery.mRawQuery);
-        builder.append(" ");
-        builder.append(entry.getValue());
-        builder.append(" ");
+        if (compoundPartsIterator.hasNext() || currentPartIsNotEmpty) {
+          builder.append(" ");
+          builder.append(entry.getValue());
+          builder.append(" ");
+        }
         args.addAll(partRawQuery.mRawQueryArgs);
       }
 
-      RawQuery lastQueryPart = mCurrentQueryPart.toRawQuery();
-      args.addAll(lastQueryPart.mRawQueryArgs);
-      builder.append(lastQueryPart.mRawQuery);
+      if (currentPartIsNotEmpty) {
+        RawQuery lastQueryPart = mCurrentQueryPart.toRawQuery();
+        args.addAll(lastQueryPart.mRawQueryArgs);
+        builder.append(lastQueryPart.mRawQuery);
+      }
 
       if (!mOrderClauses.isEmpty()) {
         builder.append(" ORDER BY ");
@@ -731,7 +768,7 @@ public final class Query {
     private CompoundQueryHelper mCompoundQueryHelper = new CompoundQueryHelper() {
       @Override
       public QueryBuilder select() {
-        mCompoundQueryParts.put(mCurrentQueryPart, mOperation);
+        mCompoundQueryParts.put(new QueryBuilderImpl(mCurrentQueryPart).build(), mOperation);
 
         mCurrentQueryPart = new CompoundQueryPart();
 
