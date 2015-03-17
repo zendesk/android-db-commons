@@ -10,7 +10,7 @@ import android.os.RemoteException;
 
 import java.util.ArrayList;
 
-interface CrudHandler {
+public interface CrudHandler {
 
   public Cursor query(Uri url, String[] projection, String selection, String[] selectionArgs, String sortOrder) throws RemoteException;
 
