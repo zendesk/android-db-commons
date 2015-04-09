@@ -122,6 +122,7 @@ public final class Expressions {
 
     // generic expression
     ExpressionCombiner expr(String expression);
+    ExpressionCombiner expr(Expression expression);
   }
 
   public interface CaseExpressions {
@@ -274,6 +275,10 @@ public final class Expressions {
   }
 
   public static ExpressionCombiner expr(String expression) {
+    return new Builder().expr(expression);
+  }
+
+  public static ExpressionCombiner expr(Expression expression) {
     return new Builder().expr(expression);
   }
 
@@ -657,6 +662,12 @@ public final class Expressions {
     @Override
     public ExpressionCombiner expr(String expr) {
       mBuilder.append(expr);
+      return this;
+    }
+
+    @Override
+    public ExpressionCombiner expr(Expression expression) {
+      expressions(expression);
       return this;
     }
 

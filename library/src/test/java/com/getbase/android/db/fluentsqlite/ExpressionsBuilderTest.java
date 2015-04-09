@@ -6,6 +6,7 @@ import static com.getbase.android.db.fluentsqlite.Expressions.coalesce;
 import static com.getbase.android.db.fluentsqlite.Expressions.column;
 import static com.getbase.android.db.fluentsqlite.Expressions.concat;
 import static com.getbase.android.db.fluentsqlite.Expressions.count;
+import static com.getbase.android.db.fluentsqlite.Expressions.expr;
 import static com.getbase.android.db.fluentsqlite.Expressions.ifNull;
 import static com.getbase.android.db.fluentsqlite.Expressions.join;
 import static com.getbase.android.db.fluentsqlite.Expressions.length;
@@ -94,6 +95,7 @@ public class ExpressionsBuilderTest {
       .put(cases(column("col_a")).when(column("col_b")).then(literal(1)).end(), "CASE (col_a) WHEN (col_b) THEN (1) END")
       .put(column("timestamp").lt().expr("strftime('%s', 'now')"), "timestamp < strftime('%s', 'now')")
       .put(column("col_a").collate(CollatingSequence.LOCALIZED), "col_a COLLATE LOCALIZED")
+      .put(expr(column("col_a").eq().literal(0)).or(column("col_b").eq().literal(1)), "(col_a == 0) OR (col_b == 1)")
       .build();
 
   @Parameters
