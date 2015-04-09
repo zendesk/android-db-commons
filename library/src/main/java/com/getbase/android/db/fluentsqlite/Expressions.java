@@ -304,7 +304,7 @@ public final class Expressions {
       }
     };
 
-    private void expr(Expression... e) {
+    private void expressions(Expression... e) {
       for (Expression expression : e) {
         for (Entry<Integer, Object> boundArg : expression.getBoundArgs().entrySet()) {
           mArgs.put(mArgsCount + boundArg.getKey(), boundArg.getValue());
@@ -333,7 +333,7 @@ public final class Expressions {
     @Override
     public ExpressionCombiner eq(Expression e) {
       eq();
-      expr(e);
+      expressions(e);
       return this;
     }
 
@@ -345,7 +345,7 @@ public final class Expressions {
     @Override
     public ExpressionCombiner ne(Expression e) {
       ne();
-      expr(e);
+      expressions(e);
       return this;
     }
 
@@ -357,7 +357,7 @@ public final class Expressions {
     @Override
     public ExpressionCombiner gt(Expression e) {
       gt();
-      expr(e);
+      expressions(e);
       return this;
     }
 
@@ -369,7 +369,7 @@ public final class Expressions {
     @Override
     public ExpressionCombiner ge(Expression e) {
       ge();
-      expr(e);
+      expressions(e);
       return this;
     }
 
@@ -381,7 +381,7 @@ public final class Expressions {
     @Override
     public ExpressionCombiner lt(Expression e) {
       lt();
-      expr(e);
+      expressions(e);
       return this;
     }
 
@@ -393,7 +393,7 @@ public final class Expressions {
     @Override
     public ExpressionCombiner le(Expression e) {
       le();
-      expr(e);
+      expressions(e);
       return this;
     }
 
@@ -405,7 +405,7 @@ public final class Expressions {
     @Override
     public ExpressionCombiner is(Expression e) {
       is();
-      expr(e);
+      expressions(e);
       return this;
     }
 
@@ -435,7 +435,7 @@ public final class Expressions {
     @Override
     public ExpressionCombiner in(Expression... e) {
       binaryOperator("IN");
-      expr(e);
+      expressions(e);
       return this;
     }
 
@@ -464,7 +464,7 @@ public final class Expressions {
     @Override
     public ExpressionCombiner or(Expression e) {
       or();
-      expr(e);
+      expressions(e);
       return this;
     }
 
@@ -476,7 +476,7 @@ public final class Expressions {
     @Override
     public ExpressionCombiner and(Expression e) {
       and();
-      expr(e);
+      expressions(e);
       return this;
     }
 
@@ -650,7 +650,7 @@ public final class Expressions {
 
     private ExpressionCombiner function(String func, Expression... e) {
       mBuilder.append(func);
-      expr(e);
+      expressions(e);
       return this;
     }
 
@@ -669,14 +669,14 @@ public final class Expressions {
     @Override
     public ExpressionCombiner otherwise(Expression e) {
       mBuilder.append(" ELSE ");
-      expr(e);
+      expressions(e);
       return end();
     }
 
     @Override
     public CaseValue when(Expression e) {
       mBuilder.append(" WHEN ");
-      expr(e);
+      expressions(e);
       return this;
     }
 
@@ -695,14 +695,14 @@ public final class Expressions {
     @Override
     public CaseCondition cases(Expression e) {
       mBuilder.append("CASE ");
-      expr(e);
+      expressions(e);
       return this;
     }
 
     @Override
     public CaseExpressionBuilder then(Expression e) {
       mBuilder.append(" THEN ");
-      expr(e);
+      expressions(e);
       return this;
     }
 
