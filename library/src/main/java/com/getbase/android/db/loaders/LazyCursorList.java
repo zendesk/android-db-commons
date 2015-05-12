@@ -9,7 +9,7 @@ import android.support.v4.util.LruCache;
 import java.util.AbstractList;
 import java.util.RandomAccess;
 
-class LazyCursorList<T> extends AbstractList<T> implements RandomAccess {
+public class LazyCursorList<T> extends AbstractList<T> implements RandomAccess {
 
   private final Cursor cursor;
   private final LruCache<Integer, T> cache;
