@@ -9,19 +9,15 @@ import android.support.v4.util.LruCache;
 import java.util.AbstractList;
 import java.util.RandomAccess;
 
-class LazyCursorList<T> extends AbstractList<T> implements RandomAccess {
+public class LazyCursorList<T> extends AbstractList<T> implements RandomAccess {
 
   private final Cursor cursor;
   private final LruCache<Integer, T> cache;
 
-  public LazyCursorList(Cursor cursor, Function<Cursor, T> function) {
-    this(cursor, function, 256);
-  }
-
-  public LazyCursorList(final Cursor cursor, final Function<Cursor, T> function, int cacheSize) {
+  public LazyCursorList(final Cursor cursor, final Function<Cursor, T> function) {
     this.cursor = Cursors.returnSameOrEmptyIfNull(cursor);
 
-    cache = new LruCache<Integer, T>(cacheSize) {
+    cache = new LruCache<Integer, T>(256) {
       @Override
       protected T create(Integer key) {
         cursor.moveToPosition(key);
