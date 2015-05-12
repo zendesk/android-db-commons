@@ -6,10 +6,11 @@ import com.google.common.base.Function;
 import android.database.Cursor;
 import android.support.v4.util.LruCache;
 
+import java.io.Closeable;
 import java.util.AbstractList;
 import java.util.RandomAccess;
 
-public class LazyCursorList<T> extends AbstractList<T> implements RandomAccess {
+public class LazyCursorList<T> extends AbstractList<T> implements RandomAccess, Closeable {
 
   private final Cursor cursor;
   private final LruCache<Integer, T> cache;
@@ -34,5 +35,10 @@ public class LazyCursorList<T> extends AbstractList<T> implements RandomAccess {
   @Override
   public int size() {
     return cursor.getCount();
+  }
+
+  @Override
+  public void close() {
+    cursor.close();
   }
 }
