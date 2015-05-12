@@ -15,7 +15,7 @@ public class LazyCursorList<T> extends AbstractList<T> implements RandomAccess, 
   private final Cursor cursor;
   private final LruCache<Integer, T> cache;
 
-  public LazyCursorList(final Cursor cursor, final Function<Cursor, T> function) {
+  public LazyCursorList(final Cursor cursor, final Function<? super Cursor, T> function) {
     this.cursor = Cursors.returnSameOrEmptyIfNull(cursor);
 
     cache = new LruCache<Integer, T>(256) {
