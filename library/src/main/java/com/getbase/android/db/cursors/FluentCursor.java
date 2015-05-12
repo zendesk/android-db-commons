@@ -1,5 +1,6 @@
 package com.getbase.android.db.cursors;
 
+import com.getbase.android.db.loaders.LazyCursorList;
 import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.FluentIterable;
@@ -38,6 +39,19 @@ public class FluentCursor extends CrossProcessCursorWrapper {
     } finally {
       close();
     }
+  }
+
+  /**
+   * Transforms Cursor to LazyCursorList of T applying given function
+   * WARNING: This method doesn't close cursor. You are responsible for calling close()
+   * on returned list or on backing Cursor.
+   *
+   * @param singleRowTransform Function to apply on every single row of this cursor
+   * @param <T> Type of List's single element
+   * @return Transformed list
+   */
+  public <T> LazyCursorList<T> toLazyCursorList(Function<? super Cursor, T> singleRowTransform) {
+    return new LazyCursorList<T>(this, singleRowTransform);
   }
 
   /**
