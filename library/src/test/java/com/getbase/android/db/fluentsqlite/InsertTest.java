@@ -2,7 +2,7 @@ package com.getbase.android.db.fluentsqlite;
 
 import static com.getbase.android.db.fluentsqlite.Insert.insert;
 import static com.getbase.android.db.fluentsqlite.Query.select;
-import static org.fest.assertions.Assertions.assertThat;
+import static com.google.common.truth.Truth.assertThat;
 import static org.fest.assertions.api.ANDROID.assertThat;
 import static org.fest.assertions.api.android.content.ContentValuesEntry.entry;
 import static org.mockito.Matchers.eq;
@@ -10,7 +10,6 @@ import static org.mockito.Mockito.*;
 
 import com.getbase.android.db.fluentsqlite.Insert.DefaultValuesInsert;
 
-import org.fest.assertions.Assertions;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -138,7 +137,7 @@ public class InsertTest {
         .values(values)
         .values(valuesToConcatenate);
 
-    Assertions.assertThat(values.containsKey("another_key")).isFalse();
+    assertThat(values.containsKey("another_key")).isFalse();
   }
 
   @Test

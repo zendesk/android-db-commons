@@ -1,6 +1,7 @@
 package com.getbase.android.db.provider;
 
-import org.fest.assertions.Assertions;
+import static com.google.common.truth.Truth.assertThat;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -139,7 +140,7 @@ public class ProviderActionsTest {
         .value("key", "value")
         .perform(contentResolverMock);
 
-    Assertions.assertThat(values.containsKey("key")).isFalse();
+    assertThat(values.containsKey("key")).isFalse();
 
     ContentValues valuesToConcatenate = new ContentValues();
     valuesToConcatenate.put("another_key", "another_value");
@@ -149,7 +150,7 @@ public class ProviderActionsTest {
         .values(valuesToConcatenate)
         .perform(contentResolverMock);
 
-    Assertions.assertThat(values.containsKey("another_key")).isFalse();
+    assertThat(values.containsKey("another_key")).isFalse();
   }
 
   @Test
@@ -310,7 +311,7 @@ public class ProviderActionsTest {
         .value("key", "value")
         .perform(contentResolverMock);
 
-    Assertions.assertThat(values.containsKey("key")).isFalse();
+    assertThat(values.containsKey("key")).isFalse();
 
     ContentValues valuesToConcatenate = new ContentValues();
     valuesToConcatenate.put("another_key", "another_value");
@@ -320,7 +321,7 @@ public class ProviderActionsTest {
         .values(valuesToConcatenate)
         .perform(contentResolverMock);
 
-    Assertions.assertThat(values.containsKey("another_key")).isFalse();
+    assertThat(values.containsKey("another_key")).isFalse();
   }
 
   @Test

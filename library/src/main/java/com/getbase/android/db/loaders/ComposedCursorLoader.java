@@ -30,7 +30,7 @@ import java.io.FileDescriptor;
 import java.io.PrintWriter;
 import java.util.Arrays;
 
-import javax.annotation.Nullable;
+import android.support.annotation.Nullable;
 
 public class ComposedCursorLoader<T> extends AbstractLoader<T> {
 

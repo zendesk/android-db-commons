@@ -3,7 +3,7 @@ package com.getbase.android.db.fluentsqlite;
 import static com.getbase.android.db.fluentsqlite.Expressions.column;
 import static com.getbase.android.db.fluentsqlite.Expressions.sum;
 import static com.getbase.android.db.fluentsqlite.Query.select;
-import static org.fest.assertions.Assertions.assertThat;
+import static com.google.common.truth.Truth.assertThat;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.*;
 
@@ -835,35 +835,35 @@ public class QueryTest {
   public void shouldGetListOfTablesForSimpleQuery() throws Exception {
     Set<String> tables = select().from("table_a").getTables();
 
-    assertThat(tables).containsOnly("table_a");
+    assertThat(tables).containsExactly("table_a");
   }
 
   @Test
   public void shouldGetListOfTablesFromSubqueries() throws Exception {
     Set<String> tables = select().from(select().from("table_a").build()).getTables();
 
-    assertThat(tables).containsOnly("table_a");
+    assertThat(tables).containsExactly("table_a");
   }
 
   @Test
   public void shouldGetListOfTablesFromJoins() throws Exception {
     Set<String> tables = select().from("table_a").join("table_b").getTables();
 
-    assertThat(tables).containsOnly("table_a", "table_b");
+    assertThat(tables).containsExactly("table_a", "table_b");
   }
 
   @Test
   public void shouldGetListOfTablesFromMultipleJoins() throws Exception {
     Set<String> tables = select().from("table_a").join("table_b").join("table_c").getTables();
 
-    assertThat(tables).containsOnly("table_a", "table_b", "table_c");
+    assertThat(tables).containsExactly("table_a", "table_b", "table_c");
   }
 
   @Test
   public void shouldGetListOfTablesFromJoinedSubqueries() throws Exception {
     Set<String> tables = select().from("table_a").join(select().from("table_b").build()).getTables();
 
-    assertThat(tables).containsOnly("table_a", "table_b");
+    assertThat(tables).containsExactly("table_a", "table_b");
   }
 
   @Test
@@ -874,7 +874,7 @@ public class QueryTest {
             .select().from("table_b")
             .getTables();
 
-    assertThat(tables).containsOnly("table_a", "table_b");
+    assertThat(tables).containsExactly("table_a", "table_b");
   }
 
   @Test
@@ -885,7 +885,7 @@ public class QueryTest {
             .where(column("col_a").in(select().column("id_a").from("table_b").build()))
             .getTables();
 
-    assertThat(tables).containsOnly("table_a", "table_b");
+    assertThat(tables).containsExactly("table_a", "table_b");
   }
 
   @Test
@@ -897,7 +897,7 @@ public class QueryTest {
             .having(column("col_a").in(select().column("id_a").from("table_b").build()))
             .getTables();
 
-    assertThat(tables).containsOnly("table_a", "table_b");
+    assertThat(tables).containsExactly("table_a", "table_b");
   }
 
   @Test
@@ -908,7 +908,7 @@ public class QueryTest {
             .from("table_a")
             .getTables();
 
-    assertThat(tables).containsOnly("table_a", "table_b");
+    assertThat(tables).containsExactly("table_a", "table_b");
   }
 
   @Test
@@ -919,7 +919,7 @@ public class QueryTest {
             .orderBy(column("col_a").in(select().column("id_a").from("table_b").build()))
             .getTables();
 
-    assertThat(tables).containsOnly("table_a", "table_b");
+    assertThat(tables).containsExactly("table_a", "table_b");
   }
 
   @Test
@@ -931,7 +931,7 @@ public class QueryTest {
             .on(column("table_b", "col_a").in(select().column("id_a").from("table_c").build()))
             .getTables();
 
-    assertThat(tables).containsOnly("table_a", "table_b", "table_c");
+    assertThat(tables).containsExactly("table_a", "table_b", "table_c");
   }
 
   @Test(expected = IllegalArgumentException.class)

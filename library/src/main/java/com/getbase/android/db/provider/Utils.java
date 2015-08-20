@@ -6,7 +6,7 @@ import android.content.ContentValues;
 import android.database.DatabaseUtils;
 import android.database.sqlite.SQLiteStatement;
 
-import javax.annotation.Nullable;
+import android.support.annotation.Nullable;
 
 public final class Utils {
   private Utils() {

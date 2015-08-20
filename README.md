@@ -196,13 +196,15 @@ select()
 
 Note that `perform()` returns `FluentCursor`, which allows you to easily transform query results into POJOs.
 
-Building
---------
-This is standard maven project. To build it just execute:
-```shell
-mvn clean package
+Usage
+-----
+Just add the dependency to your `build.gradle`:
+
+```groovy
+dependencies {
+    compile 'com.getbase.android.db:library:0.10.1'
+}
 ```
-in directory with pom.xml.
 
 minSdkVersion = 10
 ------------------

@@ -7,7 +7,7 @@ import static com.getbase.android.db.fluentsqlite.Expressions.column;
 import static com.getbase.android.db.fluentsqlite.Expressions.literal;
 import static com.getbase.android.db.fluentsqlite.Expressions.literals;
 import static com.getbase.android.db.fluentsqlite.Query.select;
-import static org.fest.assertions.Assertions.assertThat;
+import static com.google.common.truth.Truth.assertThat;
 
 import com.getbase.android.db.fluentsqlite.Expressions.Expression;
 import com.google.common.collect.ImmutableMap;

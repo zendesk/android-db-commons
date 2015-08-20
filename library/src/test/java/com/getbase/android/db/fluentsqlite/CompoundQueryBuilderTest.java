@@ -4,7 +4,7 @@ import static com.getbase.android.db.fluentsqlite.Query.intersect;
 import static com.getbase.android.db.fluentsqlite.Query.select;
 import static com.getbase.android.db.fluentsqlite.Query.union;
 import static com.getbase.android.db.fluentsqlite.Query.unionAll;
-import static org.fest.assertions.Assertions.assertThat;
+import static com.google.common.truth.Truth.assertThat;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.*;
 
@@ -92,7 +92,7 @@ public class CompoundQueryBuilderTest {
             .union(select().allColumns().from("table_b"))
             .build();
 
-    assertThat(query.getTables()).containsOnly("table_a", "table_b");
+    assertThat(query.getTables()).containsExactly("table_a", "table_b");
   }
 
   @Test(expected = NullPointerException.class)
