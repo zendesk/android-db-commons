@@ -21,7 +21,7 @@ class IdentityLinkedMap<K, V> {
   public synchronized V put(K key, V value) {
     final int index = findIndexOf(key);
     if (index == -1) {
-      entries.add(new Entry<K, V>(key, value));
+      entries.add(new Entry<>(key, value));
       return null;
     } else {
       Entry<K, V> entry = entries.get(index);

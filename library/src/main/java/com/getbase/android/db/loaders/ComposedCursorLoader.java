@@ -45,7 +45,7 @@ public class ComposedCursorLoader<T> extends AbstractLoader<T> {
   String mSortOrder;
 
   private final Function<Cursor, T> mCursorTransformation;
-  private IdentityLinkedMap<T, Cursor> cursorsForResults = new IdentityLinkedMap<T, Cursor>();
+  private IdentityLinkedMap<T, Cursor> cursorsForResults = new IdentityLinkedMap<>();
 
   @Override
   protected void onStartLoading() {
