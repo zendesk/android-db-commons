@@ -23,14 +23,14 @@ public class TransformedLoaderBuilder<To> {
   }
 
   public TransformedLoaderBuilder<To> addNotificationUri(Uri uri) {
-    return new TransformedLoaderBuilder<To>(queryData, ImmutableList.<Uri>builder().addAll(notificationUris).add(uri).build(), wrapperFunction);
+    return new TransformedLoaderBuilder<>(queryData, ImmutableList.<Uri>builder().addAll(notificationUris).add(uri).build(), wrapperFunction);
   }
 
   public <NewTo> TransformedLoaderBuilder<NewTo> transform(Function<To, NewTo> wrapper) {
-    return new TransformedLoaderBuilder<NewTo>(queryData, notificationUris, Functions.compose(wrapper, wrapperFunction));
+    return new TransformedLoaderBuilder<>(queryData, notificationUris, Functions.compose(wrapper, wrapperFunction));
   }
 
   public Loader<To> build(Context context) {
-    return new ComposedCursorLoader<To>(context, queryData, notificationUris, wrapperFunction);
+    return new ComposedCursorLoader<>(context, queryData, notificationUris, wrapperFunction);
   }
 }

@@ -54,15 +54,15 @@ public class CursorLoaderBuilder {
   }
 
   public <Out> TransformedRowLoaderBuilder<Out> transformRow(Function<Cursor, Out> rowTransformer) {
-    return new TransformedRowLoaderBuilder<Out>(query.getQueryData(), ImmutableList.copyOf(notificationUris), rowTransformer);
+    return new TransformedRowLoaderBuilder<>(query.getQueryData(), ImmutableList.copyOf(notificationUris), rowTransformer);
   }
 
   public <Out> TransformedLoaderBuilder<Out> transform(Function<Cursor, Out> transformer) {
-    return new TransformedLoaderBuilder<Out>(query.getQueryData(), ImmutableList.copyOf(notificationUris), transformer);
+    return new TransformedLoaderBuilder<>(query.getQueryData(), ImmutableList.copyOf(notificationUris), transformer);
   }
 
   public Loader<Cursor> build(Context context) {
-    return new ComposedCursorLoader<Cursor>(
+    return new ComposedCursorLoader<>(
         context,
         query.getQueryData(),
         ImmutableList.copyOf(notificationUris),

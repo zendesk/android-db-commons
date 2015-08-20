@@ -51,7 +51,7 @@ public class FluentCursor extends CrossProcessCursorWrapper {
    * @return Transformed list
    */
   public <T> LazyCursorList<T> toLazyCursorList(Function<? super Cursor, T> singleRowTransform) {
-    return new LazyCursorList<T>(this, singleRowTransform);
+    return new LazyCursorList<>(this, singleRowTransform);
   }
 
   /**
@@ -99,7 +99,7 @@ public class FluentCursor extends CrossProcessCursorWrapper {
    */
   public <TKey, TValue> LinkedHashMap<TKey, TValue> toMap(Function<? super Cursor, TKey> keyTransform, Function<? super Cursor, TValue> valueTransform) {
     try {
-      LinkedHashMap<TKey, TValue> result = new LinkedHashMap<TKey, TValue>(getCount(), 1);
+      LinkedHashMap<TKey, TValue> result = new LinkedHashMap<>(getCount(), 1);
 
       for (moveToFirst(); !isAfterLast(); moveToNext()) {
         final TKey key = keyTransform.apply(this);

@@ -54,9 +54,7 @@ public abstract class Batcher {
   private ContentProviderResult[] applyBatchOrThrow(String authority, CrudHandler crudHandler) {
     try {
       return applyBatch(authority, crudHandler);
-    } catch (RemoteException e) {
-      throw new RuntimeException("An Exception was returned from applyBatch", e);
-    } catch (OperationApplicationException e) {
+    } catch (RemoteException | OperationApplicationException e) {
       throw new RuntimeException("An Exception was returned from applyBatch", e);
     }
   }
