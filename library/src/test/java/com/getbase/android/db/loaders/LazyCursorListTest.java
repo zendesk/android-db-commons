@@ -1,6 +1,6 @@
 package com.getbase.android.db.loaders;
 
-import static org.fest.assertions.Assertions.assertThat;
+import static com.google.common.truth.Truth.assertThat;
 
 import com.google.common.base.Function;
 

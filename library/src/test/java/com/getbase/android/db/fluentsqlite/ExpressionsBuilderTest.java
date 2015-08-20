@@ -18,7 +18,7 @@ import static com.getbase.android.db.fluentsqlite.Expressions.nul;
 import static com.getbase.android.db.fluentsqlite.Expressions.nullIf;
 import static com.getbase.android.db.fluentsqlite.Expressions.sum;
 import static com.getbase.android.db.fluentsqlite.Query.select;
-import static org.fest.assertions.Assertions.assertThat;
+import static com.google.common.truth.Truth.assertThat;
 
 import com.getbase.android.db.fluentsqlite.Expressions.CollatingSequence;
 import com.getbase.android.db.fluentsqlite.Expressions.Expression;

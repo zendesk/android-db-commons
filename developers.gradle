@@ -1,0 +1,27 @@
+ext {
+  project_developers = {
+    developer {
+      id 'chalup'
+      name 'Jerzy Chalupski'
+      email 'jerzy.chalupski@gmail.com'
+    }
+
+    developer {
+      id 'partition'
+      name 'Mateusz Herych'
+      email 'heniek@getbase.com'
+    }
+
+    developer {
+      id 'ggajews'
+      name 'Grzegorz Gajewski'
+      email 'grzesiek@getbase.com'
+    }
+
+    developer {
+      id 'lmac012'
+      name 'Łukasz Maciończyk'
+      email 'lukasz.macionczyk@getbase.com'
+    }
+  }
+}

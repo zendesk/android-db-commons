@@ -1,6 +1,6 @@
 package com.getbase.android.db.cursors;
 
-import static org.fest.assertions.Assertions.assertThat;
+import static com.google.common.truth.Truth.assertThat;
 import static org.fest.assertions.api.ANDROID.assertThat;
 import static org.mockito.Matchers.anyInt;
 import static org.mockito.Mockito.*;
@@ -23,6 +23,7 @@ import org.robolectric.annotation.Config;
 import android.database.Cursor;
 import android.database.MatrixCursor;
 
+import java.util.Collections;
 import java.util.Map;
 import java.util.NoSuchElementException;
 
@@ -70,7 +71,7 @@ public class FluentCursorTest {
   @Test
   public void shouldRecognizeNullAsAnEmptyCursor() throws Exception {
     final FluentCursor cursor = new FluentCursor(null);
-    assertThat(cursor.getCount()).isZero();
+    assertThat(cursor.getCount()).is(0);
   }
 
   @Test
@@ -108,8 +109,8 @@ public class FluentCursorTest {
         SingleRowTransforms.getColumn(TEST_COLUMN).asLong());
 
     assertThat(transformed.size()).isEqualTo(cursor.getCount());
-    assertThat(transformed.keySet()).containsOnly(ContiguousSet.create(Range.closed(0, 9), DiscreteDomain.integers()).toArray());
-    assertThat(transformed.values()).containsOnly(18L);
+    assertThat(transformed.keySet()).containsExactly(ContiguousSet.create(Range.closed(0, 9), DiscreteDomain.integers()).toArray());
+    assertThat(transformed.values()).containsExactlyElementsIn(Collections.nCopies(10, 18L));
   }
 
   @Test
@@ -153,8 +154,8 @@ public class FluentCursorTest {
         SingleRowTransforms.getColumn(TEST_COLUMN).asLong());
 
     assertThat(transformed.size()).isEqualTo(cursor.getCount());
-    assertThat(transformed.keySet()).containsOnly(ContiguousSet.create(Range.closed(0, 9), DiscreteDomain.integers()).toArray());
-    assertThat(transformed.values()).containsOnly(18L);
+    assertThat(transformed.keySet()).containsExactly(ContiguousSet.create(Range.closed(0, 9), DiscreteDomain.integers()).toArray());
+    assertThat(transformed.values()).containsExactlyElementsIn(Collections.nCopies(10, 18L));
   }
 
   @Test(expected = IllegalArgumentException.class)

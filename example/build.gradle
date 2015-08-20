@@ -1,0 +1,25 @@
+apply plugin: 'com.android.application'
+
+android {
+  compileSdkVersion 22
+  buildToolsVersion "22.0.1"
+
+  defaultConfig {
+    applicationId "com.getbase.android.db.example"
+    minSdkVersion 15
+    targetSdkVersion 22
+    versionCode 1
+    versionName "1.0"
+  }
+  buildTypes {
+    release {
+      minifyEnabled false
+      signingConfig signingConfigs.debug
+    }
+  }
+}
+
+dependencies {
+  compile project(':library')
+  compile 'com.google.guava:guava:18.0'
+}
