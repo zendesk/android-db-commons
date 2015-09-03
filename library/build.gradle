@@ -25,7 +25,7 @@ dependencies {
   testCompile('junit:junit:4.11') {
     exclude module: 'hamcrest-core'
   }
-  testCompile 'org.robolectric:robolectric:2.2'
+  testCompile 'org.robolectric:robolectric:2.4'
   testCompile 'com.google.truth:truth:0.25'
   testCompile 'com.squareup:fest-android:1.0.7'
   testCompile 'org.mockito:mockito-all:1.9.5'
