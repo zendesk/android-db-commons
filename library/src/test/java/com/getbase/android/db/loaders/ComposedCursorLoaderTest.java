@@ -33,6 +33,15 @@ public class ComposedCursorLoaderTest {
   public static final String FAKE_AUTHORITY = "com.getbase.android.database";
   private static final Uri TEST_URI = Uri.parse(String.format("content://%s/people", FAKE_AUTHORITY));
 
+  private static final Function<Cursor, String> CONST_FUNCTION = new Function<Cursor, String>() {
+    private final static String BOOM = "boom";
+
+    @Override
+    public String apply(Cursor input) {
+      return BOOM;
+    }
+  };
+
   private static final Function<Cursor, String> FAILING_FUNCTION = new Function<Cursor, String>() {
     @Override
     public String apply(Cursor input) {
@@ -160,6 +169,42 @@ public class ComposedCursorLoaderTest {
     Robolectric.application.getContentResolver().notifyChange(TEST_URI, null);
     Robolectric.getBackgroundScheduler().runOneTask();
     assertThat(cursor.isClosed()).isFalse();
+  }
+
+  @Test
+  public void shouldNotCloseOldCursorWhenItsTransformedToTheEqualObjectAsOldOne() throws Exception {
+    final Loader<MyCustomWrapper> loader = CursorLoaderBuilder.forUri(TEST_URI)
+        .transformRow(genericToStringFunction)
+        .transform(new Function<List<String>, MyCustomWrapper>() {
+          @Override
+          public MyCustomWrapper apply(List<String> strings) {
+            return new MyCustomWrapper(strings);
+          }
+        })
+        .build(Robolectric.application);
+    loader.startLoading();
+    Robolectric.getBackgroundScheduler().runOneTask();
+    Robolectric.application.getContentResolver().notifyChange(TEST_URI, null);
+    MatrixCursor nextCursor = buildCursor();
+    makeProviderReturn(nextCursor);
+    Robolectric.getBackgroundScheduler().runOneTask();
+    assertThat(cursor.isClosed()).isTrue();
+    assertThat(nextCursor.isClosed()).isFalse();
+  }
+
+  @Test
+  public void shouldNotCloseOldCursorWhenItsTransformedToTheSameObjectAsOldOne() throws Exception {
+    final Loader<String> loader = CursorLoaderBuilder.forUri(TEST_URI)
+        .transform(CONST_FUNCTION)
+        .build(Robolectric.application);
+    loader.startLoading();
+    Robolectric.getBackgroundScheduler().runOneTask();
+    Robolectric.application.getContentResolver().notifyChange(TEST_URI, null);
+    MatrixCursor nextCursor = buildCursor();
+    makeProviderReturn(nextCursor);
+    Robolectric.getBackgroundScheduler().runOneTask();
+    assertThat(cursor.isClosed()).isFalse();
+    assertThat(nextCursor.isClosed()).isTrue();
   }
 
   @Test
