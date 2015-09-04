@@ -48,11 +48,16 @@ public class ComposedCursorLoaderTest {
   public void setUp() throws Exception {
     MockitoAnnotations.initMocks(this);
     ShadowContentResolver.registerProvider(FAKE_AUTHORITY, providerMock);
-    cursor = new MatrixCursor(new String[] { "name" });
-    cursor.addRow(new Object[] { "my_name" });
-    cursor.addRow(new Object[] { "my_second_name" });
+    cursor = buildCursor();
     makeProviderReturn(cursor);
     Robolectric.getBackgroundScheduler().pause();
+  }
+
+  private MatrixCursor buildCursor() {
+    MatrixCursor cursor = new MatrixCursor(new String[] { "name" });
+    cursor.addRow(new Object[] { "my_name" });
+    cursor.addRow(new Object[] { "my_second_name" });
+    return cursor;
   }
 
   private void makeProviderReturn(Cursor cursor) {
