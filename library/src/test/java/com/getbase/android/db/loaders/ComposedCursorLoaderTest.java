@@ -32,6 +32,13 @@ public class ComposedCursorLoaderTest {
   public static final String FAKE_AUTHORITY = "com.getbase.android.database";
   private static final Uri TEST_URI = Uri.parse(String.format("content://%s/people", FAKE_AUTHORITY));
 
+  private static final Function<Cursor, String> FAILING_FUNCTION = new Function<Cursor, String>() {
+    @Override
+    public String apply(Cursor input) {
+      throw new AssertionError("boom");
+    }
+  };
+
   @Mock
   private ContentProvider providerMock;
 
@@ -120,6 +127,17 @@ public class ComposedCursorLoaderTest {
     Robolectric.getBackgroundScheduler().runOneTask();
     verify(listenerMock).onLoadComplete(same(loader),
         eq(new MyCustomWrapper(Lists.newArrayList("my_name", "my_second_name"))));
+  }
+
+  @Test
+  public void shouldNotPerformLazyTransformIfNotNecessary() throws Exception {
+    final Loader<List<String>> loader = CursorLoaderBuilder.forUri(TEST_URI)
+        .transformRow(FAILING_FUNCTION)
+        .lazy()
+        .build(Robolectric.application);
+
+    loader.startLoading();
+    Robolectric.getBackgroundScheduler().runOneTask();
   }
 
   @Test
