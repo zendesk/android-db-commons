@@ -19,8 +19,8 @@ import android.database.sqlite.SQLiteDatabase;
 
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -152,6 +152,10 @@ public final class Query {
 
     private CompoundQueryBuilderImpl(Query query) {
       mQueryBuilder = query.mQueryBuilder.copy();
+      if (mQueryBuilder.isCompound()) {
+        mQueryBuilder.mCompoundQueryParts = Lists.newLinkedList();
+        mQueryBuilder.mCompoundQueryParts.add(new QueryOrOperator(query));
+      }
     }
 
     @Override
@@ -186,10 +190,11 @@ public final class Query {
 
     private CompoundQueryBuilder withCompoundQueryPart(Query queryPart, String operation) {
       if (!mQueryBuilder.mCurrentQueryPart.isEmpty()) {
-        mQueryBuilder.mCompoundQueryParts.put(new QueryBuilderImpl(mQueryBuilder.mCurrentQueryPart).build(), operation);
+        mQueryBuilder.mCompoundQueryParts.add(new QueryOrOperator(new QueryBuilderImpl(mQueryBuilder.mCurrentQueryPart).build()));
       }
 
-      mQueryBuilder.mCompoundQueryParts.put(queryPart, operation);
+      mQueryBuilder.mCompoundQueryParts.add(new QueryOrOperator(operation));
+      mQueryBuilder.mCompoundQueryParts.add(new QueryOrOperator(queryPart));
       mQueryBuilder.mCurrentQueryPart = new QueryBuilderImpl.CompoundQueryPart();
       return this;
     }
@@ -517,7 +522,7 @@ public final class Query {
     private List<Object> mOrderByArgs = Lists.newArrayList();
     private Set<String> mTablesUsedInExpressions = Sets.newHashSet();
 
-    private LinkedHashMap<Query, String> mCompoundQueryParts = Maps.newLinkedHashMap();
+    private LinkedList<QueryOrOperator> mCompoundQueryParts = Lists.newLinkedList();
 
     public boolean isCompound() {
       int queryPartsCount = (mCurrentQueryPart.isEmpty() ? 0 : 1) + mCompoundQueryParts.size();
@@ -540,7 +545,7 @@ public final class Query {
 
       mCurrentQueryPart = new CompoundQueryPart(other.mCurrentQueryPart);
 
-      mCompoundQueryParts = Maps.newLinkedHashMap(other.mCompoundQueryParts);
+      mCompoundQueryParts = Lists.newLinkedList(other.mCompoundQueryParts);
     }
 
     private QueryBuilderImpl(CompoundQueryPart compoundQueryPart) {
@@ -556,8 +561,10 @@ public final class Query {
       Builder<String> builder = ImmutableSet.builder();
 
       mCurrentQueryPart.getTables(builder);
-      for (Query part : mCompoundQueryParts.keySet()) {
-        part.getTables(builder);
+      for (QueryOrOperator part : mCompoundQueryParts) {
+        if (part.isQuery()) {
+          part.mQuery.getTables(builder);
+        }
       }
       builder.addAll(mTablesUsedInExpressions);
 
@@ -584,28 +591,27 @@ public final class Query {
       List<String> args = Lists.newArrayList();
       StringBuilder builder = new StringBuilder();
 
-      Iterator<Entry<Query, String>> compoundPartsIterator = mCompoundQueryParts.entrySet().iterator();
-      while (compoundPartsIterator.hasNext()) {
-        Entry<Query, String> entry = compoundPartsIterator.next();
-        Query query = entry.getKey();
-        RawQuery partRawQuery = query.toRawQuery();
-
-        if (query.mQueryBuilder.isCompound()) {
-          builder.append("SELECT * FROM (");
-        }
-
-        builder.append(partRawQuery.mRawQuery);
-
-        if (query.mQueryBuilder.isCompound()) {
-          builder.append(")");
-        }
-
-        if (compoundPartsIterator.hasNext() || currentPartIsNotEmpty) {
+      for (QueryOrOperator part : mCompoundQueryParts) {
+        if (part.isOperator()) {
           builder.append(" ");
-          builder.append(entry.getValue());
+          builder.append(part.mOperator);
           builder.append(" ");
+        } else {
+          Query query = part.mQuery;
+          RawQuery partRawQuery = query.toRawQuery();
+
+          if (query.mQueryBuilder.isCompound()) {
+            builder.append("SELECT * FROM (");
+          }
+
+          builder.append(partRawQuery.mRawQuery);
+
+          if (query.mQueryBuilder.isCompound()) {
+            builder.append(")");
+          }
+
+          args.addAll(partRawQuery.mRawQueryArgs);
         }
-        args.addAll(partRawQuery.mRawQueryArgs);
       }
 
       if (currentPartIsNotEmpty) {
@@ -784,7 +790,8 @@ public final class Query {
     private CompoundQueryHelper mCompoundQueryHelper = new CompoundQueryHelper() {
       @Override
       public QueryBuilder select() {
-        mCompoundQueryParts.put(new QueryBuilderImpl(mCurrentQueryPart).build(), mOperation);
+        mCompoundQueryParts.add(new QueryOrOperator(new QueryBuilderImpl(mCurrentQueryPart).build()));
+        mCompoundQueryParts.add(new QueryOrOperator(mOperation));
 
         mCurrentQueryPart = new CompoundQueryPart();
 
@@ -1076,6 +1083,29 @@ public final class Query {
         mTable = null;
         mSubquery = subquery;
       }
+    }
+  }
+
+  private static class QueryOrOperator {
+    final String mOperator;
+    final Query mQuery;
+
+    private QueryOrOperator(String operator) {
+      mOperator = operator;
+      mQuery = null;
+    }
+
+    private QueryOrOperator(Query query) {
+      mOperator = null;
+      mQuery = query;
+    }
+
+    private boolean isOperator() {
+      return mOperator != null;
+    }
+
+    private boolean isQuery() {
+      return mQuery != null;
     }
   }
 
