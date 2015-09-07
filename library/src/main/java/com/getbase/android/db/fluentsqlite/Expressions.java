@@ -309,18 +309,31 @@ public final class Expressions {
       }
     };
 
+    private void expressions(Expression e) {
+      addArgs(e);
+
+      mBuilder
+          .append("(")
+          .append(e.getSql())
+          .append(")");
+    }
+
     private void expressions(Expression... e) {
       for (Expression expression : e) {
-        for (Entry<Integer, Object> boundArg : expression.getBoundArgs().entrySet()) {
-          mArgs.put(mArgsCount + boundArg.getKey(), boundArg.getValue());
-        }
-        mArgsCount += expression.getArgsCount();
+        addArgs(expression);
       }
 
       mBuilder
           .append("(")
           .append(ARGS_JOINER.join(getSQLs(e)))
           .append(")");
+    }
+
+    private void addArgs(Expression expression) {
+      for (Entry<Integer, Object> boundArg : expression.getBoundArgs().entrySet()) {
+        mArgs.put(mArgsCount + boundArg.getKey(), boundArg.getValue());
+      }
+      mArgsCount += expression.getArgsCount();
     }
 
     private ExpressionBuilder binaryOperator(String operator) {

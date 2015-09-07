@@ -2,6 +2,8 @@ package com.getbase.android.db.cursors;
 
 import static com.google.common.truth.Truth.assertThat;
 import static org.fest.assertions.api.ANDROID.assertThat;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.not;
 import static org.mockito.Matchers.anyInt;
 import static org.mockito.Mockito.*;
 
@@ -291,7 +293,7 @@ public class FluentCursorTest {
     verify(cursor, never()).moveToNext();
     verify(cursor, never()).moveToLast();
     verify(cursor, never()).moveToPrevious();
-    verify(cursor, never()).moveToPosition(anyInt());
+    verify(cursor, never()).moveToPosition(intThat(not(equalTo(0))));
   }
 
   @Test
@@ -303,7 +305,7 @@ public class FluentCursorTest {
     verify(cursor, never()).moveToNext();
     verify(cursor, never()).moveToLast();
     verify(cursor, never()).moveToPrevious();
-    verify(cursor, never()).moveToPosition(anyInt());
+    verify(cursor, never()).moveToPosition(intThat(not(equalTo(0))));
   }
 
   @Test

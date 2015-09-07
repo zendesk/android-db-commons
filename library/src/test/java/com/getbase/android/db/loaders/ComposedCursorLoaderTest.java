@@ -9,6 +9,7 @@ import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
 
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -32,6 +33,22 @@ public class ComposedCursorLoaderTest {
   public static final String FAKE_AUTHORITY = "com.getbase.android.database";
   private static final Uri TEST_URI = Uri.parse(String.format("content://%s/people", FAKE_AUTHORITY));
 
+  private static final Function<Cursor, String> CONST_FUNCTION = new Function<Cursor, String>() {
+    private final static String BOOM = "boom";
+
+    @Override
+    public String apply(Cursor input) {
+      return BOOM;
+    }
+  };
+
+  private static final Function<Cursor, String> FAILING_FUNCTION = new Function<Cursor, String>() {
+    @Override
+    public String apply(Cursor input) {
+      throw new AssertionError("boom");
+    }
+  };
+
   @Mock
   private ContentProvider providerMock;
 
@@ -48,11 +65,17 @@ public class ComposedCursorLoaderTest {
   public void setUp() throws Exception {
     MockitoAnnotations.initMocks(this);
     ShadowContentResolver.registerProvider(FAKE_AUTHORITY, providerMock);
-    cursor = new MatrixCursor(new String[] { "name" });
-    cursor.addRow(new Object[] { "my_name" });
-    cursor.addRow(new Object[] { "my_second_name" });
+    cursor = buildCursor();
     makeProviderReturn(cursor);
     Robolectric.getBackgroundScheduler().pause();
+  }
+
+  private MatrixCursor buildCursor() {
+    MatrixCursor cursor = new MatrixCursor(new String[] { "name" });
+    cursor.addRow(new Object[] { "my_name" });
+    cursor.addRow(new Object[] { "my_second_name" });
+    cursor.setNotificationUri(Robolectric.application.getContentResolver(), TEST_URI);
+    return cursor;
   }
 
   private void makeProviderReturn(Cursor cursor) {
@@ -118,7 +141,48 @@ public class ComposedCursorLoaderTest {
   }
 
   @Test
+  public void shouldNotPerformLazyTransformIfNotNecessary() throws Exception {
+    final Loader<List<String>> loader = CursorLoaderBuilder.forUri(TEST_URI)
+        .transformRow(FAILING_FUNCTION)
+        .lazy()
+        .build(Robolectric.application);
+
+    loader.startLoading();
+    Robolectric.getBackgroundScheduler().runOneTask();
+  }
+
+  @Ignore
+  @Test
   public void shouldNotCloseOldCursorInCaseItsSameAsNewOne() throws Exception {
+    final Loader<MyCustomWrapper> loader = CursorLoaderBuilder.forUri(TEST_URI)
+        .transformRow(genericToStringFunction)
+        .transform(new Function<List<String>, MyCustomWrapper>() {
+          @Override
+          public MyCustomWrapper apply(List<String> strings) {
+            return new MyCustomWrapper(strings);
+          }
+        })
+        .build(Robolectric.application);
+
+    loader.startLoading();
+    Robolectric.getBackgroundScheduler().runOneTask();
+    Robolectric.application.getContentResolver().notifyChange(TEST_URI, null);
+    Robolectric.getBackgroundScheduler().runOneTask();
+    assertThat(cursor.isClosed()).isFalse();
+  }
+
+  private int numberOfOpenedCursors(Cursor... cursors) {
+    int openedCursorsCount = 0;
+    for (Cursor cursor : cursors) {
+      if (!cursor.isClosed()) {
+        openedCursorsCount++;
+      }
+    }
+    return openedCursorsCount;
+  }
+
+  @Test
+  public void shouldNotCloseOldCursorWhenItsTransformedToTheEqualObjectAsOldOne() throws Exception {
     final Loader<MyCustomWrapper> loader = CursorLoaderBuilder.forUri(TEST_URI)
         .transformRow(genericToStringFunction)
         .transform(new Function<List<String>, MyCustomWrapper>() {
@@ -130,9 +194,27 @@ public class ComposedCursorLoaderTest {
         .build(Robolectric.application);
     loader.startLoading();
     Robolectric.getBackgroundScheduler().runOneTask();
+    Robolectric.application.getContentResolver().notifyChange(TEST_URI, null);
+    MatrixCursor nextCursor = buildCursor();
+    makeProviderReturn(nextCursor);
+    Robolectric.getBackgroundScheduler().runOneTask();
+
+    assertThat(numberOfOpenedCursors(cursor, nextCursor)).is(1);
+  }
+
+  @Test
+  public void shouldNotCloseOldCursorWhenItsTransformedToTheSameObjectAsOldOne() throws Exception {
+    final Loader<String> loader = CursorLoaderBuilder.forUri(TEST_URI)
+        .transform(CONST_FUNCTION)
+        .build(Robolectric.application);
     loader.startLoading();
     Robolectric.getBackgroundScheduler().runOneTask();
-    assertThat(cursor.isClosed()).isFalse();
+    Robolectric.application.getContentResolver().notifyChange(TEST_URI, null);
+    MatrixCursor nextCursor = buildCursor();
+    makeProviderReturn(nextCursor);
+    Robolectric.getBackgroundScheduler().runOneTask();
+
+    assertThat(numberOfOpenedCursors(cursor, nextCursor)).is(1);
   }
 
   @Test

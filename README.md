@@ -206,11 +206,10 @@ dependencies {
 }
 ```
 
-minSdkVersion = 10
+minSdkVersion = 15
 ------------------
-android-db-commons is compatible with Android 2.3 and newer.
-
-The last version supporting older Android versions was [v0.6.3](https://github.com/futuresimple/android-db-commons/tree/v0.6.3).
+The last with minSdkVersion = 10 was [v0.10.1](https://github.com/futuresimple/android-db-commons/tree/v0.10.1).
+The last with minSdkVersion < 10 Android versions was [v0.6.3](https://github.com/futuresimple/android-db-commons/tree/v0.6.3).
 
 Other libraries
 ---------------

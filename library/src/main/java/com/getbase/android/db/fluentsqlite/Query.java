@@ -1,6 +1,7 @@
 package com.getbase.android.db.fluentsqlite;
 
 import com.getbase.android.db.cursors.FluentCursor;
+import com.getbase.android.db.fluentsqlite.Expressions.CollatingSequence;
 import com.getbase.android.db.fluentsqlite.Expressions.Expression;
 import com.google.common.base.Function;
 import com.google.common.base.Functions;
@@ -130,6 +131,7 @@ public final class Query {
 
   public interface CompoundOrderingTermBuilder extends CompoundOrderingDirectionSelector {
     CompoundOrderingDirectionSelector collate(String collation);
+    CompoundOrderingDirectionSelector collate(CollatingSequence collation);
   }
 
   public interface CompoundOrderingDirectionSelector extends CompoundQueryBuilder {
@@ -172,6 +174,12 @@ public final class Query {
 
     @Override
     public CompoundOrderingDirectionSelector collate(String collation) {
+      mQueryBuilder.collate(collation);
+      return this;
+    }
+
+    @Override
+    public CompoundOrderingDirectionSelector collate(CollatingSequence collation) {
       mQueryBuilder.collate(collation);
       return this;
     }
@@ -987,6 +995,12 @@ public final class Query {
     }
 
     @Override
+    public OrderingDirectionSelector collate(CollatingSequence collation) {
+      mOrderByCollation = collation.name();
+      return this;
+    }
+
+    @Override
     public QueryBuilder asc() {
       mOrderByOrder = " ASC";
       return this;
@@ -1397,6 +1411,7 @@ public final class Query {
 
   public interface OrderingTermBuilder extends OrderingDirectionSelector {
     OrderingDirectionSelector collate(String collation);
+    OrderingDirectionSelector collate(CollatingSequence collation);
   }
 
   public interface OrderingDirectionSelector extends QueryBuilder {

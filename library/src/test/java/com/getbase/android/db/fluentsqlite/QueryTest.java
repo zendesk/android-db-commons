@@ -7,6 +7,7 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.*;
 
+import com.getbase.android.db.fluentsqlite.Expressions.CollatingSequence;
 import com.getbase.android.db.fluentsqlite.Expressions.Expression;
 import com.getbase.android.db.fluentsqlite.Query.QueryBuilder;
 
@@ -560,6 +561,18 @@ public class QueryTest {
         .from("table_a")
         .orderBy("col_a")
         .collate("NOCASE")
+        .build()
+        .perform(mDb);
+
+    verify(mDb).rawQuery(eq("SELECT * FROM table_a ORDER BY col_a COLLATE NOCASE"), eq(new String[0]));
+  }
+
+  @Test
+  public void shouldBuildQueryWithOrderByWithSpecifiedCollationUsingCollatingSequence() throws Exception {
+    select()
+        .from("table_a")
+        .orderBy("col_a")
+        .collate(CollatingSequence.NOCASE)
         .build()
         .perform(mDb);
 

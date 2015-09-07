@@ -1,6 +1,5 @@
 package com.getbase.android.db;
 
-import com.getbase.android.db.shadows.CustomShadowMatrixCursor;
 import com.getbase.android.db.shadows.ShadowAsyncTaskLoader;
 
 import org.junit.runners.model.InitializationError;
@@ -18,7 +17,6 @@ public class CustomRobolectricTestRunner extends RobolectricTestRunner {
     return super.createShadowMap()
         .newBuilder()
         .addShadowClass(ShadowAsyncTaskLoader.class)
-        .addShadowClass(CustomShadowMatrixCursor.class)
         .build();
   }
 }

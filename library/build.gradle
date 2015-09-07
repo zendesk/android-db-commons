@@ -10,7 +10,7 @@ android {
   }
 
   defaultConfig {
-    minSdkVersion 10
+    minSdkVersion 15
     targetSdkVersion 22
     versionName project.VERSION_NAME
     versionCode Integer.parseInt(project.VERSION_CODE)
@@ -19,13 +19,13 @@ android {
 }
 
 dependencies {
-  compile 'com.google.guava:guava:16.0'
+  compile 'com.google.guava:guava:18.0'
   compile 'com.android.support:support-v4:22.2.1'
 
   testCompile('junit:junit:4.11') {
     exclude module: 'hamcrest-core'
   }
-  testCompile 'org.robolectric:robolectric:2.2'
+  testCompile 'org.robolectric:robolectric:2.4'
   testCompile 'com.google.truth:truth:0.25'
   testCompile 'com.squareup:fest-android:1.0.7'
   testCompile 'org.mockito:mockito-all:1.9.5'
