@@ -171,6 +171,16 @@ public class ComposedCursorLoaderTest {
     assertThat(cursor.isClosed()).isFalse();
   }
 
+  private int numberOfOpenedCursors(Cursor... cursors) {
+    int openedCursorsCount = 0;
+    for (Cursor cursor : cursors) {
+      if (!cursor.isClosed()) {
+        openedCursorsCount++;
+      }
+    }
+    return openedCursorsCount;
+  }
+
   @Test
   public void shouldNotCloseOldCursorWhenItsTransformedToTheEqualObjectAsOldOne() throws Exception {
     final Loader<MyCustomWrapper> loader = CursorLoaderBuilder.forUri(TEST_URI)
@@ -188,8 +198,8 @@ public class ComposedCursorLoaderTest {
     MatrixCursor nextCursor = buildCursor();
     makeProviderReturn(nextCursor);
     Robolectric.getBackgroundScheduler().runOneTask();
-    assertThat(cursor.isClosed()).isTrue();
-    assertThat(nextCursor.isClosed()).isFalse();
+
+    assertThat(numberOfOpenedCursors(cursor, nextCursor)).is(1);
   }
 
   @Test
@@ -203,8 +213,8 @@ public class ComposedCursorLoaderTest {
     MatrixCursor nextCursor = buildCursor();
     makeProviderReturn(nextCursor);
     Robolectric.getBackgroundScheduler().runOneTask();
-    assertThat(cursor.isClosed()).isFalse();
-    assertThat(nextCursor.isClosed()).isTrue();
+
+    assertThat(numberOfOpenedCursors(cursor, nextCursor)).is(1);
   }
 
   @Test
