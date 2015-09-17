@@ -195,4 +195,15 @@ public class CompoundQueryBuilderTest {
 
     verify(mDb).rawQuery(eq("SELECT * FROM (SELECT * FROM table_b UNION SELECT * FROM table_c) INTERSECT SELECT * FROM table_d INTERSECT SELECT * FROM (SELECT * FROM table_e UNION ALL SELECT * FROM table_f)"), eq(new String[0]));
   }
+
+  @Test
+  public void shouldBuildIntersectionWithSingleCompoundQuery() throws Exception {
+    Query query = intersect(
+        select().from("table_a").union().select().from("table_b").build()
+    );
+
+    query.perform(mDb);
+
+    verify(mDb).rawQuery(eq("SELECT * FROM table_a UNION SELECT * FROM table_b"), eq(new String[0]));
+  }
 }
