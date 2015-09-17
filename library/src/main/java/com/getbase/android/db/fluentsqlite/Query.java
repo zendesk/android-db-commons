@@ -76,6 +76,10 @@ public final class Query {
     Preconditions.checkNotNull(queries);
     Preconditions.checkArgument(queries.length > 0);
 
+    if (queries.length == 1) {
+      return queries[0];
+    }
+
     CompoundQueryBuilder builder = select(queries[0]);
     for (int i = 1; i < queries.length; i++) {
       builder = builder.union(queries[i]);
@@ -88,6 +92,10 @@ public final class Query {
     Preconditions.checkNotNull(queries);
     Preconditions.checkArgument(queries.length > 0);
 
+    if (queries.length == 1) {
+      return queries[0];
+    }
+
     CompoundQueryBuilder builder = select(queries[0]);
     for (int i = 1; i < queries.length; i++) {
       builder = builder.unionAll(queries[i]);
@@ -99,6 +107,10 @@ public final class Query {
   public static Query intersect(Query... queries) {
     Preconditions.checkNotNull(queries);
     Preconditions.checkArgument(queries.length > 0);
+
+    if (queries.length == 1) {
+      return queries[0];
+    }
 
     CompoundQueryBuilder builder = select(queries[0]);
     for (int i = 1; i < queries.length; i++) {
