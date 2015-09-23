@@ -43,6 +43,10 @@ public abstract class Batcher {
     return crudHandler.applyBatch(authority, operations());
   }
 
+  public final ContentProviderResult[] applyBatchOrThrow(String authority, ContentProvider provider) {
+    return applyBatchOrThrow(authority, new ContentProviderCrudHandler(provider));
+  }
+
   public final ContentProviderResult[] applyBatchOrThrow(String authority, ContentResolver resolver) {
     return applyBatchOrThrow(authority, new ContentResolverCrudHandler(resolver));
   }
