@@ -39,7 +39,7 @@ public abstract class Batcher {
     return applyBatch(authority, new ContentResolverCrudHandler(resolver));
   }
 
-  private ContentProviderResult[] applyBatch(String authority, CrudHandler crudHandler) throws RemoteException, OperationApplicationException {
+  public final ContentProviderResult[] applyBatch(String authority, CrudHandler crudHandler) throws RemoteException, OperationApplicationException {
     return crudHandler.applyBatch(authority, operations());
   }
 
@@ -55,7 +55,7 @@ public abstract class Batcher {
     return applyBatchOrThrow(null, new ContentProviderClientCrudHandler(client));
   }
 
-  private ContentProviderResult[] applyBatchOrThrow(String authority, CrudHandler crudHandler) {
+  public final ContentProviderResult[] applyBatchOrThrow(String authority, CrudHandler crudHandler) {
     try {
       return applyBatch(authority, crudHandler);
     } catch (RemoteException | OperationApplicationException e) {
