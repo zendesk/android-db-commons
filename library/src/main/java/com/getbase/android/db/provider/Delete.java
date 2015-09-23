@@ -34,13 +34,13 @@ public class Delete extends ProviderAction<Integer> implements ConvertibleToOper
   }
 
   @Override
-  public ContentProviderOperation toContentProviderOperation() {
-    return toContentProviderOperationBuilder().build();
+  public ContentProviderOperation toContentProviderOperation(UriDecorator uriDecorator) {
+    return toContentProviderOperationBuilder(uriDecorator).build();
   }
 
   @Override
-  public Builder toContentProviderOperationBuilder() {
-    return ContentProviderOperation.newDelete(getUri())
+  public Builder toContentProviderOperationBuilder(UriDecorator uriDecorator) {
+    return ContentProviderOperation.newDelete(uriDecorator.decorate(getUri()))
         .withSelection(selection.getSelection(), selection.getSelectionArgs());
   }
 }

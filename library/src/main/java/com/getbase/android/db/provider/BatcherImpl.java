@@ -1,5 +1,6 @@
 package com.getbase.android.db.provider;
 
+import com.google.common.base.MoreObjects;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
@@ -17,6 +18,7 @@ import java.util.List;
 class BatcherImpl extends Batcher {
   private final List<ConvertibleToOperation> operations = Lists.newArrayList();
   private final Multimap<ConvertibleToOperation, BackRef> backRefs = HashMultimap.create();
+  private UriDecorator mUriDecorator = Utils.DUMMY_URI_DECORATOR;
 
   @Override
   public BackRefBuilder append(ConvertibleToOperation... convertibles) {
@@ -28,6 +30,12 @@ class BatcherImpl extends Batcher {
   public BackRefBuilder append(Iterable<ConvertibleToOperation> convertibles) {
     operations.addAll(Lists.newArrayList(convertibles));
     return new BackRefBuilder(this, convertibles);
+  }
+
+  @Override
+  public Batcher decorateUrisWith(UriDecorator uriDecorator) {
+    mUriDecorator = MoreObjects.firstNonNull(uriDecorator, Utils.DUMMY_URI_DECORATOR);
+    return this;
   }
 
   private int assertThatThereIsOnlyOneParentPosition(Collection<Integer> integers) {
@@ -44,7 +52,7 @@ class BatcherImpl extends Batcher {
     final Multimap<ConvertibleToOperation, Integer> parentsPositions = HashMultimap.create();
     ArrayList<ContentProviderOperation> providerOperations = Lists.newArrayListWithCapacity(operations.size());
     for (ConvertibleToOperation convertible : operations) {
-      final Builder builder = convertible.toContentProviderOperationBuilder();
+      final Builder builder = convertible.toContentProviderOperationBuilder(mUriDecorator);
       final Collection<BackRef> backRefs = this.backRefs.get(convertible);
       if (!backRefs.isEmpty()) {
         ContentValues values = new ContentValues();

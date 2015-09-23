@@ -23,6 +23,8 @@ public abstract class Batcher {
 
   public abstract BackRefBuilder append(Iterable<ConvertibleToOperation> convertibles);
 
+  public abstract Batcher decorateUrisWith(UriDecorator uriDecorator);
+
   public abstract ArrayList<ContentProviderOperation> operations();
 
   public final ContentProviderResult[] applyBatch(ContentProvider provider) {

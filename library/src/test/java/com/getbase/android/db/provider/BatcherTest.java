@@ -191,6 +191,27 @@ public class BatcherTest {
     throwAnExceptionInsideClientsApplyBatch(SecurityException.class);
   }
 
+  @Test
+  public void shouldDecorateOperationsUrisIfSpecified() throws Exception {
+    final ArrayList<ContentProviderOperation> operations = Batcher.begin()
+        .append(ProviderAction.insert(createFakeUri("first")))
+        .append(ProviderAction.update(createFakeUri("second")).value("test", 1L))
+        .append(ProviderAction.delete(createFakeUri("third")))
+        .decorateUrisWith(new UriDecorator() {
+          @Override
+          public Uri decorate(Uri uri) {
+            return Uri.withAppendedPath(uri, "boom");
+          }
+        })
+        .operations();
+
+    assertThat(operations).hasSize(3);
+
+    operationAssert(operations.get(0), createFakeUri("first", "boom"), ShadowContentProviderOperation.TYPE_INSERT);
+    operationAssert(operations.get(1), createFakeUri("second", "boom"), ShadowContentProviderOperation.TYPE_UPDATE);
+    operationAssert(operations.get(2), createFakeUri("third", "boom"), ShadowContentProviderOperation.TYPE_DELETE);
+  }
+
   @SuppressWarnings("unchecked")
   private void throwAnExceptionInsideResolversApplyBatch(Class<? extends Exception> applyBatchException) throws RemoteException, OperationApplicationException {
     final ContentResolver resolver = mock(ContentResolver.class);

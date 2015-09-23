@@ -6,11 +6,19 @@ import android.content.ContentValues;
 import android.database.DatabaseUtils;
 import android.database.sqlite.SQLiteStatement;
 
+import android.net.Uri;
 import android.support.annotation.Nullable;
 
 public final class Utils {
   private Utils() {
   }
+
+  public static final UriDecorator DUMMY_URI_DECORATOR = new UriDecorator() {
+    @Override
+    public Uri decorate(Uri uri) {
+      return uri;
+    }
+  };
 
   public static void addToContentValues(String key, Object value, ContentValues contentValues) {
     if (value == null) {

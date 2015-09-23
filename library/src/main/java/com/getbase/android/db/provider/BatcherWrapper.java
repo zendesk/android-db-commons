@@ -25,6 +25,11 @@ class BatcherWrapper extends Batcher {
   }
 
   @Override
+  public Batcher decorateUrisWith(UriDecorator uriDecorator) {
+    return realBatcher.decorateUrisWith(uriDecorator);
+  }
+
+  @Override
   public ArrayList<ContentProviderOperation> operations() {
     return realBatcher.operations();
   }
