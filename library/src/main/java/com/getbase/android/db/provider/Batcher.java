@@ -19,8 +19,6 @@ public abstract class Batcher {
     return new BatcherImpl();
   }
 
-  public abstract Batcher append(Batcher Batcher);
-
   public abstract BackRefBuilder append(ConvertibleToOperation... convertibles);
 
   public abstract BackRefBuilder append(Iterable<ConvertibleToOperation> convertibles);

@@ -20,13 +20,6 @@ class BatcherImpl extends Batcher {
   private final Multimap<ConvertibleToOperation, BackRef> backRefs = HashMultimap.create();
 
   @Override
-  public Batcher append(Batcher batcher) {
-    backRefs.putAll(batcher.getBackRefsMultimap());
-    append(batcher.getConvertibles());
-    return this;
-  }
-
-  @Override
   public BackRefBuilder append(ConvertibleToOperation... convertibles) {
     Collections.addAll(operations, convertibles);
     return new BackRefBuilder(this, convertibles);

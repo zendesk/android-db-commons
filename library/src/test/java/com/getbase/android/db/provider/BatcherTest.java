@@ -82,52 +82,6 @@ public class BatcherTest {
   }
 
   @Test
-  public void shouldMergeBatches() throws Exception {
-    final Batcher firstPart = Batcher.begin()
-        .append(ProviderAction.insert(createFakeUri("first")))
-        .append(ProviderAction.insert(createFakeUri("second")));
-
-    final Batcher secondPart = Batcher.begin()
-        .append(ProviderAction.update(createFakeUri("third")).value("test", 1L));
-
-    final ArrayList<ContentProviderOperation> operations = Batcher.begin()
-        .append(firstPart)
-        .append(secondPart)
-        .operations();
-
-    assertThat(operations).hasSize(3);
-
-    operationAssert(operations.get(0), createFakeUri("first"), ShadowContentProviderOperation.TYPE_INSERT);
-    operationAssert(operations.get(1), createFakeUri("second"), ShadowContentProviderOperation.TYPE_INSERT);
-    operationAssert(operations.get(2), createFakeUri("third"), ShadowContentProviderOperation.TYPE_UPDATE);
-  }
-
-  @Test
-  public void shouldResolveBackReferencesFromPreviousBatch() throws Exception {
-    final Insert firstInsert = ProviderAction.insert(createFakeUri("first"));
-
-    final Batcher firstPart = Batcher.begin()
-        .append(firstInsert)
-        .append(ProviderAction.insert(createFakeUri("second")));
-
-    final Batcher secondPart = Batcher.begin()
-        .append(ProviderAction
-                .update(createFakeUri("third"))
-                .value("test", 1L)
-        ).withValueBackReference(firstInsert, "column");
-
-    final ArrayList<ContentProviderOperation> operations = Batcher.begin()
-        .append(firstPart)
-        .append(secondPart)
-        .operations();
-
-    final ContentProviderOperation lastOperation = Iterables.getLast(operations);
-    ShadowContentProviderOperation shadowLastOperation = Robolectric.shadowOf(lastOperation);
-    final ContentValues backRefs = shadowLastOperation.getValuesBackReferences();
-    assertThat(backRefs.get("column")).isEqualTo(0);
-  }
-
-  @Test
   public void shouldGenerateEmptyOperations() throws Exception {
     assertThat(Batcher.begin().operations()).isEmpty();
   }

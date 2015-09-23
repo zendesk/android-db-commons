@@ -16,11 +16,6 @@ class BatcherWrapper extends Batcher {
   }
 
   @Override
-  public Batcher append(Batcher Batcher) {
-    return realBatcher.append(Batcher);
-  }
-
-  @Override
   public BackRefBuilder append(ConvertibleToOperation... convertibles) {
     return realBatcher.append(convertibles);
   }
