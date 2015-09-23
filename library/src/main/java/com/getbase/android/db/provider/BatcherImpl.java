@@ -15,7 +15,6 @@ import java.util.Collections;
 import java.util.List;
 
 class BatcherImpl extends Batcher {
-
   private final List<ConvertibleToOperation> operations = Lists.newArrayList();
   private final Multimap<ConvertibleToOperation, BackRef> backRefs = HashMultimap.create();
 

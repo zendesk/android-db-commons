@@ -8,7 +8,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 class BatcherWrapper extends Batcher {
-
   private final Batcher realBatcher;
 
   BatcherWrapper(Batcher realBatcher) {

@@ -171,7 +171,7 @@ public class BatcherTest {
   }
 
   @Test(expected = SecurityException.class)
-  public void ifExceptionThrownFromApplyBatchIsNotCheckedThenJustThrowItinResolver() throws Exception {
+  public void ifExceptionThrownFromApplyBatchIsNotCheckedThenJustThrowItInResolver() throws Exception {
     throwAnExceptionInsideResolversApplyBatch(SecurityException.class);
   }
 

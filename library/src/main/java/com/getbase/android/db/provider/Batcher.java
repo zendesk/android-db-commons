@@ -62,7 +62,6 @@ public abstract class Batcher {
   }
 
   static class BackRef {
-
     final Insert parent;
     final String column;
 
