@@ -21,6 +21,7 @@ import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.OperationApplicationException;
 import android.net.Uri;
+import android.net.Uri.Builder;
 import android.os.RemoteException;
 import android.provider.BaseColumns;
 
@@ -208,11 +209,14 @@ public class BatcherTest {
         .applyBatchOrThrow(client);
   }
 
-  private static Uri createFakeUri(String suffix) {
-    return Uri.parse("content://com.fakedomain.base")
-        .buildUpon()
-        .appendPath(suffix)
-        .build();
+  private static Uri createFakeUri(String... pathSegments) {
+    Builder builder = Uri.parse("content://com.fakedomain.base").buildUpon();
+
+    for (String path : pathSegments) {
+      builder.appendPath(path);
+    }
+
+    return builder.build();
   }
 
   private static void operationAssert(ContentProviderOperation operation, Uri uri, int type) {
