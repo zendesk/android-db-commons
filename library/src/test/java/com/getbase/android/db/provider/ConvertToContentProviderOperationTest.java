@@ -25,7 +25,7 @@ public class ConvertToContentProviderOperationTest {
 
     final ContentProviderOperation operation = ProviderAction.insert(createFakeUri("endpoint"))
         .values(values)
-        .toContentProviderOperation();
+        .toContentProviderOperation(Utils.DUMMY_URI_DECORATOR);
 
     final ShadowContentProviderOperation shadowOperation = Robolectric.shadowOf(operation);
     assertThat(operation.getUri()).isEqualTo(createFakeUri("endpoint"));
@@ -38,7 +38,7 @@ public class ConvertToContentProviderOperationTest {
     final ContentProviderOperation operation = ProviderAction.update(createFakeUri("endpoint"))
         .value("key", "value")
         .where("key=?", "hello")
-        .toContentProviderOperation();
+        .toContentProviderOperation(Utils.DUMMY_URI_DECORATOR);
 
     final ShadowContentProviderOperation shadowOperation = Robolectric.shadowOf(operation);
     assertThat(operation.getUri()).isEqualTo(createFakeUri("endpoint"));
@@ -51,7 +51,7 @@ public class ConvertToContentProviderOperationTest {
   public void shouldConstructDeleteOperation() throws Exception {
     final ContentProviderOperation operation = ProviderAction.delete(createFakeUri("endpoint"))
         .where("key=?", "hello")
-        .toContentProviderOperation();
+        .toContentProviderOperation(Utils.DUMMY_URI_DECORATOR);
 
     final ShadowContentProviderOperation shadowOperation = Robolectric.shadowOf(operation);
     assertThat(operation.getUri()).isEqualTo(createFakeUri("endpoint"));

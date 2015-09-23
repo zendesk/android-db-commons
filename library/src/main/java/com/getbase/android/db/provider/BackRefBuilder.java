@@ -1,6 +1,6 @@
 package com.getbase.android.db.provider;
 
-import com.google.common.collect.Lists;
+import java.util.Arrays;
 
 public class BackRefBuilder extends BatcherWrapper {
 
@@ -14,7 +14,7 @@ public class BackRefBuilder extends BatcherWrapper {
   }
 
   public BackRefBuilder(BatcherImpl batcher, ConvertibleToOperation... convertible) {
-    this(batcher, Lists.newArrayList(convertible));
+    this(batcher, Arrays.asList(convertible));
   }
 
   public BackRefBuilder withValueBackReference(Insert previousInsert, String columnName) {

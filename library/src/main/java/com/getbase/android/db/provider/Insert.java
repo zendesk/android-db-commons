@@ -30,12 +30,12 @@ public class Insert extends ProviderAction<Uri> implements ConvertibleToOperatio
   }
 
   @Override
-  public ContentProviderOperation toContentProviderOperation() {
-    return toContentProviderOperationBuilder().build();
+  public ContentProviderOperation toContentProviderOperation(UriDecorator uriDecorator) {
+    return toContentProviderOperationBuilder(uriDecorator).build();
   }
 
   @Override
-  public Builder toContentProviderOperationBuilder() {
-    return ContentProviderOperation.newInsert(getUri()).withValues(contentValues);
+  public Builder toContentProviderOperationBuilder(UriDecorator uriDecorator) {
+    return ContentProviderOperation.newInsert(uriDecorator.decorate(getUri())).withValues(contentValues);
   }
 }

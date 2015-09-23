@@ -8,16 +8,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 class BatcherWrapper extends Batcher {
-
   private final Batcher realBatcher;
 
   BatcherWrapper(Batcher realBatcher) {
     this.realBatcher = realBatcher;
-  }
-
-  @Override
-  public Batcher append(Batcher Batcher) {
-    return realBatcher.append(Batcher);
   }
 
   @Override
@@ -28,6 +22,11 @@ class BatcherWrapper extends Batcher {
   @Override
   public BackRefBuilder append(Iterable<ConvertibleToOperation> convertibles) {
     return realBatcher.append(convertibles);
+  }
+
+  @Override
+  public Batcher decorateUrisWith(UriDecorator uriDecorator) {
+    return realBatcher.decorateUrisWith(uriDecorator);
   }
 
   @Override

@@ -19,39 +19,43 @@ public abstract class Batcher {
     return new BatcherImpl();
   }
 
-  public abstract Batcher append(Batcher Batcher);
-
   public abstract BackRefBuilder append(ConvertibleToOperation... convertibles);
 
   public abstract BackRefBuilder append(Iterable<ConvertibleToOperation> convertibles);
 
+  public abstract Batcher decorateUrisWith(UriDecorator uriDecorator);
+
   public abstract ArrayList<ContentProviderOperation> operations();
 
-  public ContentProviderResult[] applyBatch(ContentProvider provider) {
+  public final ContentProviderResult[] applyBatch(ContentProvider provider) {
     return applyBatchOrThrow(null, new ContentProviderCrudHandler(provider));
   }
 
-  public ContentProviderResult[] applyBatch(ContentProviderClient providerClient) throws RemoteException, OperationApplicationException {
+  public final ContentProviderResult[] applyBatch(ContentProviderClient providerClient) throws RemoteException, OperationApplicationException {
     return applyBatch(null, new ContentProviderClientCrudHandler(providerClient));
   }
 
-  public ContentProviderResult[] applyBatch(String authority, ContentResolver resolver) throws RemoteException, OperationApplicationException {
+  public final ContentProviderResult[] applyBatch(String authority, ContentResolver resolver) throws RemoteException, OperationApplicationException {
     return applyBatch(authority, new ContentResolverCrudHandler(resolver));
   }
 
-  private ContentProviderResult[] applyBatch(String authority, CrudHandler crudHandler) throws RemoteException, OperationApplicationException {
+  public final ContentProviderResult[] applyBatch(String authority, CrudHandler crudHandler) throws RemoteException, OperationApplicationException {
     return crudHandler.applyBatch(authority, operations());
   }
 
-  public ContentProviderResult[] applyBatchOrThrow(String authority, ContentResolver resolver) {
+  public final ContentProviderResult[] applyBatchOrThrow(String authority, ContentProvider provider) {
+    return applyBatchOrThrow(authority, new ContentProviderCrudHandler(provider));
+  }
+
+  public final ContentProviderResult[] applyBatchOrThrow(String authority, ContentResolver resolver) {
     return applyBatchOrThrow(authority, new ContentResolverCrudHandler(resolver));
   }
 
-  public ContentProviderResult[] applyBatchOrThrow(ContentProviderClient client) {
+  public final ContentProviderResult[] applyBatchOrThrow(ContentProviderClient client) {
     return applyBatchOrThrow(null, new ContentProviderClientCrudHandler(client));
   }
 
-  private ContentProviderResult[] applyBatchOrThrow(String authority, CrudHandler crudHandler) {
+  public final ContentProviderResult[] applyBatchOrThrow(String authority, CrudHandler crudHandler) {
     try {
       return applyBatch(authority, crudHandler);
     } catch (RemoteException | OperationApplicationException e) {
@@ -60,7 +64,6 @@ public abstract class Batcher {
   }
 
   static class BackRef {
-
     final Insert parent;
     final String column;
 

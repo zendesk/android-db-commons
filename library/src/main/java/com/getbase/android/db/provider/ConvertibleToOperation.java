@@ -4,6 +4,6 @@ import android.content.ContentProviderOperation;
 
 public interface ConvertibleToOperation {
 
-  ContentProviderOperation.Builder toContentProviderOperationBuilder();
-  ContentProviderOperation toContentProviderOperation();
+  ContentProviderOperation.Builder toContentProviderOperationBuilder(UriDecorator uriDecorator);
+  ContentProviderOperation toContentProviderOperation(UriDecorator uriDecorator);
 }
