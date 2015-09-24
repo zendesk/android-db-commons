@@ -17,7 +17,7 @@ import java.util.List;
 
 class BatcherImpl extends Batcher {
   private final List<ConvertibleToOperation> operations = Lists.newArrayList();
-  private final Multimap<ConvertibleToOperation, BackRef> backRefs = HashMultimap.create();
+  private final Multimap<ConvertibleToOperation, ValueBackRef> valueBackRefs = HashMultimap.create();
   private UriDecorator mUriDecorator = Utils.DUMMY_URI_DECORATOR;
 
   @Override
@@ -53,12 +53,12 @@ class BatcherImpl extends Batcher {
     ArrayList<ContentProviderOperation> providerOperations = Lists.newArrayListWithCapacity(operations.size());
     for (ConvertibleToOperation convertible : operations) {
       final Builder builder = convertible.toContentProviderOperationBuilder(mUriDecorator);
-      final Collection<BackRef> backRefs = this.backRefs.get(convertible);
-      if (!backRefs.isEmpty()) {
+      final Collection<ValueBackRef> valueBackRefs = this.valueBackRefs.get(convertible);
+      if (!valueBackRefs.isEmpty()) {
         ContentValues values = new ContentValues();
-        for (BackRef backRef : backRefs) {
-          final Collection<Integer> positions = parentsPositions.get(backRef.parent);
-          values.put(backRef.column, assertThatThereIsOnlyOneParentPosition(positions));
+        for (ValueBackRef valueBackRef : valueBackRefs) {
+          final Collection<Integer> positions = parentsPositions.get(valueBackRef.parent);
+          values.put(valueBackRef.column, assertThatThereIsOnlyOneParentPosition(positions));
         }
         builder.withValueBackReferences(values);
       }
@@ -68,7 +68,7 @@ class BatcherImpl extends Batcher {
     return providerOperations;
   }
 
-  public void putBackRef(ConvertibleToOperation convertible, BackRef backRef) {
-    backRefs.put(convertible, backRef);
+  public void putValueBackRef(ConvertibleToOperation convertible, ValueBackRef valueBackRef) {
+    valueBackRefs.put(convertible, valueBackRef);
   }
 }

@@ -60,11 +60,11 @@ public abstract class Batcher {
     }
   }
 
-  static class BackRef {
+  static class ValueBackRef {
     final Insert parent;
     final String column;
 
-    BackRef(Insert parent, String column) {
+    ValueBackRef(Insert parent, String column) {
       this.parent = parent;
       this.column = column;
     }

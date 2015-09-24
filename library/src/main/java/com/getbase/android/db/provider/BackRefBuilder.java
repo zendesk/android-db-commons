@@ -19,7 +19,7 @@ public class BackRefBuilder extends BatcherWrapper {
 
   public BackRefBuilder withValueBackReference(Insert previousInsert, String columnName) {
     for (ConvertibleToOperation convertible : convertibles) {
-      batcher.putBackRef(convertible, new BackRef(previousInsert, columnName));
+      batcher.putValueBackRef(convertible, new ValueBackRef(previousInsert, columnName));
     }
     return this;
   }
