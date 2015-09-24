@@ -28,7 +28,7 @@ class BatcherImpl extends Batcher {
 
   @Override
   public BackRefBuilder append(Iterable<ConvertibleToOperation> convertibles) {
-    operations.addAll(Lists.newArrayList(convertibles));
+    Iterables.addAll(operations, convertibles);
     return new BackRefBuilder(this, convertibles);
   }
 
