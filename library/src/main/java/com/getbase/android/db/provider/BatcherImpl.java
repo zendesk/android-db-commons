@@ -68,16 +68,6 @@ class BatcherImpl extends Batcher {
     return providerOperations;
   }
 
-  @Override
-  protected Multimap<ConvertibleToOperation, BackRef> getBackRefsMultimap() {
-    return backRefs;
-  }
-
-  @Override
-  protected List<ConvertibleToOperation> getConvertibles() {
-    return operations;
-  }
-
   public void putBackRef(ConvertibleToOperation convertible, BackRef backRef) {
     backRefs.put(convertible, backRef);
   }
