@@ -17,9 +17,9 @@ import java.util.List;
 
 class BatcherImpl extends Batcher {
   private final List<ConvertibleToOperation> operations = Lists.newArrayList();
-  private final Multimap<ConvertibleToOperation, ValueBackRef> valueBackRefs = HashMultimap.create();
-  private final Multimap<ConvertibleToOperation, SelectionBackRef> selectionBackRefs = HashMultimap.create();
   private UriDecorator mUriDecorator = Utils.DUMMY_URI_DECORATOR;
+  private Multimap<ConvertibleToOperation, ValueBackRef> mValueBackRefs;
+  private Multimap<ConvertibleToOperation, SelectionBackRef> mSelectionBackRefs;
 
   @Override
   public BackRefBuilder append(ConvertibleToOperation... convertibles) {
@@ -39,48 +39,100 @@ class BatcherImpl extends Batcher {
     return this;
   }
 
-  private int assertThatThereIsOnlyOneParentPosition(Collection<Integer> integers) {
-    if (integers.isEmpty()) {
-      throw new IllegalStateException("Could not find proper Insert for back references.");
-    } else if (integers.size() > 1) {
-      throw new IllegalStateException("Referenced for Insert in back references that is present twice.");
-    }
-    return Iterables.getOnlyElement(integers);
-  }
-
   @Override
   public ArrayList<ContentProviderOperation> operations() {
-    final Multimap<ConvertibleToOperation, Integer> parentsPositions = HashMultimap.create();
     ArrayList<ContentProviderOperation> providerOperations = Lists.newArrayListWithCapacity(operations.size());
+    BackRefResolver backRefResolver = getBackRefResolver();
+
     for (ConvertibleToOperation convertible : operations) {
       final Builder builder = convertible.toContentProviderOperationBuilder(mUriDecorator);
 
-      final Collection<ValueBackRef> valueBackRefs = this.valueBackRefs.get(convertible);
-      if (!valueBackRefs.isEmpty()) {
-        ContentValues values = new ContentValues();
-        for (ValueBackRef valueBackRef : valueBackRefs) {
-          final Collection<Integer> positions = parentsPositions.get(valueBackRef.parent);
-          values.put(valueBackRef.column, assertThatThereIsOnlyOneParentPosition(positions));
-        }
-        builder.withValueBackReferences(values);
-      }
+      backRefResolver.resolveBackRefs(convertible, builder);
 
-      for (SelectionBackRef selectionBackRef : selectionBackRefs.get(convertible)) {
-        final Collection<Integer> positions = parentsPositions.get(selectionBackRef.parent);
-        builder.withSelectionBackReference(selectionBackRef.selectionArgumentIndex, assertThatThereIsOnlyOneParentPosition(positions));
-      }
-
-      parentsPositions.put(convertible, providerOperations.size());
       providerOperations.add(builder.build());
     }
     return providerOperations;
   }
 
   public void putValueBackRef(ConvertibleToOperation convertible, ValueBackRef valueBackRef) {
-    valueBackRefs.put(convertible, valueBackRef);
+    if (mValueBackRefs == null) {
+      mValueBackRefs = HashMultimap.create();
+    }
+
+    mValueBackRefs.put(convertible, valueBackRef);
   }
 
   public void putSelectionBackRef(ConvertibleToOperation convertible, SelectionBackRef selectionBackRef) {
-    selectionBackRefs.put(convertible, selectionBackRef);
+    if (mSelectionBackRefs == null) {
+      mSelectionBackRefs = HashMultimap.create();
+    }
+
+    mSelectionBackRefs.put(convertible, selectionBackRef);
   }
+
+  private BackRefResolver getBackRefResolver() {
+    if (mValueBackRefs == null && mSelectionBackRefs == null) {
+      return DUMMY_BACK_REF_RESOLVER;
+    } else {
+      return new BackRefResolverImpl(mValueBackRefs, mSelectionBackRefs);
+    }
+  }
+
+  interface BackRefResolver {
+    void resolveBackRefs(ConvertibleToOperation convertible, Builder builder);
+  }
+
+  private static class BackRefResolverImpl implements BackRefResolver {
+    private final Multimap<ConvertibleToOperation, ValueBackRef> mValueBackRefs;
+    private final Multimap<ConvertibleToOperation, SelectionBackRef> mSelectionBackRefs;
+    private final Multimap<ConvertibleToOperation, Integer> mParentsPosition;
+
+    public BackRefResolverImpl(Multimap<ConvertibleToOperation, ValueBackRef> valueBackRefs, Multimap<ConvertibleToOperation, SelectionBackRef> selectionBackRefs) {
+      mValueBackRefs = valueBackRefs;
+      mSelectionBackRefs = selectionBackRefs;
+      mParentsPosition = HashMultimap.create();
+    }
+
+    @Override
+    public void resolveBackRefs(ConvertibleToOperation convertible, Builder builder) {
+      if (mValueBackRefs != null && mValueBackRefs.containsKey(convertible)) {
+        ContentValues values = new ContentValues();
+
+        for (ValueBackRef valueBackRef : mValueBackRefs.get(convertible)) {
+          values.put(valueBackRef.column, getParentPosition(valueBackRef.parent));
+        }
+
+        builder.withValueBackReferences(values);
+      }
+
+      if (mSelectionBackRefs != null) {
+        for (SelectionBackRef selectionBackRef : mSelectionBackRefs.get(convertible)) {
+          builder.withSelectionBackReference(
+              selectionBackRef.selectionArgumentIndex,
+              getParentPosition(selectionBackRef.parent)
+          );
+        }
+      }
+
+      mParentsPosition.put(convertible, mParentsPosition.size());
+    }
+
+    private int getParentPosition(ConvertibleToOperation parent) {
+      Collection<Integer> positions = mParentsPosition.get(parent);
+
+      if (positions.isEmpty()) {
+        throw new IllegalStateException("Could not find operation used in back reference.");
+      } else if (positions.size() > 1) {
+        throw new IllegalStateException("Ambiguous back reference; referenced operation was added to Batcher more than once.");
+      }
+
+      return Iterables.getOnlyElement(positions);
+    }
+  }
+
+  private static final BackRefResolver DUMMY_BACK_REF_RESOLVER = new BackRefResolver() {
+    @Override
+    public void resolveBackRefs(ConvertibleToOperation convertible, Builder builder) {
+    }
+  };
 }
