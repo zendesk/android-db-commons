@@ -23,4 +23,11 @@ public class BackRefBuilder extends BatcherWrapper {
     }
     return this;
   }
+
+  public BackRefBuilder withSelectionBackReference(Insert previousInsert, int selectionArgumentIndex) {
+    for (ConvertibleToOperation convertible : convertibles) {
+      batcher.putSelectionBackRef(convertible, new SelectionBackRef(previousInsert, selectionArgumentIndex));
+    }
+    return this;
+  }
 }

@@ -28,6 +28,7 @@ import android.provider.BaseColumns;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 @RunWith(RobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
@@ -52,6 +53,27 @@ public class BatcherTest {
     final ContentValues backRefs = shadowOperation.getValuesBackReferences();
     assertThat(backRefs.get("_id")).isEqualTo(0);
     assertThat(backRefs.get("contact_id")).isEqualTo(1);
+  }
+
+  @Test
+  public void shouldResolveSelectionBackReferences() throws Exception {
+    final Insert firstInsert = ProviderAction.insert(Uri.EMPTY);
+    final Insert secondInsert = ProviderAction.insert(Uri.EMPTY);
+    final ArrayList<ContentProviderOperation> operations = Batcher.begin()
+        .append(firstInsert)
+        .append(secondInsert)
+        .append(ProviderAction.update(Uri.EMPTY).value("test", 1L).where(BaseColumns._ID + "=? AND contact_id=?"))
+        .withSelectionBackReference(firstInsert, 0)
+        .withSelectionBackReference(secondInsert, 1)
+        .operations();
+
+    assertThat(operations).hasSize(3);
+
+    final ContentProviderOperation lastOperation = operations.get(2);
+    ShadowContentProviderOperation shadowOperation = Robolectric.shadowOf(lastOperation);
+    final Map<Integer, Integer> backRefs = shadowOperation.getSelectionArgsBackReferences();
+    assertThat(backRefs).containsEntry(0, 0);
+    assertThat(backRefs).containsEntry(1, 1);
   }
 
   @Test
@@ -119,6 +141,24 @@ public class BatcherTest {
     final Insert first = ProviderAction.insert(createFakeUri("only"));
     Batcher.begin()
         .append(ProviderAction.insert(createFakeUri("only"))).withValueBackReference(first, "column")
+        .operations();
+  }
+
+  @Test(expected = IllegalStateException.class)
+  public void shouldThrowAnExceptionIfPreviousInsertForSelectionBackReferenceIsDuplicated() throws Exception {
+    final Insert first = ProviderAction.insert(createFakeUri("only"));
+    Batcher.begin()
+        .append(first)
+        .append(first)
+        .append(ProviderAction.delete(createFakeUri("only")).where(BaseColumns._ID + "=?")).withSelectionBackReference(first, 0)
+        .operations();
+  }
+
+  @Test(expected = IllegalStateException.class)
+  public void shouldThrowAnExceptionPreviousInsertForSelectionBackReferenceWasNotAddedToBatcher() throws Exception {
+    final Insert first = ProviderAction.insert(createFakeUri("only"));
+    Batcher.begin()
+        .append(ProviderAction.delete(createFakeUri("only")).where(BaseColumns._ID + "=?")).withSelectionBackReference(first, 0)
         .operations();
   }
 

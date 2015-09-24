@@ -69,4 +69,14 @@ public abstract class Batcher {
       this.column = column;
     }
   }
+
+  static class SelectionBackRef {
+    final Insert parent;
+    final int selectionArgumentIndex;
+
+    SelectionBackRef(Insert parent, int selectionArgumentIndex) {
+      this.parent = parent;
+      this.selectionArgumentIndex = selectionArgumentIndex;
+    }
+  }
 }
