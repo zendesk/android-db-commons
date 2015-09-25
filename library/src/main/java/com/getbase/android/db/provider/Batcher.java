@@ -1,7 +1,5 @@
 package com.getbase.android.db.provider;
 
-import com.google.common.collect.Multimap;
-
 import android.content.ContentProvider;
 import android.content.ContentProviderClient;
 import android.content.ContentProviderOperation;
@@ -11,7 +9,6 @@ import android.content.OperationApplicationException;
 import android.os.RemoteException;
 
 import java.util.ArrayList;
-import java.util.List;
 
 public abstract class Batcher {
 
@@ -63,16 +60,23 @@ public abstract class Batcher {
     }
   }
 
-  static class BackRef {
+  static class ValueBackRef {
     final Insert parent;
     final String column;
 
-    BackRef(Insert parent, String column) {
+    ValueBackRef(Insert parent, String column) {
       this.parent = parent;
       this.column = column;
     }
   }
 
-  protected abstract Multimap<ConvertibleToOperation, BackRef> getBackRefsMultimap();
-  protected abstract List<ConvertibleToOperation> getConvertibles();
+  static class SelectionBackRef {
+    final Insert parent;
+    final int selectionArgumentIndex;
+
+    SelectionBackRef(Insert parent, int selectionArgumentIndex) {
+      this.parent = parent;
+      this.selectionArgumentIndex = selectionArgumentIndex;
+    }
+  }
 }
