@@ -206,4 +206,18 @@ public class CompoundQueryBuilderTest {
 
     verify(mDb).rawQuery(eq("SELECT * FROM table_a UNION SELECT * FROM table_b"), eq(new String[0]));
   }
+
+  @Test
+  public void shouldBuildIntersectionWithIntersection() throws Exception {
+    Query query = intersect(
+        intersect(
+            select().from("table_a").build(),
+            select().from("table_b").build()
+        )
+    );
+
+    query.perform(mDb);
+
+    verify(mDb).rawQuery(eq("SELECT * FROM table_a INTERSECT SELECT * FROM table_b"), eq(new String[0]));
+  }
 }
