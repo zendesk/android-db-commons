@@ -199,7 +199,7 @@ public class ComposedCursorLoaderTest {
     makeProviderReturn(nextCursor);
     Robolectric.getBackgroundScheduler().runOneTask();
 
-    assertThat(numberOfOpenedCursors(cursor, nextCursor)).is(1);
+    assertThat(numberOfOpenedCursors(cursor, nextCursor)).isEqualTo(1);
   }
 
   @Test
@@ -214,7 +214,7 @@ public class ComposedCursorLoaderTest {
     makeProviderReturn(nextCursor);
     Robolectric.getBackgroundScheduler().runOneTask();
 
-    assertThat(numberOfOpenedCursors(cursor, nextCursor)).is(1);
+    assertThat(numberOfOpenedCursors(cursor, nextCursor)).isEqualTo(1);
   }
 
   @Test

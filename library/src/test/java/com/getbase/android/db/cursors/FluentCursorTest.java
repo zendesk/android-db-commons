@@ -73,7 +73,7 @@ public class FluentCursorTest {
   @Test
   public void shouldRecognizeNullAsAnEmptyCursor() throws Exception {
     final FluentCursor cursor = new FluentCursor(null);
-    assertThat(cursor.getCount()).is(0);
+    assertThat(cursor.getCount()).isEqualTo(0);
   }
 
   @Test

@@ -1,11 +1,9 @@
 package com.getbase.android.db;
 
-import static com.google.common.truth.Truth.ASSERT;
 import static com.google.common.truth.Truth.assertThat;
 
 import com.getbase.android.db.cursors.Cursors;
 import com.getbase.android.db.cursors.SingleRowTransforms;
-import com.getbase.android.db.fluentsqlite.Query;
 import com.getbase.android.db.provider.Utils;
 
 import org.junit.Test;

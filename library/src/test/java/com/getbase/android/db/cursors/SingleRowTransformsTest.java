@@ -142,7 +142,7 @@ public class SingleRowTransformsTest {
     when(cursorMock.isNull(1)).thenReturn(false);
     when(cursorMock.getDouble(1)).thenReturn(42d);
 
-    assertThat(SingleRowTransforms.getColumn(COLUMN).asDouble().apply(cursorMock)).isEqualTo(42d);
+    assertThat(SingleRowTransforms.getColumn(COLUMN).asDouble().apply(cursorMock)).isWithin(0e-6).of(42d);
   }
 
   @Test
