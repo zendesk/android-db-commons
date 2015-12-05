@@ -1,6 +1,11 @@
 Change Log
 ==========
 
+Version 0.13.1 *(2015-12-05)*
+----------------------------
+
+ * Fix compilation warnings when using varargs APIs
+
 Version 0.13.0 *(2015-09-23)*
 ----------------------------
 
