@@ -23,7 +23,8 @@ class Selection {
   private final List<String> selection = Lists.newLinkedList();
   private final List<Object> selectionArgs = Lists.newLinkedList();
 
-  void append(String selection, Object... selectionArgs) {
+  @SafeVarargs
+  final <T> void append(String selection, T... selectionArgs) {
     Preconditions.checkArgument(selection != null || selectionArgs == null || selectionArgs.length == 0,
         "selection cannot be null when arguments are provided");
 

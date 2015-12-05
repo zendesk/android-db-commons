@@ -150,7 +150,8 @@ public class Update implements UpdateTableSelector {
     return this;
   }
 
-  public Update where(String selection, Object... selectionArgs) {
+  @SafeVarargs
+  public final <T> Update where(String selection, T... selectionArgs) {
     if (selection != null) {
       mSelections.add("(" + selection + ")");
       if (selectionArgs != null) {
@@ -163,7 +164,8 @@ public class Update implements UpdateTableSelector {
     return this;
   }
 
-  public Update where(Expression expression, Object... selectionArgs) {
+  @SafeVarargs
+  public final <T> Update where(Expression expression, T... selectionArgs) {
     return where(expression.getSql(), expression.getMergedArgs(selectionArgs));
   }
 }

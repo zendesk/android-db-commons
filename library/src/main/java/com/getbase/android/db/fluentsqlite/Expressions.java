@@ -91,7 +91,8 @@ public final class Expressions {
     abstract int getArgsCount();
     abstract Map<Integer, Object> getBoundArgs();
     abstract Set<String> getTables();
-    abstract Object[] getMergedArgs(Object... boundArgs);
+    @SuppressWarnings("unchecked")
+    abstract <T> Object[] getMergedArgs(T... boundArgs);
   }
 
   public interface ExpressionCore {
@@ -212,7 +213,8 @@ public final class Expressions {
     return new Builder().literal(object);
   }
 
-  public static Expression[] literals(Object... objects) {
+  @SafeVarargs
+  public static <T> Expression[] literals(T... objects) {
     Preconditions.checkNotNull(objects);
     Expression[] result = new Expression[objects.length];
 
@@ -521,8 +523,9 @@ public final class Expressions {
           .toSet();
     }
 
+    @SafeVarargs
     @Override
-    public Object[] getMergedArgs(Object... boundArgs) {
+    public final <T> Object[] getMergedArgs(T... boundArgs) {
       ArrayList<Object> args = Lists.newArrayList();
       addExpressionArgs(args, this, boundArgs);
       return args.toArray();

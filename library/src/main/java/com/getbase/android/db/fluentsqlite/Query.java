@@ -1042,8 +1042,9 @@ public final class Query {
       }
     }
 
+    @SafeVarargs
     @Override
-    public QueryBuilder where(String selection, Object... selectionArgs) {
+    public final <T> QueryBuilder where(String selection, T... selectionArgs) {
       if (!Strings.isNullOrEmpty(selection)) {
         mCurrentQueryPart.mSelection.add(selection);
         if (selectionArgs != null) {
@@ -1054,8 +1055,9 @@ public final class Query {
       return this;
     }
 
+    @SafeVarargs
     @Override
-    public QueryBuilder where(Expression selection, Object... selectionArgs) {
+    public final <T> QueryBuilder where(Expression selection, T... selectionArgs) {
       if (selection != null) {
         mCurrentQueryPart.mTablesUsedInExpressions.addAll(selection.getTables());
         where(selection.getSql(), selection.getMergedArgs(selectionArgs));
@@ -1275,13 +1277,15 @@ public final class Query {
       return mDelegate.orderBy(expression);
     }
 
+    @SafeVarargs
     @Override
-    public QueryBuilder where(String selection, Object... selectionArgs) {
+    public final <T> QueryBuilder where(String selection, T... selectionArgs) {
       return mDelegate.where(selection, selectionArgs);
     }
 
+    @SafeVarargs
     @Override
-    public QueryBuilder where(Expression selection, Object... selectionArgs) {
+    public final <T> QueryBuilder where(Expression selection, T... selectionArgs) {
       return mDelegate.where(selection, selectionArgs);
     }
 
@@ -1373,9 +1377,10 @@ public final class Query {
     QueryBuilder as(String alias);
   }
 
+  @SuppressWarnings("unchecked")
   public interface SelectionBuilder {
-    QueryBuilder where(String selection, Object... selectionArgs);
-    QueryBuilder where(Expression selection, Object... selectionArgs);
+    <T> QueryBuilder where(String selection, T... selectionArgs);
+    <T> QueryBuilder where(Expression selection, T... selectionArgs);
   }
 
   public interface JoinTypeBuilder extends JoinBuilder {

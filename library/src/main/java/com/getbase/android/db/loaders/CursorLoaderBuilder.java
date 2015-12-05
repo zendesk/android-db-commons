@@ -33,7 +33,8 @@ public class CursorLoaderBuilder {
     return this;
   }
 
-  public CursorLoaderBuilder where(String selection, Object... selectionArgs) {
+  @SafeVarargs
+  public final <T> CursorLoaderBuilder where(String selection, T... selectionArgs) {
     query.where(selection, selectionArgs);
     return this;
   }

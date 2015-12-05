@@ -27,7 +27,8 @@ public class Query extends ProviderAction<FluentCursor> {
     return this;
   }
 
-  public Query where(String selection, Object... selectionArgs) {
+  @SafeVarargs
+  public final <T> Query where(String selection, T... selectionArgs) {
     this.selection.append(selection, selectionArgs);
     return this;
   }

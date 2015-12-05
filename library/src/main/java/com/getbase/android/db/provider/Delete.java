@@ -18,7 +18,8 @@ public class Delete extends ProviderAction<Integer> implements ConvertibleToOper
     super(uri);
   }
 
-  public Delete where(String selection, Object... selectionArgs) {
+  @SafeVarargs
+  public final <T> Delete where(String selection, T... selectionArgs) {
     this.selection.append(selection, selectionArgs);
     return this;
   }

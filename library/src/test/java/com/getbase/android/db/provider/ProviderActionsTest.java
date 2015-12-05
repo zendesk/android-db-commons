@@ -1,6 +1,16 @@
 package com.getbase.android.db.provider;
 
 import static com.google.common.truth.Truth.assertThat;
+import static org.fest.assertions.api.ANDROID.assertThat;
+import static org.fest.assertions.api.android.content.ContentValuesEntry.entry;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.isNotNull;
+import static org.mockito.Matchers.isNull;
+import static org.mockito.Mockito.*;
+
+import com.google.common.base.Joiner;
+import com.google.common.collect.Collections2;
+import com.google.common.collect.Lists;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -14,18 +24,6 @@ import org.robolectric.annotation.Config;
 import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.net.Uri;
-
-import static org.fest.assertions.api.ANDROID.assertThat;
-import static org.fest.assertions.api.android.content.ContentValuesEntry.entry;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.isNotNull;
-import static org.mockito.Matchers.isNull;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.eq;
-
-import com.google.common.base.Joiner;
-import com.google.common.collect.Collections2;
-import com.google.common.collect.Lists;
 
 import java.util.List;
 
@@ -362,7 +360,7 @@ public class ProviderActionsTest {
 
   @Test
   public void shouldBeAbleToCreateAnUpdateWithWhereIn() throws Exception {
-    final List<? extends Object> inSet = Lists.newArrayList(1L, "two", 3L);
+    final List<Object> inSet = Lists.<Object>newArrayList(1L, "two", 3L);
     ProviderAction.update(TEST_URI)
         .whereIn("col1", inSet)
         .perform(contentResolverMock);
@@ -375,7 +373,7 @@ public class ProviderActionsTest {
 
   @Test
   public void shouldBeAbleToCreateADeleteWithWhereIn() throws Exception {
-    final List<? extends Object> inSet = Lists.newArrayList(1L, "two", 3L);
+    final List<Object> inSet = Lists.<Object>newArrayList(1L, "two", 3L);
     ProviderAction.delete(TEST_URI)
         .whereIn("col1", inSet)
         .perform(contentResolverMock);
@@ -428,10 +426,12 @@ public class ProviderActionsTest {
     verify(contentResolverMock).delete(eq(TEST_URI), isNull(String.class), isNull(String[].class));
   }
 
+  private static final Object[] NULL_ARGS = null;
+
   @Test
   public void shouldAllowUsingNullArgumentsForSelectionOnQuery() throws Exception {
     ProviderAction.query(TEST_URI)
-        .where("col1 IS NULL", (String[]) null)
+        .where("col1 IS NULL", NULL_ARGS)
         .perform(contentResolverMock);
 
     verify(contentResolverMock).query(eq(TEST_URI), isNull(String[].class), eq("(col1 IS NULL)"), isNull(String[].class), isNull(String.class));
@@ -440,7 +440,7 @@ public class ProviderActionsTest {
   @Test
   public void shouldAllowUsingNullArgumentsForSelectionOnUpdate() throws Exception {
     ProviderAction.update(TEST_URI)
-        .where("col1 IS NULL", (String[]) null)
+        .where("col1 IS NULL", NULL_ARGS)
         .perform(contentResolverMock);
 
     verify(contentResolverMock).update(eq(TEST_URI), any(ContentValues.class), eq("(col1 IS NULL)"), isNull(String[].class));
@@ -449,7 +449,7 @@ public class ProviderActionsTest {
   @Test
   public void shouldAllowUsingNullArgumentsForSelectionOnDelete() throws Exception {
     ProviderAction.delete(TEST_URI)
-        .where("col1 IS NULL", (String[]) null)
+        .where("col1 IS NULL", NULL_ARGS)
         .perform(contentResolverMock);
 
     verify(contentResolverMock).delete(eq(TEST_URI), eq("(col1 IS NULL)"), isNull(String[].class));
@@ -458,7 +458,7 @@ public class ProviderActionsTest {
   @Test
   public void shouldAllowUsingNullSelectionAndArgumentsOnQuery() throws Exception {
     ProviderAction.query(TEST_URI)
-        .where(null, (String[]) null)
+        .where(null, NULL_ARGS)
         .perform(contentResolverMock);
 
     verify(contentResolverMock).query(eq(TEST_URI), isNull(String[].class), isNull(String.class), isNull(String[].class), isNull(String.class));
@@ -467,7 +467,7 @@ public class ProviderActionsTest {
   @Test
   public void shouldAllowUsingNullSelectionAndArgumentsOnUpdate() throws Exception {
     ProviderAction.update(TEST_URI)
-        .where(null, (String[]) null)
+        .where(null, NULL_ARGS)
         .perform(contentResolverMock);
 
     verify(contentResolverMock).update(eq(TEST_URI), any(ContentValues.class), isNull(String.class), isNull(String[].class));
@@ -476,7 +476,7 @@ public class ProviderActionsTest {
   @Test
   public void shouldAllowUsingNullSelectionAndArgumentsOnDelete() throws Exception {
     ProviderAction.delete(TEST_URI)
-        .where(null, (String[]) null)
+        .where(null, NULL_ARGS)
         .perform(contentResolverMock);
 
     verify(contentResolverMock).delete(eq(TEST_URI), isNull(String.class), isNull(String[].class));

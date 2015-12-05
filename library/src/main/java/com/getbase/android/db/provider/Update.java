@@ -30,7 +30,8 @@ public class Update extends ProviderAction<Integer> implements ConvertibleToOper
     return this;
   }
 
-  public Update where(String selection, Object... selectionArgs) {
+  @SafeVarargs
+  public final <T> Update where(String selection, T... selectionArgs) {
     this.selection.append(selection, selectionArgs);
     return this;
   }

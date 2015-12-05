@@ -40,7 +40,8 @@ public class Delete implements DeleteTableSelector {
     return this;
   }
 
-  public Delete where(String selection, Object... selectionArgs) {
+  @SafeVarargs
+  public final <T> Delete where(String selection, T... selectionArgs) {
     if (selection != null) {
       mSelections.add("(" + selection + ")");
       if (selectionArgs != null) {
@@ -53,7 +54,8 @@ public class Delete implements DeleteTableSelector {
     return this;
   }
 
-  public Delete where(Expression expression, Object... selectionArgs) {
+  @SafeVarargs
+  public final <T> Delete where(Expression expression, T... selectionArgs) {
     return where(expression.getSql(), expression.getMergedArgs(selectionArgs));
   }
 }
