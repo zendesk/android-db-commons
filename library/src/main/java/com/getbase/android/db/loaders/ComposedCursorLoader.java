@@ -18,6 +18,7 @@ package com.getbase.android.db.loaders;
 
 import com.getbase.android.db.common.QueryData;
 import com.google.common.base.Function;
+import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 
@@ -56,17 +57,21 @@ public class ComposedCursorLoader<T> extends AbstractLoader<T> {
   /* Runs on a worker thread */
   @Override
   public T loadInBackground() {
-    final Cursor cursor = loadCursorInBackground();
-    final T result = mCursorTransformation.apply(cursor);
-    Preconditions.checkNotNull(result, "Function passed to this loader should never return null.");
+    try {
+      final Cursor cursor = loadCursorInBackground();
+      final T result = mCursorTransformation.apply(cursor);
+      Preconditions.checkNotNull(result, "Function passed to this loader should never return null.");
 
-    if (cursorsForResults.get(result) != null) {
-      releaseCursor(cursor);
-    } else {
-      cursorsForResults.put(result, cursor);
+      if (cursorsForResults.get(result) != null) {
+        releaseCursor(cursor);
+      } else {
+        cursorsForResults.put(result, cursor);
+      }
+
+      return result;
+    } catch (Throwable t) {
+      throw new RuntimeException("Error occurred when running loader: " + this, t);
     }
-
-    return result;
   }
 
   private Cursor loadCursorInBackground() {
@@ -156,5 +161,18 @@ public class ComposedCursorLoader<T> extends AbstractLoader<T> {
     writer.print(prefix);
     writer.print("mResult=");
     writer.println(mResult);
+  }
+
+  @Override
+  public String toString() {
+    return MoreObjects
+        .toStringHelper(this)
+        .add("mId", getId())
+        .add("mUri", mUri)
+        .add("mProjection", Arrays.toString(mProjection))
+        .add("mSelection", mSelection)
+        .add("mSelectionArgs", Arrays.toString(mSelectionArgs))
+        .add("mSortOrder", mSortOrder)
+        .toString();
   }
 }
