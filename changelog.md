@@ -1,6 +1,11 @@
 Change Log
 ==========
 
+Version 0.13.2 *(2016-05-17)*
+----------------------------
+
+ * Provide more info when exception is thrown from `ComposedCursorLoader.loadInBackground()`
+
 Version 0.13.1 *(2015-12-05)*
 ----------------------------
 

@@ -202,7 +202,7 @@ Just add the dependency to your `build.gradle`:
 
 ```groovy
 dependencies {
-    compile 'com.getbase.android.db:library:0.13.1'
+    compile 'com.getbase.android.db:library:0.13.2'
 }
 ```
 
