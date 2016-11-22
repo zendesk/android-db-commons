@@ -27,7 +27,11 @@ public abstract class AbstractLoader<T> extends AsyncTaskLoader<T> {
 
     if (isStarted()) {
       if (oldResult != result) {
-        onNewDataDelivered(result);
+        try {
+          onNewDataDelivered(result);
+        } catch (Throwable t) {
+          throw new RuntimeException("Error occurred on delivering new data in loader: " + this, t);
+        }
       }
       super.deliverResult(result);
     }
