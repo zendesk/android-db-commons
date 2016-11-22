@@ -1,6 +1,11 @@
 Change Log
 ==========
 
+Version 0.13.3 *(2016-11-22)*
+----------------------------
+
+ * Provide more info when exception is thrown from `AbstractLoader.onNewDataDelivered()`
+
 Version 0.13.2 *(2016-05-17)*
 ----------------------------
 
