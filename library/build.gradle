@@ -1,5 +1,6 @@
 apply plugin: 'com.android.library'
 apply plugin: 'com.github.ben-manes.versions'
+apply plugin: 'kotlin-android'
 
 android {
   compileSdkVersion 23
@@ -16,6 +17,7 @@ android {
     versionName project.VERSION_NAME
     versionCode Integer.parseInt(project.VERSION_CODE)
     consumerProguardFiles 'consumer-proguard-rules.pro'
+    testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
   }
 }
 
@@ -32,6 +34,13 @@ dependencies {
   testCompile 'org.mockito:mockito-all:1.10.19'
 
   compile 'com.android.support:support-annotations:23.2.1'
+
+  androidTestCompile 'com.android.support.test:runner:0.5'
+  androidTestCompile 'com.android.support.test:rules:0.5'
+  androidTestCompile "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
+  androidTestCompile "org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version"
+  androidTestCompile 'com.google.truth:truth:0.27'
+  androidTestCompile 'com.google.guava:guava:18.0'
 }
 
 apply from: './gradle-mvn-push.gradle'
