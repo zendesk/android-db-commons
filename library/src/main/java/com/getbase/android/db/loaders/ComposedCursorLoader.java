@@ -26,12 +26,15 @@ import android.content.ContentResolver;
 import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
+import android.support.annotation.Nullable;
+import android.support.v4.util.Pair;
 
 import java.io.FileDescriptor;
 import java.io.PrintWriter;
 import java.util.Arrays;
-
-import android.support.annotation.Nullable;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
 
 public class ComposedCursorLoader<T> extends AbstractLoader<T> {
 
@@ -47,6 +50,7 @@ public class ComposedCursorLoader<T> extends AbstractLoader<T> {
 
   private final Function<Cursor, T> mCursorTransformation;
   private IdentityLinkedMap<T, Cursor> cursorsForResults = new IdentityLinkedMap<>();
+  private final List<Pair<T, Cursor>> pendingLoadResults = new LinkedList<>();
 
   @Override
   protected void onStartLoading() {
@@ -62,10 +66,8 @@ public class ComposedCursorLoader<T> extends AbstractLoader<T> {
       final T result = mCursorTransformation.apply(cursor);
       Preconditions.checkNotNull(result, "Function passed to this loader should never return null.");
 
-      if (cursorsForResults.get(result) != null) {
-        releaseCursor(cursor);
-      } else {
-        cursorsForResults.put(result, cursor);
+      synchronized (pendingLoadResults) {
+        pendingLoadResults.add(new Pair<>(result, cursor));
       }
 
       return result;
@@ -82,6 +84,39 @@ public class ComposedCursorLoader<T> extends AbstractLoader<T> {
       cursor.getCount();
     }
     return cursor;
+  }
+
+  @Override
+  public void deliverResult(T result) {
+    Cursor cursor = takePendingCursorForResult(result);
+    if (cursor != null) {
+      if (cursorsForResults.get(result) != null) {
+        releaseCursor(cursor);
+      } else {
+        cursorsForResults.put(result, cursor);
+      }
+    }
+    super.deliverResult(result);
+  }
+
+  @Override
+  public void onCanceled(T result) {
+    releaseCursor(takePendingCursorForResult(result));
+  }
+
+  @Nullable
+  private Cursor takePendingCursorForResult(T result) {
+    synchronized (pendingLoadResults) {
+      Iterator<Pair<T, Cursor>> i = pendingLoadResults.iterator();
+      while (i.hasNext()) {
+        Pair<T, Cursor> entry = i.next();
+        if (entry.first == result) {
+          i.remove();
+          return entry.second;
+        }
+      }
+      return null;
+    }
   }
 
   @Override

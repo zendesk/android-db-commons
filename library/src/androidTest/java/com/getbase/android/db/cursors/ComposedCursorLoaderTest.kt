@@ -122,12 +122,9 @@ class ComposedCursorLoaderTest {
 
         // Again, we synchronously wait for the task to finish. We want to be sure that
         // the results of the first reload are not processed yet. At this point we'll have:
-        // - First reload result delivery and second reload result delivery enqueued in
-        //   main Looper.
-        // - The first reload has added the result and backing cursor to the internal
-        //   ComposedCursorLoader resources mapping. The second reload has already finished
-        //   and it closed the loaded Cursor, because there was already mapping for the
-        //   given instance of the result.
+        // - Two delivery tasks for both reloads enqueued in main Looper.
+        // - Two pending result entries for the same result in the ComposedCursorLoader
+        //   internals.
         // - The first reload results should be cancelled; the second reload results should be
         //   delivered to onLoadFinished callback.
       }
