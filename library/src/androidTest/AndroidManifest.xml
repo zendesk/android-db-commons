@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest package="com.getbase.android.db.test"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <uses-sdk
+        android:minSdkVersion="15"
+        android:targetSdkVersion="21"
+        tools:overrideLibrary="android.support.test.uiautomator.v18"/>
+
+    <application>
+        <uses-library android:name="android.test.runner"/>
+        <activity android:name="com.getbase.android.db.test.TestActivity"/>
+
+        <provider
+            android:name="com.getbase.android.db.test.TestContentProvider"
+            android:authorities="com.getbase.android.db.test.TestContentProvider"
+            android:enabled="true"
+            android:exported="false">
+        </provider>
+
+    </application>
+
+    <instrumentation
+        android:name="android.support.test.runner.AndroidJUnitRunner"
+        android:targetPackage="com.getbase.android.db.test"
+        />
+
+</manifest>
