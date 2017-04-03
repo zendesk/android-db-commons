@@ -1,6 +1,11 @@
 Change Log
 ==========
 
+Version 0.13.4 *(2017-04-03)*
+----------------------------
+
+ * Fix issue with ComposedCursorLoader and boxed primitives..
+
 Version 0.13.3 *(2016-11-22)*
 ----------------------------
 
