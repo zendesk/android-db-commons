@@ -9,7 +9,13 @@ import android.provider.BaseColumns;
 import android.support.annotation.NonNull;
 import android.util.Log;
 
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+
 public class TestContentProvider extends ContentProvider {
+
+  private static QueryBlocker mQueryBlocker = null;
+
   public TestContentProvider() {
   }
 
@@ -26,9 +32,21 @@ public class TestContentProvider extends ContentProvider {
   @Override
   public Cursor query(@NonNull Uri uri, String[] projection, String selection, String[] selectionArgs, String sortOrder) {
     Log.d("JCH", "query");
+    blockQueryIfNeeded();
     MatrixCursor cursor = new MatrixCursor(new String[] { BaseColumns._ID });
     cursor.setNotificationUri(getContext().getContentResolver(), TestContract.BASE_URI);
     return cursor;
+  }
+
+  private void blockQueryIfNeeded() {
+    if (mQueryBlocker != null) {
+      try {
+        mQueryBlocker.mStartLatch.countDown();
+        mQueryBlocker.mProceedLatch.await(10, TimeUnit.MILLISECONDS);
+      } catch (InterruptedException e) {
+        throw new RuntimeException(e);
+      }
+    }
   }
 
   @Override
@@ -44,5 +62,26 @@ public class TestContentProvider extends ContentProvider {
   @Override
   public Uri insert(@NonNull Uri uri, ContentValues values) {
     throw new UnsupportedOperationException();
+  }
+
+  public static void blockOnQuery() {
+    mQueryBlocker = new QueryBlocker();
+  }
+
+  public static void proceedQuery() {
+    mQueryBlocker.mProceedLatch.countDown();
+  }
+
+  public static void waitUntilQueryStarted() {
+    try {
+      mQueryBlocker.mStartLatch.await();
+    } catch (InterruptedException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  private static class QueryBlocker {
+    private CountDownLatch mStartLatch = new CountDownLatch(1);
+    private CountDownLatch mProceedLatch = new CountDownLatch(1);
   }
 }
