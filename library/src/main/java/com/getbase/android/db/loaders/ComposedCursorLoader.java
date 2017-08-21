@@ -27,6 +27,8 @@ import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
 import android.support.annotation.Nullable;
+import android.support.v4.os.CancellationSignal;
+import android.support.v4.os.OperationCanceledException;
 import android.support.v4.util.Pair;
 
 import java.io.FileDescriptor;
@@ -48,6 +50,8 @@ public class ComposedCursorLoader<T> extends AbstractLoader<T> {
   String[] mSelectionArgs;
   String mSortOrder;
 
+  @Nullable
+  private CancellationSignal mCancellationSignal = null;
   private final Function<Cursor, T> mCursorTransformation;
   private IdentityLinkedMap<T, Cursor> cursorsForResults = new IdentityLinkedMap<>();
   private final List<Pair<T, Cursor>> pendingLoadResults = new LinkedList<>();
@@ -61,8 +65,11 @@ public class ComposedCursorLoader<T> extends AbstractLoader<T> {
   /* Runs on a worker thread */
   @Override
   public T loadInBackground() {
+    Cursor cursor = null;
     try {
-      final Cursor cursor = loadCursorInBackground();
+      initCancellationSignal();
+      cursor = loadCursorInBackground();
+      checkIfLoadNotCancelled();
       final T result = mCursorTransformation.apply(cursor);
       Preconditions.checkNotNull(result, "Function passed to this loader should never return null.");
 
@@ -71,8 +78,36 @@ public class ComposedCursorLoader<T> extends AbstractLoader<T> {
       }
 
       return result;
+    } catch (OperationCanceledException ex) {
+      releaseCursor(cursor);
+      throw ex;
     } catch (Throwable t) {
       throw new RuntimeException("Error occurred when running loader: " + this, t);
+    } finally {
+      destroyCancellationSignal();
+    }
+  }
+
+  private void initCancellationSignal() {
+    synchronized (this) {
+      if (isLoadInBackgroundCanceled()) {
+        throw new OperationCanceledException();
+      }
+      mCancellationSignal = new CancellationSignal();
+    }
+  }
+
+  private void destroyCancellationSignal() {
+    synchronized (this) {
+      mCancellationSignal = null;
+    }
+  }
+
+  private void checkIfLoadNotCancelled() {
+    synchronized (this) {
+      if (mCancellationSignal != null) {
+        mCancellationSignal.throwIfCanceled();
+      }
     }
   }
 
@@ -97,6 +132,16 @@ public class ComposedCursorLoader<T> extends AbstractLoader<T> {
       }
     }
     super.deliverResult(result);
+  }
+
+  @Override
+  public void cancelLoadInBackground() {
+    super.cancelLoadInBackground();
+    synchronized (this) {
+      if (mCancellationSignal != null) {
+        mCancellationSignal.cancel();
+      }
+    }
   }
 
   @Override
