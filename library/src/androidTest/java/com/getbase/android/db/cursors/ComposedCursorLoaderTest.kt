@@ -230,6 +230,66 @@ class ComposedCursorLoaderTest {
     Truth.assertThat(secondTransformationInvoked.get()).isFalse()
   }
 
+  interface RowTransformation {
+    fun transform(): Int;
+  }
+
+  @Test
+  fun shouldNotInvokeTransformationForSecondRowWhenLoaderDestroyedDuringTransformationOfFirstRow() {
+    val secondTransformationInvoked = AtomicBoolean(false)
+    val asyncTaskIdleLatch = CountDownLatch(1)
+    TestContentProvider.setDataForQuery(mutableListOf(1, 2))
+    val firstTransformation = TransformData(1)
+    val transformations = mutableListOf(
+        object : RowTransformation {
+          override fun transform(): Int = firstTransformation.perform()
+        },
+        object : RowTransformation {
+          override fun transform(): Int {
+            secondTransformationInvoked.set(true)
+            return 2
+          }
+        }
+    )
+
+    rule.runOnUiThread {
+      rule
+          .activity
+          .supportLoaderManager
+          .initLoader(1, Bundle.EMPTY, object : LoaderManager.LoaderCallbacks<List<Int>> {
+            override fun onCreateLoader(id: Int, args: Bundle) =
+                CursorLoaderBuilder
+                    .forUri(TestContract.BASE_URI)
+                    .transformRow {
+                      val transformation = transformations.first()
+                      transformations.remove(transformation)
+                      transformation.transform()
+                    }
+                    .build(rule.activity)
+
+            override fun onLoadFinished(loader: Loader<List<Int>>, data: List<Int>?) {
+              throw AssertionError("This loader should be cancelled so result should never be returned")
+            }
+
+            override fun onLoaderReset(loader: Loader<List<Int>>) {}
+          })
+    }
+    firstTransformation.waitUntilStarted()
+    //Data is loaded and loader is blocked on first row transformation
+    rule.runOnUiThread {
+      rule
+          .activity
+          .supportLoaderManager
+          .destroyLoader(1)
+      firstTransformation.proceed()
+      asyncTasksMonitor.waitUntilIdle()
+      asyncTaskIdleLatch.countDown()
+    }
+    asyncTaskIdleLatch.await()
+    Truth.assertThat(secondTransformationInvoked.get()).isFalse()
+  }
+
+
   private fun scheduleMainLooperTask(task: () -> Unit) = Handler(Looper.getMainLooper()).post(task)
 
   private fun scheduleLoaderReload() = rule.activity.contentResolver.notifyChange(TestContract.BASE_URI, null)

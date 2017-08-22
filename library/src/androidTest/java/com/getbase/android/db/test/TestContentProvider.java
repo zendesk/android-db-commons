@@ -9,12 +9,15 @@ import android.provider.BaseColumns;
 import android.support.annotation.NonNull;
 import android.util.Log;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 public class TestContentProvider extends ContentProvider {
 
   private static QueryBlocker mQueryBlocker = null;
+  private static Collection<Long> mData = null;
 
   public TestContentProvider() {
   }
@@ -34,6 +37,11 @@ public class TestContentProvider extends ContentProvider {
     Log.d("JCH", "query");
     blockQueryIfNeeded();
     MatrixCursor cursor = new MatrixCursor(new String[] { BaseColumns._ID });
+    if (mData != null) {
+      for (Long value : mData) {
+        cursor.addRow(Collections.singleton(value));
+      }
+    }
     cursor.setNotificationUri(getContext().getContentResolver(), TestContract.BASE_URI);
     return cursor;
   }
@@ -78,6 +86,14 @@ public class TestContentProvider extends ContentProvider {
     } catch (InterruptedException e) {
       throw new RuntimeException(e);
     }
+  }
+
+  public static void setDataForQuery(Collection<Long> data) {
+    mData = data;
+  }
+
+  public static void clearDataForQuery() {
+    mData = null;
   }
 
   private static class QueryBlocker {
