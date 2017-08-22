@@ -1,5 +1,6 @@
 package com.getbase.android.db.loaders;
 
+import com.getbase.android.db.loaders.functions.SingleFunctionWithCompletionListener;
 import com.getbase.android.db.provider.ProviderAction;
 import com.getbase.android.db.provider.Query;
 import com.google.common.base.Function;
@@ -60,6 +61,14 @@ public class CursorLoaderBuilder {
 
   public <Out> TransformedLoaderBuilder<Out> transform(Function<Cursor, Out> transformer) {
     return new TransformedLoaderBuilder<>(query.getQueryData(), ImmutableList.copyOf(notificationUris), transformer);
+  }
+
+  public <Out> TransformedCancellableLoaderBuilder<Out> cancellableTransform(Function<Cursor, Out> transformer) {
+    return new TransformedCancellableLoaderBuilder<>(query.getQueryData(), ImmutableList.copyOf(notificationUris), SingleFunctionWithCompletionListener.wrapIfNeeded(transformer));
+  }
+
+  public <Out> TransformedRowCancellableLoaderBuilder<Out> cancellableTransformRow(Function<Cursor, Out> transformer) {
+    return new TransformedRowCancellableLoaderBuilder<>(query.getQueryData(), ImmutableList.copyOf(notificationUris), SingleFunctionWithCompletionListener.wrapIfNeeded(transformer));
   }
 
   public Loader<Cursor> build(Context context) {
