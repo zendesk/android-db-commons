@@ -41,6 +41,7 @@ dependencies {
   androidTestCompile "org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version"
   androidTestCompile 'com.google.truth:truth:0.27'
   androidTestCompile 'com.google.guava:guava:18.0'
+  compile 'dk.ilios:spanner:0.6.0'
 }
 
 apply from: './gradle-mvn-push.gradle'
