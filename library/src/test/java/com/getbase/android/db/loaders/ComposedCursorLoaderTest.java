@@ -140,17 +140,6 @@ public class ComposedCursorLoaderTest {
         eq(new MyCustomWrapper(Lists.newArrayList("my_name", "my_second_name"))));
   }
 
-  @Test
-  public void shouldNotPerformLazyTransformIfNotNecessary() throws Exception {
-    final Loader<List<String>> loader = CursorLoaderBuilder.forUri(TEST_URI)
-        .transformRow(FAILING_FUNCTION)
-        .lazy()
-        .build(Robolectric.application);
-
-    loader.startLoading();
-    Robolectric.getBackgroundScheduler().runOneTask();
-  }
-
   @Ignore
   @Test
   public void shouldNotCloseOldCursorInCaseItsSameAsNewOne() throws Exception {

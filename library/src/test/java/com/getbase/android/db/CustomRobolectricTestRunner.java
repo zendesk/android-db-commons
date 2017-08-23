@@ -1,6 +1,6 @@
 package com.getbase.android.db;
 
-import com.getbase.android.db.shadows.ShadowAsyncTaskLoader;
+import android.support.v4.content.ShadowAsyncTaskLoader;
 
 import org.junit.runners.model.InitializationError;
 import org.robolectric.RobolectricTestRunner;

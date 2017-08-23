@@ -86,36 +86,6 @@ open class ComposedCursorLoaderBenchmark {
     }
   }
 
-  @Benchmark
-  open fun transformedCancellableLoaderBuilderBenchmark() {
-    benchmarkLoader { builder ->
-      builder
-          .cancellableTransform { cursor ->
-            cursor.mapTo {
-              val index = it.getColumnIndexOrThrow(BaseColumns._ID)
-              it.getLong(index)
-            }
-          }
-          .cancellableTransform { list -> list!!.map { it + 4L } }
-          .cancellableTransform { list -> list!!.map { it - 4L } }
-          .build(rule.activity)
-    }
-  }
-
-  @Benchmark
-  open fun transformedRowCancellableLoaderBuilderBenchmark() {
-    benchmarkLoader { builder ->
-      builder
-          .cancellableTransformRow { cursor ->
-            val index = cursor!!.getColumnIndexOrThrow(BaseColumns._ID)
-            cursor.getLong(index)
-          }
-          .cancellableTransformRow { it!! + 4L }
-          .cancellableTransformRow { it!! - 4L }
-          .build(rule.activity)
-    }
-  }
-
   private fun benchmarkLoader(loader: (CursorLoaderBuilder) -> Loader<List<Long>>) {
     val latch = CountDownLatch(1)
     val data = prepareTestData()

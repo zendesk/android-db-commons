@@ -202,8 +202,8 @@ class ComposedCursorLoaderTest {
             override fun onCreateLoader(id: Int, args: Bundle) =
                 CursorLoaderBuilder
                     .forUri(TestContract.BASE_URI)
-                    .cancellableTransform { firstTransformation.perform() }
-                    .cancellableTransform {
+                    .transform { firstTransformation.perform() }
+                    .transform {
                       secondTransformationInvoked.set(true)
                       throw AssertionError("This transformation should never be invoked")
                     }
@@ -260,7 +260,7 @@ class ComposedCursorLoaderTest {
             override fun onCreateLoader(id: Int, args: Bundle) =
                 CursorLoaderBuilder
                     .forUri(TestContract.BASE_URI)
-                    .cancellableTransformRow {
+                    .transformRow {
                       val transformation = transformations.first()
                       transformations.remove(transformation)
                       transformation.transform()

@@ -2,7 +2,6 @@ package com.getbase.android.db.loaders;
 
 import com.getbase.android.db.common.QueryData;
 import com.google.common.base.Function;
-import com.google.common.base.Functions;
 import com.google.common.collect.ImmutableList;
 
 import android.content.Context;
@@ -14,9 +13,9 @@ public class TransformedLoaderBuilder<To> {
 
   private final QueryData queryData;
   private final ImmutableList<Uri> notificationUris;
-  private final Function<Cursor, To> cursorTransformation;
+  private final CancellableFunction<Cursor, To> cursorTransformation;
 
-  TransformedLoaderBuilder(QueryData queryData, ImmutableList<Uri> notificationUris, Function<Cursor, To> transformer) {
+  TransformedLoaderBuilder(QueryData queryData, ImmutableList<Uri> notificationUris, CancellableFunction<Cursor, To> transformer) {
     this.queryData = queryData;
     this.notificationUris = notificationUris;
     this.cursorTransformation = transformer;
@@ -30,7 +29,7 @@ public class TransformedLoaderBuilder<To> {
     return new TransformedLoaderBuilder<>(
         queryData,
         notificationUris,
-        Functions.compose(transformer, cursorTransformation));
+        new ComposedCancellableFunction<>(cursorTransformation, new SimpleCancellableFunction<>(transformer)));
   }
 
   public Loader<To> build(Context context) {

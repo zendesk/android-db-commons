@@ -16,13 +16,6 @@ package com.getbase.android.db.loaders;
  * limitations under the License.
  */
 
-import com.getbase.android.db.common.QueryData;
-import com.getbase.android.db.loaders.functions.FunctionWithCompletionListener;
-import com.google.common.base.Function;
-import com.google.common.base.MoreObjects;
-import com.google.common.base.Preconditions;
-import com.google.common.collect.ImmutableList;
-
 import android.content.ContentResolver;
 import android.content.Context;
 import android.database.Cursor;
@@ -31,6 +24,11 @@ import android.support.annotation.Nullable;
 import android.support.v4.os.CancellationSignal;
 import android.support.v4.os.OperationCanceledException;
 import android.support.v4.util.Pair;
+
+import com.getbase.android.db.common.QueryData;
+import com.google.common.base.MoreObjects;
+import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableList;
 
 import java.io.FileDescriptor;
 import java.io.PrintWriter;
@@ -50,11 +48,10 @@ public class ComposedCursorLoader<T> extends AbstractLoader<T> {
   String mSelection;
   String[] mSelectionArgs;
   String mSortOrder;
-  boolean mTransformationCancellationSupported;
 
   @Nullable
   private CancellationSignal mCancellationSignal = null;
-  private final Function<Cursor, T> mCursorTransformation;
+  private final CancellableFunction<Cursor, T> mCursorTransformation;
   private IdentityLinkedMap<T, Cursor> cursorsForResults = new IdentityLinkedMap<>();
   private final List<Pair<T, Cursor>> pendingLoadResults = new LinkedList<>();
 
@@ -69,11 +66,10 @@ public class ComposedCursorLoader<T> extends AbstractLoader<T> {
   public T loadInBackground() {
     Cursor cursor = null;
     try {
-      initCancellationSignal();
+      CancellationSignal cancellationSignal = initCancellationSignal();
       cursor = loadCursorInBackground();
-      checkIfLoadNotCancelled();
-      initOnTransformationCancellationIfSupported();
-      final T result = mCursorTransformation.apply(cursor);
+      cancellationSignal.throwIfCanceled();
+      final T result = mCursorTransformation.apply(cursor, cancellationSignal);
       Preconditions.checkNotNull(result, "Function passed to this loader should never return null.");
 
       synchronized (pendingLoadResults) {
@@ -91,37 +87,19 @@ public class ComposedCursorLoader<T> extends AbstractLoader<T> {
     }
   }
 
-  private void initOnTransformationCancellationIfSupported() {
-    if (mTransformationCancellationSupported) {
-      ((FunctionWithCompletionListener) mCursorTransformation).setCompletionListener(new FunctionWithCompletionListener.CompletionListener() {
-        @Override
-        public void onFunctionComplete() {
-          checkIfLoadNotCancelled();
-        }
-      });
-    }
-  }
-
-  private void initCancellationSignal() {
+  private CancellationSignal initCancellationSignal() {
     synchronized (this) {
       if (isLoadInBackgroundCanceled()) {
         throw new OperationCanceledException();
       }
       mCancellationSignal = new CancellationSignal();
+      return mCancellationSignal;
     }
   }
 
   private void destroyCancellationSignal() {
     synchronized (this) {
       mCancellationSignal = null;
-    }
-  }
-
-  private void checkIfLoadNotCancelled() {
-    synchronized (this) {
-      if (mCancellationSignal != null) {
-        mCancellationSignal.throwIfCanceled();
-      }
     }
   }
 
@@ -191,11 +169,7 @@ public class ComposedCursorLoader<T> extends AbstractLoader<T> {
     }
   }
 
-  ComposedCursorLoader(Context context, QueryData queryData, ImmutableList<Uri> notificationUris, Function<Cursor, T> cursorTransformation) {
-    this(context, queryData, notificationUris, cursorTransformation, false);
-  }
-
-  ComposedCursorLoader(Context context, QueryData queryData, ImmutableList<Uri> notificationUris, Function<Cursor, T> cursorTransformation, boolean supportTransformationCancellation) {
+  ComposedCursorLoader(Context context, QueryData queryData, ImmutableList<Uri> notificationUris, CancellableFunction<Cursor, T> cursorTransformation) {
     super(context);
     mObserver = new DisableableContentObserver(new ForceLoadContentObserver());
     mUri = queryData.getUri();
@@ -205,7 +179,6 @@ public class ComposedCursorLoader<T> extends AbstractLoader<T> {
     mSortOrder = queryData.getOrderBy();
     mCursorTransformation = cursorTransformation;
     mNotificationUris = notificationUris;
-    mTransformationCancellationSupported = supportTransformationCancellation;
   }
 
   @Override
