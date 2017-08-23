@@ -22,7 +22,7 @@ public class TransformedRowCancellableLoaderBuilder<T> {
   private final ImmutableList<Uri> notificationUris;
   private final FunctionWithCompletionListener<Cursor, T> cursorTransformation;
 
-  public TransformedRowCancellableLoaderBuilder(QueryData queryData, ImmutableList<Uri> notificationUris, FunctionWithCompletionListener<Cursor, T> transformation) {
+  TransformedRowCancellableLoaderBuilder(QueryData queryData, ImmutableList<Uri> notificationUris, FunctionWithCompletionListener<Cursor, T> transformation) {
     this.queryData = queryData;
     this.notificationUris = notificationUris;
     this.cursorTransformation = transformation;

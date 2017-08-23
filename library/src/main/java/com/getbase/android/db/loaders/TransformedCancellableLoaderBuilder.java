@@ -19,7 +19,7 @@ public class TransformedCancellableLoaderBuilder<To> {
   private final ImmutableList<Uri> notificationUris;
   private final FunctionWithCompletionListener<Cursor, To> wrapperFunction;
 
-  public TransformedCancellableLoaderBuilder(QueryData queryData, ImmutableList<Uri> notificationUris, FunctionWithCompletionListener<Cursor, To> wrapperFunction) {
+  TransformedCancellableLoaderBuilder(QueryData queryData, ImmutableList<Uri> notificationUris, FunctionWithCompletionListener<Cursor, To> wrapperFunction) {
     this.queryData = queryData;
     this.notificationUris = notificationUris;
     this.wrapperFunction = wrapperFunction;

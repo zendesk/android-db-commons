@@ -191,11 +191,11 @@ public class ComposedCursorLoader<T> extends AbstractLoader<T> {
     }
   }
 
-  public ComposedCursorLoader(Context context, QueryData queryData, ImmutableList<Uri> notificationUris, Function<Cursor, T> cursorTransformation) {
+  ComposedCursorLoader(Context context, QueryData queryData, ImmutableList<Uri> notificationUris, Function<Cursor, T> cursorTransformation) {
     this(context, queryData, notificationUris, cursorTransformation, false);
   }
 
-  public ComposedCursorLoader(Context context, QueryData queryData, ImmutableList<Uri> notificationUris, Function<Cursor, T> cursorTransformation, boolean supportTransformationCancellation) {
+  ComposedCursorLoader(Context context, QueryData queryData, ImmutableList<Uri> notificationUris, Function<Cursor, T> cursorTransformation, boolean supportTransformationCancellation) {
     super(context);
     mObserver = new DisableableContentObserver(new ForceLoadContentObserver());
     mUri = queryData.getUri();

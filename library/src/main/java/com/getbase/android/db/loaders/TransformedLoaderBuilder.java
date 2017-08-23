@@ -16,7 +16,7 @@ public class TransformedLoaderBuilder<To> {
   private final ImmutableList<Uri> notificationUris;
   private final Function<Cursor, To> wrapperFunction;
 
-  public TransformedLoaderBuilder(QueryData queryData, ImmutableList<Uri> notificationUris, Function<Cursor, To> wrapperFunction) {
+  TransformedLoaderBuilder(QueryData queryData, ImmutableList<Uri> notificationUris, Function<Cursor, To> wrapperFunction) {
     this.queryData = queryData;
     this.notificationUris = notificationUris;
     this.wrapperFunction = wrapperFunction;

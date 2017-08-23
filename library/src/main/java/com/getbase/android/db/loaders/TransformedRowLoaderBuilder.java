@@ -20,7 +20,7 @@ public class TransformedRowLoaderBuilder<T> {
   private final ImmutableList<Uri> notificationUris;
   private final Function<Cursor, T> cursorTransformation;
 
-  public TransformedRowLoaderBuilder(QueryData queryData, ImmutableList<Uri> notificationUris, Function<Cursor, T> transformation) {
+  TransformedRowLoaderBuilder(QueryData queryData, ImmutableList<Uri> notificationUris, Function<Cursor, T> transformation) {
     this.queryData = queryData;
     this.notificationUris = notificationUris;
     this.cursorTransformation = transformation;
