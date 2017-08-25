@@ -14,26 +14,26 @@ public class TransformedLoaderBuilder<To> {
 
   private final QueryData queryData;
   private final ImmutableList<Uri> notificationUris;
-  private final Function<Cursor, To> wrapperFunction;
+  private final Function<Cursor, To> cursorTransformation;
 
-  TransformedLoaderBuilder(QueryData queryData, ImmutableList<Uri> notificationUris, Function<Cursor, To> wrapperFunction) {
+  TransformedLoaderBuilder(QueryData queryData, ImmutableList<Uri> notificationUris, Function<Cursor, To> transformer) {
     this.queryData = queryData;
     this.notificationUris = notificationUris;
-    this.wrapperFunction = wrapperFunction;
+    this.cursorTransformation = transformer;
   }
 
   public TransformedLoaderBuilder<To> addNotificationUri(Uri uri) {
-    return new TransformedLoaderBuilder<>(queryData, ImmutableList.<Uri>builder().addAll(notificationUris).add(uri).build(), wrapperFunction);
+    return new TransformedLoaderBuilder<>(queryData, ImmutableList.<Uri>builder().addAll(notificationUris).add(uri).build(), cursorTransformation);
   }
 
-  public <NewTo> TransformedLoaderBuilder<NewTo> transform(Function<To, NewTo> wrapper) {
+  public <NewTo> TransformedLoaderBuilder<NewTo> transform(Function<To, NewTo> transformer) {
     return new TransformedLoaderBuilder<>(
         queryData,
         notificationUris,
-        Functions.compose(wrapper, wrapperFunction));
+        Functions.compose(transformer, cursorTransformation));
   }
 
   public Loader<To> build(Context context) {
-    return new ComposedCursorLoader<>(context, queryData, notificationUris, wrapperFunction);
+    return new ComposedCursorLoader<>(context, queryData, notificationUris, cursorTransformation);
   }
 }
