@@ -68,6 +68,13 @@ public class CursorLoaderBuilder {
         new SimpleCancellableFunction<>(transformer));
   }
 
+  public <Out> TransformedLoaderBuilder<Out> cancellableTransform(CancellableFunction<Cursor, Out> transformer) {
+    return new TransformedLoaderBuilder<>(
+        query.getQueryData(),
+        ImmutableList.copyOf(notificationUris),
+        transformer);
+  }
+
   public Loader<Cursor> build(Context context) {
     return new ComposedCursorLoader<>(
         context,

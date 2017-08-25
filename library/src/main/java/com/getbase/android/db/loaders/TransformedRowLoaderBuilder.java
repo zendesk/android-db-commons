@@ -41,6 +41,13 @@ public class TransformedRowLoaderBuilder<T> {
         new ComposedCancellableFunction<>(getEagerTransformationFunction(), new SimpleCancellableFunction<>(transformer)));
   }
 
+  public <Out> TransformedLoaderBuilder<Out> cancellableTransform(CancellableFunction<List<T>, Out> transformer) {
+    return new TransformedLoaderBuilder<>(
+        queryData,
+        ImmutableList.copyOf(notificationUris),
+        new ComposedCancellableFunction<>(getEagerTransformationFunction(), transformer));
+  }
+
   public TransformedRowLoaderBuilder<T> addNotificationUri(Uri uri) {
     return new TransformedRowLoaderBuilder<>(
         queryData,

@@ -32,6 +32,13 @@ public class TransformedLoaderBuilder<To> {
         new ComposedCancellableFunction<>(cursorTransformation, new SimpleCancellableFunction<>(transformer)));
   }
 
+  public <NewTo> TransformedLoaderBuilder<NewTo> cancellableTransform(CancellableFunction<To, NewTo> transformer) {
+    return new TransformedLoaderBuilder<>(
+        queryData,
+        ImmutableList.copyOf(notificationUris),
+        new ComposedCancellableFunction<>(cursorTransformation, transformer));
+  }
+
   public Loader<To> build(Context context) {
     return new ComposedCursorLoader<>(context, queryData, notificationUris, cursorTransformation);
   }
