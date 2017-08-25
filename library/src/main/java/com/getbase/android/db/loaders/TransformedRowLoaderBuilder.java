@@ -27,24 +27,39 @@ public class TransformedRowLoaderBuilder<T> {
   }
 
   public <Out> TransformedRowLoaderBuilder<Out> transformRow(final Function<T, Out> rowTransformer) {
-    return new TransformedRowLoaderBuilder<>(queryData, notificationUris, Functions.compose(rowTransformer, cursorTransformation));
+    return new TransformedRowLoaderBuilder<>(
+        queryData,
+        notificationUris,
+        Functions.compose(rowTransformer, cursorTransformation));
   }
 
   public TransformedLoaderBuilder<List<T>> lazy() {
-    return new TransformedLoaderBuilder<>(queryData, notificationUris, getLazyTransformationFunction());
+    return new TransformedLoaderBuilder<>(
+        queryData,
+        notificationUris,
+        getLazyTransformationFunction());
   }
 
   public <Out> TransformedLoaderBuilder<Out> transform(final Function<List<T>, Out> transformer) {
-    return new TransformedLoaderBuilder<>(queryData, notificationUris, Functions.compose(transformer, getEagerTransformationFunction())
-    );
+    return new TransformedLoaderBuilder<>(
+        queryData,
+        notificationUris,
+        Functions.compose(transformer, getEagerTransformationFunction()));
   }
 
   public TransformedRowLoaderBuilder<T> addNotificationUri(Uri uri) {
-    return new TransformedRowLoaderBuilder<>(queryData, ImmutableList.<Uri>builder().addAll(notificationUris).add(uri).build(), cursorTransformation);
+    return new TransformedRowLoaderBuilder<>(
+        queryData,
+        ImmutableList.<Uri>builder().addAll(notificationUris).add(uri).build(),
+        cursorTransformation);
   }
 
   public Loader<List<T>> build(Context context) {
-    return new ComposedCursorLoader<>(context, queryData, ImmutableList.copyOf(notificationUris), getEagerTransformationFunction());
+    return new ComposedCursorLoader<>(
+        context,
+        queryData,
+        ImmutableList.copyOf(notificationUris),
+        getEagerTransformationFunction());
   }
 
   private Function<Cursor, List<T>> getEagerTransformationFunction() {

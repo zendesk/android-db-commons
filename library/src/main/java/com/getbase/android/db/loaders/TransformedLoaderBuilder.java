@@ -27,7 +27,10 @@ public class TransformedLoaderBuilder<To> {
   }
 
   public <NewTo> TransformedLoaderBuilder<NewTo> transform(Function<To, NewTo> wrapper) {
-    return new TransformedLoaderBuilder<>(queryData, notificationUris, Functions.compose(wrapper, wrapperFunction));
+    return new TransformedLoaderBuilder<>(
+        queryData,
+        notificationUris,
+        Functions.compose(wrapper, wrapperFunction));
   }
 
   public Loader<To> build(Context context) {
