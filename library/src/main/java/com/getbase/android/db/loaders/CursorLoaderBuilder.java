@@ -55,11 +55,24 @@ public class CursorLoaderBuilder {
   }
 
   public <Out> TransformedRowLoaderBuilder<Out> transformRow(Function<Cursor, Out> rowTransformer) {
-    return new TransformedRowLoaderBuilder<>(query.getQueryData(), ImmutableList.copyOf(notificationUris), rowTransformer);
+    return new TransformedRowLoaderBuilder<>(
+        query.getQueryData(),
+        ImmutableList.copyOf(notificationUris),
+        new SimpleCancellableFunction<>(rowTransformer));
   }
 
   public <Out> TransformedLoaderBuilder<Out> transform(Function<Cursor, Out> transformer) {
-    return new TransformedLoaderBuilder<>(query.getQueryData(), ImmutableList.copyOf(notificationUris), transformer);
+    return new TransformedLoaderBuilder<>(
+        query.getQueryData(),
+        ImmutableList.copyOf(notificationUris),
+        new SimpleCancellableFunction<>(transformer));
+  }
+
+  public <Out> TransformedLoaderBuilder<Out> cancellableTransform(CancellableFunction<Cursor, Out> transformer) {
+    return new TransformedLoaderBuilder<>(
+        query.getQueryData(),
+        ImmutableList.copyOf(notificationUris),
+        transformer);
   }
 
   public Loader<Cursor> build(Context context) {
@@ -67,7 +80,6 @@ public class CursorLoaderBuilder {
         context,
         query.getQueryData(),
         ImmutableList.copyOf(notificationUris),
-        Functions.<Cursor>identity()
-    );
+        new SimpleCancellableFunction<>(Functions.<Cursor>identity()));
   }
 }

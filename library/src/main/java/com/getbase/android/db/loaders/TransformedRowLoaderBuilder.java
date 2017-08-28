@@ -1,66 +1,78 @@
 package com.getbase.android.db.loaders;
 
 import com.getbase.android.db.common.QueryData;
-import com.getbase.android.db.cursors.Cursors;
 import com.google.common.base.Function;
-import com.google.common.base.Functions;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Lists;
 
 import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
+import android.support.annotation.NonNull;
 import android.support.v4.content.Loader;
+import android.support.v4.os.CancellationSignal;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class TransformedRowLoaderBuilder<T> {
 
   private final QueryData queryData;
   private final ImmutableList<Uri> notificationUris;
-  private final Function<Cursor, T> cursorTransformation;
+  private final CancellableFunction<Cursor, T> cursorTransformation;
 
-  public TransformedRowLoaderBuilder(QueryData queryData, ImmutableList<Uri> notificationUris, Function<Cursor, T> transformation) {
+  TransformedRowLoaderBuilder(QueryData queryData, ImmutableList<Uri> notificationUris, CancellableFunction<Cursor, T> transformation) {
     this.queryData = queryData;
     this.notificationUris = notificationUris;
     this.cursorTransformation = transformation;
   }
 
   public <Out> TransformedRowLoaderBuilder<Out> transformRow(final Function<T, Out> rowTransformer) {
-    return new TransformedRowLoaderBuilder<>(queryData, notificationUris, Functions.compose(rowTransformer, cursorTransformation));
-  }
-
-  public TransformedLoaderBuilder<List<T>> lazy() {
-    return new TransformedLoaderBuilder<>(queryData, notificationUris, getLazyTransformationFunction());
-  }
-
-  public <Out> TransformedLoaderBuilder<Out> transform(final Function<List<T>, Out> transformer) {
-    return new TransformedLoaderBuilder<>(queryData, notificationUris, Functions.compose(transformer, getEagerTransformationFunction())
+    return new TransformedRowLoaderBuilder<>(
+        queryData,
+        notificationUris,
+        new ComposedCancellableFunction<>(cursorTransformation, new SimpleCancellableFunction<>(rowTransformer))
     );
   }
 
+  public <Out> TransformedLoaderBuilder<Out> transform(final Function<List<T>, Out> transformer) {
+    return new TransformedLoaderBuilder<>(
+        queryData,
+        notificationUris,
+        new ComposedCancellableFunction<>(getEagerTransformationFunction(), new SimpleCancellableFunction<>(transformer)));
+  }
+
+  public <Out> TransformedLoaderBuilder<Out> cancellableTransform(CancellableFunction<List<T>, Out> transformer) {
+    return new TransformedLoaderBuilder<>(
+        queryData,
+        ImmutableList.copyOf(notificationUris),
+        new ComposedCancellableFunction<>(getEagerTransformationFunction(), transformer));
+  }
+
   public TransformedRowLoaderBuilder<T> addNotificationUri(Uri uri) {
-    return new TransformedRowLoaderBuilder<>(queryData, ImmutableList.<Uri>builder().addAll(notificationUris).add(uri).build(), cursorTransformation);
+    return new TransformedRowLoaderBuilder<>(
+        queryData,
+        ImmutableList.<Uri>builder().addAll(notificationUris).add(uri).build(),
+        cursorTransformation);
   }
 
   public Loader<List<T>> build(Context context) {
-    return new ComposedCursorLoader<>(context, queryData, ImmutableList.copyOf(notificationUris), getEagerTransformationFunction());
+    return new ComposedCursorLoader<>(
+        context,
+        queryData,
+        ImmutableList.copyOf(notificationUris),
+        getEagerTransformationFunction());
   }
 
-  private Function<Cursor, List<T>> getEagerTransformationFunction() {
-    return new Function<Cursor, List<T>>() {
+  @NonNull
+  private CancellableFunction<Cursor, List<T>> getEagerTransformationFunction() {
+    return new CancellableFunction<Cursor, List<T>>() {
       @Override
-      public List<T> apply(Cursor input) {
-        return Lists.newArrayList(Cursors.toFluentIterable(input, cursorTransformation));
-      }
-    };
-  }
-
-  private Function<Cursor, List<T>> getLazyTransformationFunction() {
-    return new Function<Cursor, List<T>>() {
-      @Override
-      public List<T> apply(Cursor cursor) {
-        return new LazyCursorList<>(cursor, cursorTransformation);
+      public List<T> apply(Cursor input, CancellationSignal signal) {
+        List<T> result = new ArrayList<>(input.getCount());
+        for (input.moveToFirst(); !input.isAfterLast(); input.moveToNext()) {
+          result.add(cursorTransformation.apply(input, signal));
+        }
+        return result;
       }
     };
   }

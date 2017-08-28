@@ -2,7 +2,6 @@ package com.getbase.android.db.loaders;
 
 import com.getbase.android.db.common.QueryData;
 import com.google.common.base.Function;
-import com.google.common.base.Functions;
 import com.google.common.collect.ImmutableList;
 
 import android.content.Context;
@@ -14,23 +13,33 @@ public class TransformedLoaderBuilder<To> {
 
   private final QueryData queryData;
   private final ImmutableList<Uri> notificationUris;
-  private final Function<Cursor, To> wrapperFunction;
+  private final CancellableFunction<Cursor, To> cursorTransformation;
 
-  public TransformedLoaderBuilder(QueryData queryData, ImmutableList<Uri> notificationUris, Function<Cursor, To> wrapperFunction) {
+  TransformedLoaderBuilder(QueryData queryData, ImmutableList<Uri> notificationUris, CancellableFunction<Cursor, To> transformer) {
     this.queryData = queryData;
     this.notificationUris = notificationUris;
-    this.wrapperFunction = wrapperFunction;
+    this.cursorTransformation = transformer;
   }
 
   public TransformedLoaderBuilder<To> addNotificationUri(Uri uri) {
-    return new TransformedLoaderBuilder<>(queryData, ImmutableList.<Uri>builder().addAll(notificationUris).add(uri).build(), wrapperFunction);
+    return new TransformedLoaderBuilder<>(queryData, ImmutableList.<Uri>builder().addAll(notificationUris).add(uri).build(), cursorTransformation);
   }
 
-  public <NewTo> TransformedLoaderBuilder<NewTo> transform(Function<To, NewTo> wrapper) {
-    return new TransformedLoaderBuilder<>(queryData, notificationUris, Functions.compose(wrapper, wrapperFunction));
+  public <NewTo> TransformedLoaderBuilder<NewTo> transform(Function<To, NewTo> transformer) {
+    return new TransformedLoaderBuilder<>(
+        queryData,
+        notificationUris,
+        new ComposedCancellableFunction<>(cursorTransformation, new SimpleCancellableFunction<>(transformer)));
+  }
+
+  public <NewTo> TransformedLoaderBuilder<NewTo> cancellableTransform(CancellableFunction<To, NewTo> transformer) {
+    return new TransformedLoaderBuilder<>(
+        queryData,
+        ImmutableList.copyOf(notificationUris),
+        new ComposedCancellableFunction<>(cursorTransformation, transformer));
   }
 
   public Loader<To> build(Context context) {
-    return new ComposedCursorLoader<>(context, queryData, notificationUris, wrapperFunction);
+    return new ComposedCursorLoader<>(context, queryData, notificationUris, cursorTransformation);
   }
 }

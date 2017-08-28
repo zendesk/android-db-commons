@@ -6,11 +6,13 @@ import android.os.Looper
 import android.os.SystemClock
 import android.support.test.rule.ActivityTestRule
 import android.support.test.runner.AndroidJUnit4
+import android.support.v4.app.LoaderManager
 import android.support.v4.app.LoaderManager.LoaderCallbacks
 import android.support.v4.content.Loader
 import com.getbase.android.db.loaders.CursorLoaderBuilder
 import com.getbase.android.db.test.AsyncTasksMonitor
 import com.getbase.android.db.test.TestActivity
+import com.getbase.android.db.test.TestContentProvider
 import com.getbase.android.db.test.TestContract
 import com.google.common.truth.Truth
 import org.junit.Assert
@@ -21,6 +23,7 @@ import java.util.*
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.LinkedBlockingDeque
 import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicBoolean
 
 @RunWith(AndroidJUnit4::class)
 class ComposedCursorLoaderTest {
@@ -32,26 +35,6 @@ class ComposedCursorLoaderTest {
 
   @Test
   fun shouldGracefullyHandleTransformationsYieldingTheSameInstance() {
-    class TransformData(val result: Int, pauseWhenExecuting: Boolean = true) {
-      private val startLatch = CountDownLatch(if (pauseWhenExecuting) 1 else 0)
-      private val proceedLatch = CountDownLatch(if (pauseWhenExecuting) 1 else 0)
-
-      fun perform(): Int {
-        startLatch.countDown()
-        proceedLatch.awaitOrFail()
-        return result
-      }
-
-      fun waitUntilStarted() = startLatch.awaitOrFail()
-      fun proceed() = proceedLatch.countDown()
-
-      private fun CountDownLatch.awaitOrFail(): Unit {
-        if (!await(3, TimeUnit.SECONDS)) {
-          Assert.fail()
-        }
-      }
-    }
-
     val initialLoad = TransformData(1, pauseWhenExecuting = false)
     val firstReload = TransformData(2)
     val secondReload = TransformData(2)
@@ -152,6 +135,161 @@ class ComposedCursorLoaderTest {
     Truth.assertThat(results.takeFirst()).isEqualTo(2)
   }
 
+  @Test
+  fun shouldNotInvokeTransformationWhenLoaderDestroyedDuringQuery() {
+    val asyncTaskIdleLatch = CountDownLatch(1)
+    //As throwing exception on background loader thread do not fail test we need flag to ensure
+    //that transformation was never invoked
+    val transformationInvoked = AtomicBoolean(false)
+    //Prepare TestContentProvider to wait when loader start query for data
+    TestContentProvider.blockOnQuery()
+
+    rule.runOnUiThread {
+      rule
+          .activity
+          .supportLoaderManager
+          .initLoader(1, Bundle.EMPTY, object : LoaderManager.LoaderCallbacks<Nothing> {
+            override fun onCreateLoader(id: Int, args: Bundle) =
+                CursorLoaderBuilder
+                    .forUri(TestContract.BASE_URI)
+                    .transform {
+                      transformationInvoked.set(true)
+                      throw AssertionError("This transformation should never be invoked")
+                    }
+                    .build(rule.activity)
+
+            override fun onLoadFinished(loader: Loader<Nothing>, data: Nothing?) {
+              throw AssertionError("This loader should be cancelled so result should never be returned")
+            }
+
+            override fun onLoaderReset(loader: Loader<Nothing>) {}
+          })
+    }
+
+    //Now when loader is scheduled, test thread should wait until
+    //Loader is created and initialized by LoaderManager
+    TestContentProvider.waitUntilQueryStarted()
+
+    //As loader is busy querying for data we cancel load in background.
+    //Then we allow it to finish query and move forward. In the meantime
+    //test thread is waiting until asyncTaskMonitor will be idle.
+    rule.runOnUiThread {
+      rule
+          .activity
+          .supportLoaderManager
+          .destroyLoader(1)
+      TestContentProvider.proceedQuery()
+      asyncTasksMonitor.waitUntilIdle()
+      asyncTaskIdleLatch.countDown()
+    }
+
+    //After all background work is done and check if transformation will not be invoked
+    asyncTaskIdleLatch.await()
+    Truth.assertThat(transformationInvoked.get()).isFalse()
+  }
+
+  @Test
+  fun shouldNotInvokeSecondTransformationWhenLoaderDestroyedDuringFirstTransformation() {
+    val firstTransformation = TransformData(1)
+    val secondTransformationInvoked = AtomicBoolean(false)
+    val asyncTaskIdleLatch = CountDownLatch(1)
+
+    rule.runOnUiThread {
+      rule
+          .activity
+          .supportLoaderManager
+          .initLoader(1, Bundle.EMPTY, object : LoaderManager.LoaderCallbacks<Nothing> {
+            override fun onCreateLoader(id: Int, args: Bundle) =
+                CursorLoaderBuilder
+                    .forUri(TestContract.BASE_URI)
+                    .transform { firstTransformation.perform() }
+                    .transform {
+                      secondTransformationInvoked.set(true)
+                      throw AssertionError("This transformation should never be invoked")
+                    }
+                    .build(rule.activity)
+
+            override fun onLoadFinished(loader: Loader<Nothing>, data: Nothing?) {
+              throw AssertionError("This loader should be cancelled so result should never be returned")
+            }
+
+            override fun onLoaderReset(loader: Loader<Nothing>) {}
+          })
+    }
+    firstTransformation.waitUntilStarted()
+    rule.runOnUiThread {
+      rule
+          .activity
+          .supportLoaderManager
+          .destroyLoader(1)
+      firstTransformation.proceed()
+      asyncTasksMonitor.waitUntilIdle()
+      asyncTaskIdleLatch.countDown()
+    }
+    asyncTaskIdleLatch.await()
+    Truth.assertThat(secondTransformationInvoked.get()).isFalse()
+  }
+
+  interface RowTransformation {
+    fun transform(): Int;
+  }
+
+  @Test
+  fun shouldNotInvokeTransformationForSecondRowWhenLoaderDestroyedDuringTransformationOfFirstRow() {
+    val secondTransformationInvoked = AtomicBoolean(false)
+    val asyncTaskIdleLatch = CountDownLatch(1)
+    TestContentProvider.setDataForQuery(mutableListOf(1, 2))
+    val firstTransformation = TransformData(1)
+    val transformations = mutableListOf(
+        object : RowTransformation {
+          override fun transform(): Int = firstTransformation.perform()
+        },
+        object : RowTransformation {
+          override fun transform(): Int {
+            secondTransformationInvoked.set(true)
+            return 2
+          }
+        }
+    )
+
+    rule.runOnUiThread {
+      rule
+          .activity
+          .supportLoaderManager
+          .initLoader(1, Bundle.EMPTY, object : LoaderManager.LoaderCallbacks<List<Int>> {
+            override fun onCreateLoader(id: Int, args: Bundle) =
+                CursorLoaderBuilder
+                    .forUri(TestContract.BASE_URI)
+                    .transformRow {
+                      val transformation = transformations.first()
+                      transformations.remove(transformation)
+                      transformation.transform()
+                    }
+                    .build(rule.activity)
+
+            override fun onLoadFinished(loader: Loader<List<Int>>, data: List<Int>?) {
+              throw AssertionError("This loader should be cancelled so result should never be returned")
+            }
+
+            override fun onLoaderReset(loader: Loader<List<Int>>) {}
+          })
+    }
+    firstTransformation.waitUntilStarted()
+    //Data is loaded and loader is blocked on first row transformation
+    rule.runOnUiThread {
+      rule
+          .activity
+          .supportLoaderManager
+          .destroyLoader(1)
+      firstTransformation.proceed()
+      asyncTasksMonitor.waitUntilIdle()
+      asyncTaskIdleLatch.countDown()
+    }
+    asyncTaskIdleLatch.await()
+    Truth.assertThat(secondTransformationInvoked.get()).isFalse()
+  }
+
+
   private fun scheduleMainLooperTask(task: () -> Unit) = Handler(Looper.getMainLooper()).post(task)
 
   private fun scheduleLoaderReload() = rule.activity.contentResolver.notifyChange(TestContract.BASE_URI, null)
@@ -159,6 +297,26 @@ class ComposedCursorLoaderTest {
   private fun AsyncTasksMonitor.waitUntilIdle() {
     while (!isIdleNow) {
       SystemClock.sleep(10)
+    }
+  }
+
+  class TransformData(val result: Int, pauseWhenExecuting: Boolean = true) {
+    private val startLatch = CountDownLatch(if (pauseWhenExecuting) 1 else 0)
+    private val proceedLatch = CountDownLatch(if (pauseWhenExecuting) 1 else 0)
+
+    fun perform(): Int {
+      startLatch.countDown()
+      proceedLatch.awaitOrFail()
+      return result
+    }
+
+    fun waitUntilStarted() = startLatch.awaitOrFail()
+    fun proceed() = proceedLatch.countDown()
+
+    private fun CountDownLatch.awaitOrFail(): Unit {
+      if (!await(3, TimeUnit.SECONDS)) {
+        Assert.fail()
+      }
     }
   }
 }
