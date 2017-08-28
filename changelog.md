@@ -1,6 +1,12 @@
 Change Log
 ==========
 
+Version 0.14.0 *(2017-08-28)*
+----------------------------
+
+ * Added support for loader cancellation in `ComposedCursorLoader`.
+ * Dropped support for lazy row transformation.
+
 Version 0.13.4 *(2017-04-03)*
 ----------------------------
 
