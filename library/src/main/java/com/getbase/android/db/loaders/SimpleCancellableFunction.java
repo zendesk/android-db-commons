@@ -13,7 +13,8 @@ class SimpleCancellableFunction<TIn, TOut> implements CancellableFunction<TIn, T
 
   @Override
   public final TOut apply(TIn input, CancellationSignal signal) {
+    TOut result = transform.apply(input);
     signal.throwIfCanceled();
-    return transform.apply(input);
+    return result;
   }
 }
