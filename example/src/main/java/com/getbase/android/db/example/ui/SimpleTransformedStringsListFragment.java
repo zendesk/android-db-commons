@@ -44,7 +44,6 @@ public class SimpleTransformedStringsListFragment extends ListFragment implement
               return String.format("%s %s", cursor.getString(0), cursor.getString(1));
             }
           })
-          .lazy()
           .build(context);
     }
   };
