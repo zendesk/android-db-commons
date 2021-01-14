@@ -1,11 +1,12 @@
-package android.support.v4.content;
+package androidx.loader.content;
 
 import android.os.AsyncTask;
-import android.support.v4.os.OperationCanceledException;
 
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
+
+import androidx.core.os.OperationCanceledException;
 
 @Implements(AsyncTaskLoader.class)
 public class ShadowAsyncTaskLoader<T> {

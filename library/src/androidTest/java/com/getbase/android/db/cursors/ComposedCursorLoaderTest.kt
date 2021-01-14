@@ -4,11 +4,10 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.os.SystemClock
-import android.support.test.rule.ActivityTestRule
-import android.support.test.runner.AndroidJUnit4
-import android.support.v4.app.LoaderManager
-import android.support.v4.app.LoaderManager.LoaderCallbacks
-import android.support.v4.content.Loader
+import androidx.loader.app.LoaderManager
+import androidx.loader.content.Loader
+import androidx.test.rule.ActivityTestRule
+import androidx.test.runner.AndroidJUnit4
 import com.getbase.android.db.loaders.CursorLoaderBuilder
 import com.getbase.android.db.test.AsyncTasksMonitor
 import com.getbase.android.db.test.TestActivity
@@ -59,8 +58,8 @@ class ComposedCursorLoaderTest {
       rule
           .activity
           .supportLoaderManager
-          .initLoader(0, Bundle.EMPTY, object : LoaderCallbacks<Int> {
-            override fun onCreateLoader(id: Int, args: Bundle): Loader<Int> =
+          .initLoader(0, Bundle.EMPTY, object : LoaderManager.LoaderCallbacks<Int> {
+            override fun onCreateLoader(id: Int, args: Bundle?): Loader<Int> =
                 CursorLoaderBuilder
                     .forUri(TestContract.BASE_URI)
                     .transform { transforms.removeFirst().perform() }
@@ -149,7 +148,7 @@ class ComposedCursorLoaderTest {
           .activity
           .supportLoaderManager
           .initLoader(1, Bundle.EMPTY, object : LoaderManager.LoaderCallbacks<Nothing> {
-            override fun onCreateLoader(id: Int, args: Bundle) =
+            override fun onCreateLoader(id: Int, args: Bundle?) =
                 CursorLoaderBuilder
                     .forUri(TestContract.BASE_URI)
                     .transform {
@@ -199,7 +198,7 @@ class ComposedCursorLoaderTest {
           .activity
           .supportLoaderManager
           .initLoader(1, Bundle.EMPTY, object : LoaderManager.LoaderCallbacks<Nothing> {
-            override fun onCreateLoader(id: Int, args: Bundle) =
+            override fun onCreateLoader(id: Int, args: Bundle?) =
                 CursorLoaderBuilder
                     .forUri(TestContract.BASE_URI)
                     .transform { firstTransformation.perform() }
@@ -257,7 +256,7 @@ class ComposedCursorLoaderTest {
           .activity
           .supportLoaderManager
           .initLoader(1, Bundle.EMPTY, object : LoaderManager.LoaderCallbacks<List<Int>> {
-            override fun onCreateLoader(id: Int, args: Bundle) =
+            override fun onCreateLoader(id: Int, args: Bundle?) =
                 CursorLoaderBuilder
                     .forUri(TestContract.BASE_URI)
                     .transformRow {
