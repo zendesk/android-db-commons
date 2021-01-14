@@ -20,10 +20,6 @@ import android.content.ContentResolver;
 import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
-import android.support.annotation.Nullable;
-import android.support.v4.os.CancellationSignal;
-import android.support.v4.os.OperationCanceledException;
-import android.support.v4.util.Pair;
 
 import com.getbase.android.db.common.QueryData;
 import com.google.common.base.MoreObjects;
@@ -36,6 +32,11 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+
+import androidx.annotation.Nullable;
+import androidx.core.os.CancellationSignal;
+import androidx.core.os.OperationCanceledException;
+import androidx.core.util.Pair;
 
 public class ComposedCursorLoader<T> extends AbstractLoader<T> {
 

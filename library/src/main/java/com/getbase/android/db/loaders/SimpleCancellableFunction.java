@@ -2,7 +2,7 @@ package com.getbase.android.db.loaders;
 
 import com.google.common.base.Function;
 
-import android.support.v4.os.CancellationSignal;
+import androidx.core.os.CancellationSignal;
 
 class SimpleCancellableFunction<TIn, TOut> implements CancellableFunction<TIn, TOut> {
   final Function<TIn, TOut> transform;

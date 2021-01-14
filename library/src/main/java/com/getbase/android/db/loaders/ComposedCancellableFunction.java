@@ -1,6 +1,6 @@
 package com.getbase.android.db.loaders;
 
-import android.support.v4.os.CancellationSignal;
+import androidx.core.os.CancellationSignal;
 
 class ComposedCancellableFunction<TIn, T, TOut> implements CancellableFunction<TIn, TOut> {
   private final CancellableFunction<TIn, T> mFirst;

@@ -7,12 +7,13 @@ import com.google.common.collect.ImmutableList;
 import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
-import android.support.annotation.NonNull;
-import android.support.v4.content.Loader;
-import android.support.v4.os.CancellationSignal;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import androidx.annotation.NonNull;
+import androidx.core.os.CancellationSignal;
+import androidx.loader.content.Loader;
 
 public class TransformedRowLoaderBuilder<T> {
 

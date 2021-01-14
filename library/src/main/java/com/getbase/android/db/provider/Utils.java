@@ -7,7 +7,8 @@ import android.database.DatabaseUtils;
 import android.database.sqlite.SQLiteStatement;
 
 import android.net.Uri;
-import android.support.annotation.Nullable;
+
+import androidx.annotation.Nullable;
 
 public final class Utils {
   private Utils() {
