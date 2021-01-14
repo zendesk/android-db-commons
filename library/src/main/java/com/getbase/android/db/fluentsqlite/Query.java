@@ -443,7 +443,7 @@ public final class Query {
             if (tableOrSubquery.mTable != null) {
               tableString = tableOrSubquery.mTable;
             } else {
-              RawQuery rawSubquery = tableOrSubquery.mSubquery.toRawQuery();
+              RawQuery rawSubquery = tableOrSubquery.mSubquery.buildUpon().toRawQuery();
 
               tableString = SURROUND_WITH_PARENS.apply(rawSubquery.mRawQuery);
               args.addAll(rawSubquery.mRawQueryArgs);
@@ -467,7 +467,7 @@ public final class Query {
           if (join.mJoinSource.mTable != null) {
             builder.append(join.mJoinSource.mTable);
           } else {
-            final RawQuery rawQuery = join.mJoinSource.mSubquery.toRawQuery();
+            final RawQuery rawQuery = join.mJoinSource.mSubquery.buildUpon().toRawQuery();
 
             builder.append(SURROUND_WITH_PARENS.apply(rawQuery.mRawQuery));
             args.addAll(rawQuery.mRawQueryArgs);
