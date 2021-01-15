@@ -355,7 +355,11 @@ public final class Query {
 
         mArgs.putAll(other.mArgs);
 
-        mPendingTable = other.mPendingTable;
+        if (other.mPendingTable != null) {
+          mPendingTable = new TableOrSubquery(other.mPendingTable);
+        } else {
+          mPendingTable = null;
+        }
 
         for (Entry<TableOrSubquery, String> tableEntry : other.mTables.entrySet()) {
           mTables.put(new TableOrSubquery(tableEntry.getKey()), tableEntry.getValue());
