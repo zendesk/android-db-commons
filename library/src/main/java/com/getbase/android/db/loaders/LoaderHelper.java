@@ -4,11 +4,11 @@ import com.google.common.base.Preconditions;
 
 import android.content.Context;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentActivity;
-import android.support.v4.app.LoaderManager;
-import android.support.v4.app.LoaderManager.LoaderCallbacks;
-import android.support.v4.content.Loader;
+
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentActivity;
+import androidx.loader.app.LoaderManager;
+import androidx.loader.content.Loader;
 
 public abstract class LoaderHelper<T> {
   final int mId;
@@ -49,8 +49,8 @@ public abstract class LoaderHelper<T> {
     return loaderManager.initLoader(mId, args, wrapCallbacks(context.getApplicationContext(), callbacks));
   }
 
-  private LoaderCallbacks<T> wrapCallbacks(final Context applicationContext, final LoaderDataCallbacks<T> callbacks) {
-    return new LoaderCallbacks<T>() {
+  private LoaderManager.LoaderCallbacks<T> wrapCallbacks(final Context applicationContext, final LoaderDataCallbacks<T> callbacks) {
+    return new LoaderManager.LoaderCallbacks<T>() {
       @Override
       public Loader<T> onCreateLoader(int id, Bundle args) {
         Preconditions.checkArgument(id == mId);

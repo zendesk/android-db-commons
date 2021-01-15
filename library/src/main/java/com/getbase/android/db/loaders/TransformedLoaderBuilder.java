@@ -7,7 +7,8 @@ import com.google.common.collect.ImmutableList;
 import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
-import android.support.v4.content.Loader;
+
+import androidx.loader.content.Loader;
 
 public class TransformedLoaderBuilder<To> {
 

@@ -10,10 +10,11 @@ import com.google.common.collect.Lists;
 import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
-import android.support.v4.content.Loader;
 
 import java.util.Collection;
 import java.util.List;
+
+import androidx.loader.content.Loader;
 
 public class CursorLoaderBuilder {
 

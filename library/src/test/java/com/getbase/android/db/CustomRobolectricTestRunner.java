@@ -1,10 +1,10 @@
 package com.getbase.android.db;
 
-import android.support.v4.content.ShadowAsyncTaskLoader;
-
 import org.junit.runners.model.InitializationError;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.bytecode.ShadowMap;
+
+import androidx.loader.content.ShadowAsyncTaskLoader;
 
 public class CustomRobolectricTestRunner extends RobolectricTestRunner {
 

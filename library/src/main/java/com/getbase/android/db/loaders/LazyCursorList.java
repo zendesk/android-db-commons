@@ -4,11 +4,12 @@ import com.getbase.android.db.cursors.Cursors;
 import com.google.common.base.Function;
 
 import android.database.Cursor;
-import android.support.v4.util.LruCache;
 
 import java.io.Closeable;
 import java.util.AbstractList;
 import java.util.RandomAccess;
+
+import androidx.collection.LruCache;
 
 public class LazyCursorList<T> extends AbstractList<T> implements RandomAccess, Closeable {
 

@@ -1,7 +1,8 @@
 package com.getbase.android.db.test;
 
 import android.os.Bundle;
-import android.support.v4.app.FragmentActivity;
+
+import androidx.fragment.app.FragmentActivity;
 
 public class TestActivity extends FragmentActivity {
 

@@ -355,9 +355,15 @@ public final class Query {
 
         mArgs.putAll(other.mArgs);
 
-        mPendingTable = other.mPendingTable;
+        if (other.mPendingTable != null) {
+          mPendingTable = new TableOrSubquery(other.mPendingTable);
+        } else {
+          mPendingTable = null;
+        }
 
-        mTables.putAll(other.mTables);
+        for (Entry<TableOrSubquery, String> tableEntry : other.mTables.entrySet()) {
+          mTables.put(new TableOrSubquery(tableEntry.getKey()), tableEntry.getValue());
+        }
 
         mPendingJoinType = other.mPendingJoinType;
         mPendingJoin = other.mPendingJoin != null ? new JoinSpec(other.mPendingJoin) : null;
@@ -953,7 +959,7 @@ public final class Query {
 
       private JoinSpec(JoinSpec other) {
         mJoinType = other.mJoinType;
-        mJoinSource = other.mJoinSource;
+        mJoinSource = new TableOrSubquery(other.mJoinSource);
         mAlias = other.mAlias;
         mUsingColumns = other.mUsingColumns != null ? Arrays.copyOf(other.mUsingColumns, other.mUsingColumns.length) : null;
         mConstraints.addAll(other.mConstraints);
@@ -1110,6 +1116,15 @@ public final class Query {
       private TableOrSubquery(Query subquery) {
         mTable = null;
         mSubquery = subquery;
+      }
+
+      private TableOrSubquery(TableOrSubquery other) {
+        mTable = other.mTable;
+        if (other.mSubquery != null) {
+          mSubquery = other.mSubquery.buildUpon().build();
+        } else {
+          mSubquery = null;
+        }
       }
     }
   }

@@ -1,10 +1,11 @@
 package com.getbase.android.db.loaders;
 
 import android.content.Context;
-import android.support.v4.content.AsyncTaskLoader;
+
+import androidx.loader.content.AsyncTaskLoader;
 
 /**
- * Base class for {@link android.support.v4.content.Loader} which caches
+ * Base class for {@link androidx.loader.content.Loader} which caches
  * the results.
  */
 public abstract class AbstractLoader<T> extends AsyncTaskLoader<T> {
