@@ -21,8 +21,8 @@ android {
 }
 
 dependencies {
-  compile 'com.google.guava:guava:18.0'
-  compile 'androidx.annotation:annotation:1.0.0'
+  api 'com.google.guava:guava:18.0'
+  api 'androidx.annotation:annotation:1.0.0'
 
   testImplementation('junit:junit:4.12') {
     exclude module: 'hamcrest-core'
@@ -32,14 +32,14 @@ dependencies {
   testImplementation 'com.squareup:fest-android:1.0.7'
   testImplementation 'org.mockito:mockito-all:1.10.19'
 
-  compile 'androidx.legacy:legacy-support-v4:1.0.0'
+  api 'androidx.legacy:legacy-support-v4:1.0.0'
 
-  androidTestCompile 'com.android.support.test:runner:0.5'
-  androidTestCompile 'com.android.support.test:rules:0.5'
-  androidTestCompile "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
-  androidTestCompile "org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version"
-  androidTestCompile 'com.google.truth:truth:0.27'
-  androidTestCompile 'com.google.guava:guava:18.0'
+  androidTestImplementation 'com.android.support.test:runner:0.5'
+  androidTestImplementation 'com.android.support.test:rules:0.5'
+  androidTestImplementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
+  androidTestImplementation "org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version"
+  androidTestImplementation 'com.google.truth:truth:0.27'
+  androidTestImplementation 'com.google.guava:guava:18.0'
 }
 
 apply from: './gradle-mvn-push.gradle'

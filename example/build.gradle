@@ -20,6 +20,6 @@ android {
 }
 
 dependencies {
-  compile project(':library')
-  compile 'com.google.guava:guava:18.0'
+  implementation project(':library')
+  implementation 'com.google.guava:guava:18.0'
 }
