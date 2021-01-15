@@ -357,7 +357,9 @@ public final class Query {
 
         mPendingTable = other.mPendingTable;
 
-        mTables.putAll(other.mTables);
+        for (Entry<TableOrSubquery, String> tableEntry : other.mTables.entrySet()) {
+          mTables.put(new TableOrSubquery(tableEntry.getKey()), tableEntry.getValue());
+        }
 
         mPendingJoinType = other.mPendingJoinType;
         mPendingJoin = other.mPendingJoin != null ? new JoinSpec(other.mPendingJoin) : null;
@@ -443,7 +445,7 @@ public final class Query {
             if (tableOrSubquery.mTable != null) {
               tableString = tableOrSubquery.mTable;
             } else {
-              RawQuery rawSubquery = tableOrSubquery.mSubquery.buildUpon().toRawQuery();
+              RawQuery rawSubquery = tableOrSubquery.mSubquery.toRawQuery();
 
               tableString = SURROUND_WITH_PARENS.apply(rawSubquery.mRawQuery);
               args.addAll(rawSubquery.mRawQueryArgs);
@@ -467,7 +469,7 @@ public final class Query {
           if (join.mJoinSource.mTable != null) {
             builder.append(join.mJoinSource.mTable);
           } else {
-            final RawQuery rawQuery = join.mJoinSource.mSubquery.buildUpon().toRawQuery();
+            final RawQuery rawQuery = join.mJoinSource.mSubquery.toRawQuery();
 
             builder.append(SURROUND_WITH_PARENS.apply(rawQuery.mRawQuery));
             args.addAll(rawQuery.mRawQueryArgs);
@@ -953,7 +955,7 @@ public final class Query {
 
       private JoinSpec(JoinSpec other) {
         mJoinType = other.mJoinType;
-        mJoinSource = other.mJoinSource;
+        mJoinSource = new TableOrSubquery(other.mJoinSource);
         mAlias = other.mAlias;
         mUsingColumns = other.mUsingColumns != null ? Arrays.copyOf(other.mUsingColumns, other.mUsingColumns.length) : null;
         mConstraints.addAll(other.mConstraints);
@@ -1110,6 +1112,15 @@ public final class Query {
       private TableOrSubquery(Query subquery) {
         mTable = null;
         mSubquery = subquery;
+      }
+
+      private TableOrSubquery(TableOrSubquery other) {
+        mTable = other.mTable;
+        if (other.mSubquery != null) {
+          mSubquery = other.mSubquery.buildUpon().build();
+        } else {
+          mSubquery = null;
+        }
       }
     }
   }
