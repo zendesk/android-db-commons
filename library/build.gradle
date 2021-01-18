@@ -1,5 +1,9 @@
-apply plugin: 'com.android.library'
-apply plugin: 'com.github.ben-manes.versions'
+plugins {
+  id 'com.android.library'
+  id 'com.github.ben-manes.versions'
+  id 'maven-publish'
+  id 'com.jfrog.bintray'
+}
 
 android {
   compileSdkVersion 30
@@ -17,6 +21,12 @@ android {
     versionCode Integer.parseInt(project.VERSION_CODE)
     consumerProguardFiles 'consumer-proguard-rules.pro'
     testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+  }
+
+  buildTypes {
+    release {
+      minifyEnabled false
+    }
   }
 }
 
@@ -42,10 +52,97 @@ dependencies {
   androidTestImplementation 'com.google.guava:guava:18.0'
 }
 
-apply from: './gradle-mvn-push.gradle'
+task androidJavadocs(type: Javadoc) {
+    source = android.sourceSets.main.java.srcDirs
+    classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
+    failOnError = false
+}
+
+task androidJavadocsJar(type: Jar, dependsOn: androidJavadocs) {
+    classifier = 'javadoc'
+    from androidJavadocs.destinationDir
+}
+
+task androidSourcesJar(type: Jar) {
+    classifier = 'sources'
+    from android.sourceSets.main.java.sourceFiles
+}
+
+artifacts {
+    archives androidSourcesJar
+    archives androidJavadocsJar
+}
 
 project.afterEvaluate {
   project.tasks.findByName("test").getTaskDependencies().getDependencies().each { task ->
     task.jvmArgs('-noverify')
+  }
+}
+
+def libraryGroupId = 'com.getbase.android.db'
+def libraryArtifactId = 'library'
+def libraryVersion = VERSION_NAME
+
+apply from: '../developers.gradle'
+
+def pomConfig = {
+  licenses {
+    license {
+      name 'The Apache Software License, Version 2.0'
+      url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+    }
+  }
+  developers project_developers
+  scm {
+    connection 'https://github.com/zendesk/android-db-commons.git'
+    developerConnection 'https://github.com/zendesk/android-db-commons.git'
+    url 'https://github.com/zendesk/android-db-commons'
+  }
+}
+
+afterEvaluate {
+  publishing {
+    publications {
+      // Creates a Maven publication called "release".
+      release(MavenPublication) {
+        from components.release
+        artifact androidSourcesJar
+        artifact androidJavadocsJar
+        groupId = libraryGroupId
+        artifactId = libraryArtifactId
+        version = libraryVersion
+
+        pom.withXml {
+          def root = asNode()
+          root.appendNode('description', POM_DESCRIPTION)
+          root.appendNode('name', 'android-db-commons')
+          root.appendNode('url', POM_URL)
+          root.children().last() + pomConfig
+        }
+      }
+    }
+  }
+}
+
+bintray {
+  user = System.getenv('BINTRAY_USER')
+  key = System.getenv('BINTRAY_KEY')
+
+  publications = ['release']
+  publish = true
+  override = true
+  pkg {
+    repo = 'maven'
+    userOrg = 'basecrm'
+    name = 'com.getbase.android.db:library'
+    desc = 'com.getbase.android.db'
+    licenses = ['Apache-2.0']
+    websiteUrl = 'https://github.com/zendesk/android-db-commons'
+    vcsUrl = 'https://github.com/zendesk/android-db-commons.git'
+    publicDownloadNumbers = true
+    version {
+      name = libraryVersion
+      released = new Date()
+    }
   }
 }
