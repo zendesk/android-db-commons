@@ -1,6 +1,12 @@
 Change Log
 ==========
 
+Version 0.15.0 *(2021-01-15)*
+----------------------------
+
+ * Migration to AndroidX
+ * Fix ConcurrentModificationException
+
 Version 0.14.0 *(2017-08-28)*
 ----------------------------
 
