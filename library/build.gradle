@@ -7,7 +7,6 @@ plugins {
 
 android {
   compileSdkVersion 30
-  buildToolsVersion "22.0.1"
 
   compileOptions {
     sourceCompatibility JavaVersion.VERSION_1_7
