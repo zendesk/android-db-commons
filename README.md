@@ -201,13 +201,6 @@ Usage
 Just add repository and the dependency to your `build.gradle`:
 
 ```groovy
-allprojects {
-    repositories {
-        // ...
-        maven { url 'https://dl.bintray.com/basecrm/maven' }
-    }
-}
-
 dependencies {
     compile 'com.getbase.android.db:library:0.15.0'
 }
@@ -235,7 +228,7 @@ CursorLoaderBuilder.forUri(myLittleUri)
 1. Update `VERSION_NAME` in `gradle.properties` file
 2. Merge PR to master
 3. Create new GitHub release with tag name `v` followed by version - e.g. `v0.15.0`
-4. GitHub Actions will automatically build and publish new package in Bintray repository
+4. GitHub Actions will automatically build and publish new package in Maven repository
 
 ## Copyright and license
 
