@@ -1,5 +1,6 @@
 package com.getbase.android.db.cursors;
 
+import android.annotation.SuppressLint;
 import android.database.MatrixCursor;
 
 class EmptyCursor extends MatrixCursor {
@@ -9,6 +10,7 @@ class EmptyCursor extends MatrixCursor {
   }
 
   @Override
+  @SuppressLint("Range")
   public int getColumnIndexOrThrow(String columnName) {
     return -1;
   }
